@@ -56,6 +56,11 @@
            `RESULT_MSG` varchar(5) DEFAULT NULL,
            `TELCOINFO` varchar(5) DEFAULT NULL,
            `REAL_MESSAGE_TYPE` varchar(4) DEFAULT NULL,
+            `ETC1` varchar(100) DEFAULT NULL,
+            `ETC2` varchar(100) DEFAULT NULL,
+            `ETC3` varchar(100) DEFAULT NULL,
+            `ETC4` varchar(100) DEFAULT NULL,
+            `ETC5` varchar(100) DEFAULT NULL,
            PRIMARY KEY (`id`),
            KEY `${at_table}_send_group_IDX` (`SEND_GROUP`,`MESSAGE_TYPE`,`RESERVE_DT`) USING BTREE,
            KEY `${at_table}_status_IDX` (`STATUS`,`SEND_GROUP`,`MESSAGE_TYPE`) USING BTREE,
@@ -111,6 +116,11 @@
            "RESULT_MSG" VARCHAR2(5 CHAR) DEFAULT NULL,
            "TELCOINFO" VARCHAR2(5 CHAR) DEFAULT NULL,
            "REAL_MESSAGE_TYPE" VARCHAR2(4 CHAR) DEFAULT NULL,
+            "ETC1" VARCHAR2(100 CHAR) DEFAULT NULL,
+            "ETC2" VARCHAR2(100 CHAR) DEFAULT NULL,
+            "ETC3" VARCHAR2(100 CHAR) DEFAULT NULL,
+            "ETC4" VARCHAR2(100 CHAR) DEFAULT NULL,
+            "ETC5" VARCHAR2(100 CHAR) DEFAULT NULL,
            PRIMARY KEY ("ID")
         )
     </update>
@@ -201,6 +211,11 @@
             `RESULT` VARCHAR(5) DEFAULT NULL,
             `TELCOINFO` VARCHAR(5) DEFAULT NULL,
             `REAL_MESSAGE_TYPE` VARCHAR(4) DEFAULT NULL,
+            `ETC1` varchar(100) DEFAULT NULL,
+            `ETC2` varchar(100) DEFAULT NULL,
+            `ETC3` varchar(100) DEFAULT NULL,
+            `ETC4` varchar(100) DEFAULT NULL,
+            `ETC5` varchar(100) DEFAULT NULL,
             PRIMARY KEY (`id`),
             KEY `${msg_table}_send_group_IDX` (`SEND_GROUP`,`SMS_KIND`,`RESERVE_DT`) USING BTREE,
             KEY `${msg_table}_status_IDX` (`STATUS`,`SEND_GROUP`,`SMS_KIND`) USING BTREE,
@@ -244,6 +259,11 @@
              "RESULT" VARCHAR2(5 CHAR) DEFAULT NULL,
              "TELCOINFO" VARCHAR2(5 CHAR) DEFAULT NULL,
              "REAL_MESSAGE_TYPE" VARCHAR2(4 CHAR) DEFAULT NULL,
+             "ETC1" VARCHAR2(100 CHAR) DEFAULT NULL,
+             "ETC2" VARCHAR2(100 CHAR) DEFAULT NULL,
+             "ETC3" VARCHAR2(100 CHAR) DEFAULT NULL,
+             "ETC4" VARCHAR2(100 CHAR) DEFAULT NULL,
+             "ETC5" VARCHAR2(100 CHAR) DEFAULT NULL,
              PRIMARY KEY ("ID")
         )
     </update>
