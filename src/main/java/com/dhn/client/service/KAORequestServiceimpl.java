@@ -19,7 +19,6 @@ public class KAORequestServiceimpl implements KAORequestService{
     private KAORequestDAO kaoRequestDAO;
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void atTableCheck(SQLParameter param) throws Exception {
         int result = kaoRequestDAO.atTableCheck(param);
 
@@ -37,7 +36,6 @@ public class KAORequestServiceimpl implements KAORequestService{
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void atLogTableCheck(String atTable, String atLogTable, String database) throws Exception{
         kaoRequestDAO.atLogTableCheck(atTable, atLogTable, database);
     }
@@ -48,7 +46,6 @@ public class KAORequestServiceimpl implements KAORequestService{
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void updateKAOGroupNo(SQLParameter param) throws Exception {
         kaoRequestDAO.updateKAOGroupNo(param);
     }
@@ -59,13 +56,11 @@ public class KAORequestServiceimpl implements KAORequestService{
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void updateKAOSendComplete(SQLParameter param) throws Exception {
         kaoRequestDAO.updateKAOSendComplete(param);
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void updateKAOSendInit(SQLParameter param) throws Exception {
         kaoRequestDAO.updateKAOSendInit(param);
     }
@@ -76,7 +71,6 @@ public class KAORequestServiceimpl implements KAORequestService{
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void kaoJsonErrMessage(SQLParameter param, List<String> jsonErrMsgid) throws Exception {
         kaoRequestDAO.kaoJsonErrMessage(param, jsonErrMsgid);
     }
@@ -93,7 +87,6 @@ public class KAORequestServiceimpl implements KAORequestService{
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void update_log_move_groupNo(SQLParameter param) throws Exception {
         kaoRequestDAO.update_log_move_groupNo(param);
     }

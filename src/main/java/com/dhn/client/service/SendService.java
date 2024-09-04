@@ -70,7 +70,6 @@ public class SendService {
             maxAttempts = 3, // 최대 시도 횟수
             backoff = @Backoff(delay = 2000) // 재시도 간의 대기 시간 (밀리초)
     )
-    @Transactional(rollbackFor = Exception.class)
     public void KAOSendAsync(List<KAORequestBean> _list, SQLParameter paramCopy, String group_no) throws Exception {
         if (activeKAOThreads.incrementAndGet() <= MAX_THREADS) {
             boolean apiCalled = false;
@@ -159,7 +158,6 @@ public class SendService {
             maxAttempts = 3, // 최대 시도 횟수
             backoff = @Backoff(delay = 2000) // 재시도 간의 대기 시간 (밀리초)
     )
-    @Transactional
     public void SMSSendAsync(List<RequestBean> _list, SQLParameter paramCopy, String group_no) throws Exception {
         if (activeSMSThreads.incrementAndGet() <= MAX_THREADS) {
             boolean apiCalled = false;
@@ -247,7 +245,6 @@ public class SendService {
             maxAttempts = 3, // 최대 시도 횟수
             backoff = @Backoff(delay = 2000) // 재시도 간의 대기 시간 (밀리초)
     )
-    @Transactional
     public void LMSSendAsync(List<RequestBean> _list, SQLParameter paramCopy, String group_no) throws Exception {
         if (activeLMSThreads.incrementAndGet() <= MAX_THREADS) {
             boolean apiCalled = false;
@@ -336,7 +333,6 @@ public class SendService {
             maxAttempts = 3, // 최대 시도 횟수
             backoff = @Backoff(delay = 2000) // 재시도 간의 대기 시간 (밀리초)
     )
-    @Transactional
     public void MMSSendAsync(List<RequestBean> _list, SQLParameter paramCopy, String group_no) throws Exception {
         if (activeMMSThreads.incrementAndGet() <= MAX_THREADS) {
             boolean apiCalled = false;

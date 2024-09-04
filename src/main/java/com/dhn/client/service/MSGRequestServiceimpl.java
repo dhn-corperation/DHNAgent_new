@@ -8,6 +8,7 @@ import com.dhn.client.dao.MSGRequestDAO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
@@ -77,6 +78,7 @@ public class MSGRequestServiceimpl implements MSGRequestService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void msgResultInsert(Msg_Log ml) throws Exception {
         msgRequestDAO.msgResultInsert(ml);
     }
@@ -92,6 +94,7 @@ public class MSGRequestServiceimpl implements MSGRequestService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void log_move(SQLParameter param) throws Exception {
         msgRequestDAO.log_move(param);
     }
