@@ -178,6 +178,36 @@
         </choose>
     </select>
 
+    <update id="createMsgTable_mysql" parameterType="com.dhn.client.bean.SQLParameter">
+        CREATE TABLE `${msg_table}`
+        (
+            `ID` INT NOT NULL AUTO_INCREMENT,
+            `MSG_ID` VARCHAR(40) NOT NULL,
+            `SMS_KIND` CHAR(1) DEFAULT 'S' NOT NULL,
+            `MSG` VARCHAR(4000) NOT NULL,
+            `PHN` VARCHAR(15) NOT NULL,
+            `STATUS` CHAR(1) DEFAULT '0',
+            `REG_DT` DATETIME DEFAULT CURRENT_TIMESTAMP,
+            `RESERVE_DT` VARCHAR(15) DEFAULT '00000000000000',
+            `RESPONSE_DT` DATETIME DEFAULT NULL,
+            `RESULT_DT` VARCHAR(30) DEFAULT NULL,
+            `SMS_SENDER` VARCHAR(15) NOT NULL,
+            `SMSLMS_TIT` VARCHAR(100) DEFAULT NULL,
+            `MMS_IMAGE_KEY` VARCHAR(100) DEFAULT NULL,
+            `MMS_IMAGE1` VARCHAR(200) DEFAULT NULL,
+            `MMS_IMAGE2` VARCHAR(200) DEFAULT NULL,
+            `MMS_IMAGE3` VARCHAR(200) DEFAULT NULL,
+            `SEND_GROUP` VARCHAR(50) DEFAULT NULL,
+            `RESULT` VARCHAR(5) DEFAULT NULL,
+            `TELCOINFO` VARCHAR(5) DEFAULT NULL,
+            `REAL_MESSAGE_TYPE` VARCHAR(4) DEFAULT NULL,
+            PRIMARY KEY (`id`),
+            KEY `${msg_table}_send_group_IDX` (`SEND_GROUP`,`SMS_KIND`,`RESERVE_DT`) USING BTREE,
+            KEY `${msg_table}_status_IDX` (`STATUS`,`SEND_GROUP`,`SMS_KIND`) USING BTREE,
+            KEY `${msg_table}_msgid_IDX` (`MSG_ID`) USING BTREE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    </update>
+
     <select id="msgSeqCheck_oracle" parameterType="com.dhn.client.bean.SQLParameter" resultType="int">
         SELECT COUNT(1)
         FROM ALL_SEQUENCES
@@ -203,7 +233,7 @@
              "REG_DT" TIMESTAMP (6) DEFAULT CURRENT_TIMESTAMP,
              "RESERVE_DT" VARCHAR2(15 CHAR) DEFAULT '00000000000000',
              "RESPONSE_DT" TIMESTAMP (6) DEFAULT NULL,
-             "RESULT_DT" TIMESTAMP (6) DEFAULT NULL,
+             "RESULT_DT" VARCHAR2(30 CHAR) DEFAULT NULL,
              "SMS_SENDER" VARCHAR2(15 CHAR) NOT NULL,
              "SMSLMS_TIT" VARCHAR2(100 CHAR) DEFAULT NULL,
              "MMS_IMAGE_KEY" VARCHAR2(100 CHAR) DEFAULT NULL,

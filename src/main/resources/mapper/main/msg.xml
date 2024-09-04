@@ -81,7 +81,7 @@
                     SMS_SENDER AS smssender,
                     SMSLMS_TIT AS smslmstit,
                     SMS_KIND AS smskind,
-                    DATA_FORMAT(REG_DT, '%Y-%m-%d %H:%i:%s') AS regdt,
+                    DATE_FORMAT(REG_DT, '%Y-%m-%d %H:%i:%s') AS regdt,
                     IFNULL(RESERVE_DT, '00000000000000') AS reservedt
                 from ${msg_table}
                 where STATUS = '1'
@@ -378,7 +378,7 @@
                 SMS_SENDER AS smssender,
                 SMSLMS_TIT AS smslmstit,
                 'L' AS smskind,
-                DATA_FORMAT(REG_DT, '%Y-%m-%d %H:%i:%s') AS regdt,
+                DATE_FORMAT(REG_DT, '%Y-%m-%d %H:%i:%s') AS regdt,
                 IFNULL(RESERVE_DT, '00000000000000') AS reservedt
                 from ${msg_table}
                 where STATUS = '1'
@@ -473,7 +473,7 @@
                     SMSLMS_TIT AS smslmstit,
                     'M' AS smskind,
                     MMS_IMAGE_KEY AS pinvoice,
-                    DATA_FORMAT(REG_DT, '%Y-%m-%d %H:%i:%s') AS regdt,
+                    DATE_FORMAT(REG_DT, '%Y-%m-%d %H:%i:%s') AS regdt,
                     IFNULL(RESERVE_DT, '00000000000000') AS reservedt
                 from ${msg_table}
                 where STATUS = '1'
