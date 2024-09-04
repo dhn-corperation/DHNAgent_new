@@ -1,11 +1,8 @@
 package com.dhn.client.controller;
 
-import com.dhn.client.bean.LMSTableBean;
 import com.dhn.client.bean.Msg_Log;
-import com.dhn.client.bean.SQLParameter;
 import com.dhn.client.service.KAORequestService;
 import com.dhn.client.service.MSGRequestService;
-import com.dhn.client.service.RequestService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
@@ -21,10 +18,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Component
@@ -196,7 +191,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			try{
 				if (msg_ml.getMsg_table() != null && msg_ml.getMsg_log_table() != null) {
 					log.info("MSG 결과처리 : {}",msg_ml.toString());
-					// MSG 처리 로직
+					msgRequestService.msgResultInsert(msg_ml);
 				}else if (kao_ml.getAt_table() != null && kao_ml.getAt_log_table() != null) {
 					log.info("KAO 결과처리 : {}",kao_ml.toString());
 					kaoRequestService.kaoResultInsert(kao_ml);

@@ -156,6 +156,27 @@
         </choose>
     </update>
 
+    <update id="kao_auth_fail" parameterType = "com.dhn.client.bean.SQLParameter" >
+        <choose>
+            <when test="database == 'oracle'">
+                UPDATE ${at_table}
+                SET STATUS = '7',
+                    SEND_GROUP = NULL,
+                    RESPONSE_DT = NULL
+                WHERE STATUS = '1'
+                    AND SEND_GROUP = #{group_no}
+            </when>
+            <when test="database == 'mysql' or database == 'mariadb'">
+                UPDATE ${at_table}
+                SET STATUS = '7',
+                    SEND_GROUP = NULL,
+                    RESPONSE_DT = NULL
+                WHERE STATUS = '1'
+                    AND SEND_GROUP = #{group_no}
+            </when>
+        </choose>
+    </update>
+
     <update id="kao_json_err_message" parameterType="map">
         <choose>
             <when test="param.database == 'oracle'">

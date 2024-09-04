@@ -29,6 +29,9 @@ public class SendService {
     private KAORequestService kaoRequestService;
 
     @Autowired
+    private MSGRequestService msgRequestService;
+
+    @Autowired
     private KAOService kaoService;
 
     private final String dhnServer;
@@ -150,7 +153,6 @@ public class SendService {
     }
 
 
-    /*
     @Async("smsTaskExecutor")
     @Retryable(
             value = {Exception.class}, // 재시도할 예외 유형
@@ -202,26 +204,29 @@ public class SendService {
                         Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
                         if(response.getStatusCode() ==  HttpStatus.OK)
                         {
-                            requestService.updateSMSSendComplete(paramCopy);
+                            msgRequestService.updateSMSSendComplete(paramCopy);
                             log.info("SMS 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
                         } else if(response.getStatusCode() == HttpStatus.BAD_REQUEST){
-                            requestService.updateSMSSendInit(paramCopy);
+                            msgRequestService.updateSMSSendInit(paramCopy);
                             log.info("({}) SMS 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
+                        } else if(response.getStatusCode() == HttpStatus.NOT_ACCEPTABLE){ // 허가되지않은 계정 & IP
+                            msgRequestService.updateMSGAuthFail(paramCopy);
+                            log.info("({}) KAO 허가되지않은 사용자 입니다. : {}",res.get("userid"), res.get("message"));
                         } else {
                             log.info("({}) SMS 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
-                            requestService.updateSMSSendInit(paramCopy);
+                            msgRequestService.updateSMSSendInit(paramCopy);
                         }
                         apiCalled = true;
                     }catch (Exception e) {
                         log.error("SMS 메세지 전송 오류 : " + e.toString());
-                        requestService.updateSMSSendInit(paramCopy);
+                        msgRequestService.updateSMSSendInit(paramCopy);
                         throw e;
                     }
                 }
 
                 if (apiCalled) {
                     if (!json_err_msgid.isEmpty()) {
-                        requestService.jsonErrMessage(paramCopy, json_err_msgid);
+                        msgRequestService.jsonErrMessage(paramCopy, json_err_msgid);
                     }
                 }
             }catch (Exception e){
@@ -288,26 +293,29 @@ public class SendService {
                         Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
                         if(response.getStatusCode() ==  HttpStatus.OK)
                         {
-                            requestService.updateSMSSendComplete(paramCopy);
+                            msgRequestService.updateSMSSendComplete(paramCopy);
                             log.info("LMS 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
                         } else if(response.getStatusCode() == HttpStatus.BAD_REQUEST){
-                            requestService.updateSMSSendInit(paramCopy);
+                            msgRequestService.updateSMSSendInit(paramCopy);
                             log.info("({}) LMS 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
+                        } else if(response.getStatusCode() == HttpStatus.NOT_ACCEPTABLE){ // 허가되지않은 계정 & IP
+                            msgRequestService.updateMSGAuthFail(paramCopy);
+                            log.info("({}) KAO 허가되지않은 사용자 입니다. : {}",res.get("userid"), res.get("message"));
                         } else {
                             log.info("({}) LMS 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
-                            requestService.updateSMSSendInit(paramCopy);
+                            msgRequestService.updateSMSSendInit(paramCopy);
                         }
                         apiCalled = true;
                     }catch (Exception e) {
                         log.error("LMS 메세지 전송 오류 : " + e.toString());
-                        requestService.updateSMSSendInit(paramCopy);
+                        msgRequestService.updateSMSSendInit(paramCopy);
                         throw e;
                     }
                 }
 
                 if (apiCalled) {
                     if (!json_err_msgid.isEmpty()) {
-                        requestService.jsonErrMessage(paramCopy, json_err_msgid);
+                        msgRequestService.jsonErrMessage(paramCopy, json_err_msgid);
                     }
                 }
             }catch (Exception e){
@@ -374,26 +382,29 @@ public class SendService {
                         Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
                         if(response.getStatusCode() ==  HttpStatus.OK)
                         {
-                            requestService.updateSMSSendComplete(paramCopy);
+                            msgRequestService.updateSMSSendComplete(paramCopy);
                             log.info("MMS 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
                         } else if(response.getStatusCode() == HttpStatus.BAD_REQUEST){
-                            requestService.updateSMSSendInit(paramCopy);
+                            msgRequestService.updateSMSSendInit(paramCopy);
                             log.info("({}) MMS 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
+                        } else if(response.getStatusCode() == HttpStatus.NOT_ACCEPTABLE){ // 허가되지않은 계정 & IP
+                            msgRequestService.updateMSGAuthFail(paramCopy);
+                            log.info("({}) KAO 허가되지않은 사용자 입니다. : {}",res.get("userid"), res.get("message"));
                         } else {
                             log.info("({}) MMS 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
-                            requestService.updateSMSSendInit(paramCopy);
+                            msgRequestService.updateSMSSendInit(paramCopy);
                         }
                         apiCalled = true;
                     }catch (Exception e) {
                         log.error("MMS 메세지 전송 오류 : " + e.toString());
-                        requestService.updateSMSSendInit(paramCopy);
+                        msgRequestService.updateSMSSendInit(paramCopy);
                         throw e;
                     }
                 }
 
                 if (apiCalled) {
                     if (!json_err_msgid.isEmpty()) {
-                        requestService.jsonErrMessage(paramCopy, json_err_msgid);
+                        msgRequestService.jsonErrMessage(paramCopy, json_err_msgid);
                     }
                 }
             }catch (Exception e){
@@ -408,5 +419,4 @@ public class SendService {
         }
     }
 
-     */
 }

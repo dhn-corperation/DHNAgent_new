@@ -2,6 +2,7 @@ package com.dhn.client.controller;
 
 import com.dhn.client.bean.SQLParameter;
 import com.dhn.client.service.KAORequestService;
+import com.dhn.client.service.MSGRequestService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -16,7 +17,7 @@ import java.time.format.DateTimeFormatter;
 
 @Component
 @Slf4j
-public class KAOLogMove implements ApplicationListener<ContextRefreshedEvent> {
+public class MSGLogMove implements ApplicationListener<ContextRefreshedEvent> {
 
     public static boolean isStart = false;
     private boolean isProc = false;
@@ -24,17 +25,19 @@ public class KAOLogMove implements ApplicationListener<ContextRefreshedEvent> {
     private String preGroupNo = "";
 
     @Autowired
-    private KAORequestService kaoRequestService;
+    private MSGRequestService msgRequestService;
 
     @Autowired
     private ApplicationContext appContext;
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
-        param.setAt_table(appContext.getEnvironment().getProperty("dhnclient.at_table"));
-        param.setAt_log_table(appContext.getEnvironment().getProperty("dhnclient.at_log_table"));
+        param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
+        param.setMsg_log_table(appContext.getEnvironment().getProperty("dhnclient.msg_log_table"));
         param.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database"));
-        if(appContext.getEnvironment().getProperty("dhnclient.kakao_use").equalsIgnoreCase("Y")){
+        if(appContext.getEnvironment().getProperty("dhnclient.lms_use").equalsIgnoreCase("Y") ||
+                appContext.getEnvironment().getProperty("dhnclient.sms_use").equalsIgnoreCase("Y")||
+                appContext.getEnvironment().getProperty("dhnclient.mms_use").equalsIgnoreCase("Y")){
             isStart = true;
         }
     }
@@ -50,20 +53,20 @@ public class KAOLogMove implements ApplicationListener<ContextRefreshedEvent> {
 
             if(!group_no.equals(preGroupNo)){
                 try {
-                    int cnt = kaoRequestService.log_move_count(param);
+                    int cnt = msgRequestService.log_move_count(param);
                     if(cnt > 0){
 
                         LocalDate logdate = LocalDate.now();
                         DateTimeFormatter log_formatter = DateTimeFormatter.ofPattern("yyyyMM");
                         String currentMonth = logdate.format(log_formatter);
 
-                        param.setAt_log_table(param.getAt_log_table()+"_"+currentMonth);
+                        param.setMsg_log_table(param.getMsg_log_table()+"_"+currentMonth);
 
                         param.setGroup_no(group_no);
 
-                        kaoRequestService.update_log_move_groupNo(param);
+                        msgRequestService.update_log_move_groupNo(param);
 
-                        kaoRequestService.log_move(param);
+                        msgRequestService.log_move(param);
 
                         log.info("Log 테이블 이동 그룹 : {}",param.getGroup_no());
                     }else{

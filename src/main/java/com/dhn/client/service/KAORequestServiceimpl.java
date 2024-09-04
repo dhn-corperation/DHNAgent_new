@@ -71,8 +71,8 @@ public class KAORequestServiceimpl implements KAORequestService{
     }
 
     @Override
-    public void updateKAOAuthFail(SQLParameter paramCopy) throws Exception {
-        kaoRequestDAO.updateKAOAuthFail(paramCopy);
+    public void updateKAOAuthFail(SQLParameter param) throws Exception {
+        kaoRequestDAO.updateKAOAuthFail(param);
     }
 
     @Override

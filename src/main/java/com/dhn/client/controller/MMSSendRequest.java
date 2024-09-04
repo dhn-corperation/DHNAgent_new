@@ -4,7 +4,6 @@ import com.dhn.client.bean.MMSImageBean;
 import com.dhn.client.bean.RequestBean;
 import com.dhn.client.bean.SQLParameter;
 import com.dhn.client.service.MSGRequestService;
-import com.dhn.client.service.RequestService;
 import com.dhn.client.service.SendService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -14,15 +13,11 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.MediaType;
-import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
-import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -40,9 +35,6 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private String userid;
 	private String basepath;
 	private String preGroupNo = "";
-	
-	@Autowired
-	private RequestService requestService;
 
 	@Autowired
 	private MSGRequestService msgRequestService;
@@ -84,7 +76,6 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 		}
 	}
 
-	/*
 	@Scheduled(fixedDelay = 100)
 	private void SendProcess() {
 		if(isStart && !isProc && sendService.getActiveMMSThreads() < SendService.MAX_THREADS) {
@@ -98,16 +89,16 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 				
 				try {
 					
-					int cnt = requestService.selectMMSReqeustCount(param);
+					int cnt = msgRequestService.selectMMSReqeustCount(param);
 					
 					if(cnt > 0) {
 						
 						param.setGroup_no(group_no);
-						requestService.updateMMSGroupNo(param);
-						List<RequestBean> _list = requestService.selectMMSRequests(param);
+						msgRequestService.updateMMSGroupNo(param);
+						List<RequestBean> _list = msgRequestService.selectMMSRequests(param);
 
 						SQLParameter paramCopy = param.toBuilder().build();
-						sendService.LMSSendAsync(_list, paramCopy, group_no);
+						sendService.MMSSendAsync(_list, paramCopy, group_no);
 
 					}
 				}catch (Exception e) {
@@ -129,10 +120,10 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 			
 			try {
 
-				int cnt = requestService.selectMMSImageCount(param);
+				int cnt = msgRequestService.selectMMSImageCount(param);
 
 				if(cnt > 0){
-					List<MMSImageBean> imgList = requestService.selectMMSImage(param);
+					List<MMSImageBean> imgList = msgRequestService.selectMMSImage(param);
 
 					for (MMSImageBean mmsImageBean : imgList) {
 						param.setFkContent(mmsImageBean.getFkContent());
@@ -170,9 +161,10 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 								ObjectMapper mapper = new ObjectMapper();
 								Map<String, String> res = mapper.readValue(response.body().string(), Map.class);
 								//log.info("MMS Image Key : " + res.get("image group"));
-								if(res.get("image group") != null && res.get("image group").length() > 0) {
-									param.setMms_key(res.get("image group"));
-									requestService.updateMMSImageGroup(param);
+								if(res.get("image_group") != null && res.get("image_group").length() > 0) {
+									log.info("이미지 들어옴? {}", res.get("image_group"));
+									param.setMms_key(res.get("image_group"));
+									msgRequestService.updateMMSImageGroup(param);
 								}
 							}
 							response.close();
@@ -190,8 +182,5 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 		}
 		isProc = false;
 	}
-
-	 */
-	
 
 }

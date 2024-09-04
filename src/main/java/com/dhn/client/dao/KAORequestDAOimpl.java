@@ -113,8 +113,8 @@ public class KAORequestDAOimpl implements KAORequestDAO{
     }
 
     @Override
-    public void updateKAOAuthFail(SQLParameter paramCopy) throws Exception {
-        sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.kao_oauth_fail", paramCopy);
+    public void updateKAOAuthFail(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.kao_auth_fail", param);
     }
 
     @Override

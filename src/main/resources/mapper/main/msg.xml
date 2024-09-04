@@ -1,0 +1,563 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhn.client.msg.mapper.SendRequest">
+    <select id="req_sms_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
+        <choose>
+            <when test="database == 'oracle'">
+                SELECT count(1) AS cnt
+                FROM ${msg_table}
+                WHERE STATUS = '0'
+                    AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+                    AND RESPONSE_DT IS NULL
+                    AND SMS_KIND = #{msg_type}
+                    AND SEND_GROUP IS NULL
+            </when>
+            <when test="database == 'mysql' or database == 'mariadb'">
+                SELECT count(1) AS cnt
+                FROM ${msg_table}
+                WHERE STATUS = '0'
+                    AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'))
+                    AND RESPONSE_DT IS NULL
+                    AND SMS_KIND = #{msg_type}
+                    AND SEND_GROUP IS NULL
+            </when>
+        </choose>
+    </select>
+
+    <update id="req_sms_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
+        <choose>
+            <when test="database == 'oracle'">
+                UPDATE ${msg_table}
+                SET STATUS = '1',
+                    SEND_GROUP = '${group_no}'
+                WHERE STATUS = '0'
+                    AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+                    AND RESPONSE_DT IS NULL
+                    AND SMS_KIND = #{msg_type}
+                    AND SEND_GROUP IS NULL
+                    AND ROWNUM &lt;= 500
+            </when>
+            <when test="database == 'mysql' or database == 'mariadb'">
+                UPDATE ${msg_table}
+                SET STATUS = '1',
+                    SEND_GROUP = '${group_no}'
+                WHERE STATUS = '0'
+                    AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'))
+                    AND RESPONSE_DT IS NULL
+                    AND SMS_KIND = #{msg_type}
+                    AND SEND_GROUP IS NULL
+                LIMIT 500
+            </when>
+        </choose>
+    </update>
+
+    <select id="req_sms_select" parameterType = "com.dhn.client.bean.SQLParameter" resultType= "com.dhn.client.bean.RequestBean">
+        <choose>
+            <when test="database == 'oracle'">
+                SELECT
+                    MSG_ID AS msgid,
+                    'PH' AS messagetype,
+                    MSG AS msg,
+                    MSG AS msgsms,
+                    PHN AS phn,
+                    SMS_SENDER AS smssender,
+                    SMSLMS_TIT AS smslmstit,
+                    SMS_KIND AS smskind,
+                    TO_CHAR(REG_DT, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
+                    NVL(RESERVE_DT, '00000000000000') AS reservedt
+                from ${msg_table}
+                where STATUS = '1'
+                  and SEND_GROUP = #{group_no}
+                  and SMS_KIND = #{msg_type}
+            </when>
+            <when test="database == 'mysql' or database == 'mariadb'">
+                SELECT
+                    MSG_ID AS msgid,
+                    'PH' AS messagetype,
+                    MSG AS msg,
+                    MSG AS msgsms,
+                    PHN AS phn,
+                    SMS_SENDER AS smssender,
+                    SMSLMS_TIT AS smslmstit,
+                    SMS_KIND AS smskind,
+                    DATA_FORMAT(REG_DT, '%Y-%m-%d %H:%i:%s') AS regdt,
+                    IFNULL(RESERVE_DT, '00000000000000') AS reservedt
+                from ${msg_table}
+                where STATUS = '1'
+                    and SEND_GROUP = #{group_no}
+                    and SMS_KIND = #{msg_type}
+            </when>
+        </choose>
+    </select>
+
+    <update id="req_sent_complete" parameterType = "com.dhn.client.bean.SQLParameter" >
+        <choose>
+            <when test="database == 'oracle'">
+                UPDATE ${msg_table}
+                SET STATUS = '2',
+                RESPONSE_DT = CURRENT_TIMESTAMP
+                WHERE STATUS = '1'
+                AND SEND_GROUP = #{group_no}
+                AND SMS_KIND = #{msg_type}
+            </when>
+            <when test="database == 'mysql' or database == 'mariadb'">
+                UPDATE ${msg_table}
+                SET STATUS = '2',
+                RESPONSE_DT = CURRENT_TIMESTAMP
+                WHERE STATUS = '1'
+                AND SEND_GROUP = #{group_no}
+                AND SMS_KIND = #{msg_type}
+            </when>
+        </choose>
+    </update>
+
+    <update id="req_sent_init" parameterType = "com.dhn.client.bean.SQLParameter" >
+        <choose>
+            <when test="database == 'oracle'">
+                UPDATE ${msg_table}
+                SET STATUS = '0',
+                    SEND_GROUP = NULL,
+                    RESPONSE_DT = NULL
+                WHERE STATUS = '1'
+                    AND SEND_GROUP = #{group_no}
+            </when>
+            <when test="database == 'mysql' or database == 'mariadb'">
+                UPDATE ${msg_table}
+                SET STATUS = '0',
+                    SEND_GROUP = NULL,
+                    RESPONSE_DT = NULL
+                WHERE STATUS = '1'
+                    AND SEND_GROUP = #{group_no}
+            </when>
+        </choose>
+    </update>
+
+    <update id="msg_auth_fail" parameterType = "com.dhn.client.bean.SQLParameter" >
+        <choose>
+            <when test="database == 'oracle'">
+                UPDATE ${msg_table}
+                SET STATUS = '7',
+                    SEND_GROUP = NULL,
+                    RESPONSE_DT = NULL
+                WHERE STATUS = '1'
+                    AND SEND_GROUP = #{group_no}
+            </when>
+            <when test="database == 'mysql' or database == 'mariadb'">
+                UPDATE ${msg_table}
+                SET STATUS = '7',
+                    SEND_GROUP = NULL,
+                    RESPONSE_DT = NULL
+                WHERE STATUS = '1'
+                    AND SEND_GROUP = #{group_no}
+            </when>
+        </choose>
+    </update>
+
+    <update id="msg_json_err_message" parameterType="map">
+        <choose>
+            <when test="param.database == 'oracle'">
+                UPDATE ${param.msg_table}
+                SET STATUS = '8'
+                WHERE MSG_ID IN
+                <foreach item="msgid" collection="jsonErrMsgid" open="(" separator="," close=")">
+                    #{msgid}
+                </foreach>
+            </when>
+            <when test="database == 'mysql' or database == 'mariadb'">
+                UPDATE ${param.msg_table}
+                SET STATUS = '8'
+                WHERE MSG_ID IN
+                <foreach item="msgid" collection="jsonErrMsgid" open="(" separator="," close=")">
+                    #{msgid}
+                </foreach>
+            </when>
+        </choose>
+    </update>
+
+    <update id="msgResultUpdate" parameterType="com.dhn.client.bean.Msg_Log">
+        <choose>
+            <when test="database == 'oracle'">
+                UPDATE ${msg_table}
+                SET STATUS = '${status}',
+                    RESULT_DT = '${result_dt}',
+                    RESULT = '${code}',
+                    TELCOINFO = '${telecom}',
+                    REAL_MESSAGE_TYPE = '${real_send_type}'
+                WHERE MSG_ID = '${msgid}'
+            </when>
+            <when test="database == 'mysql' or database == 'mariadb'">
+                UPDATE ${msg_table}
+                SET STATUS = '${status}',
+                    RESULT_DT = '${result_dt}',
+                    RESULT = '${code}',
+                    TELCOINFO = '${telecom}',
+                    REAL_MESSAGE_TYPE = '${real_send_type}'
+                WHERE MSG_ID = '${msgid}'
+            </when>
+        </choose>
+    </update>
+
+    <insert id="msgLogInsert" parameterType="com.dhn.client.bean.Msg_Log">
+        <choose>
+            <when test="database == 'oracle'">
+                INSERT INTO ${msg_log_table}
+                SELECT * FROM ${msg_table}
+                WHERE MSG_ID = '${msgid}'
+            </when>
+            <when test="database == 'mysql' or database == 'mariadb'">
+                INSERT INTO ${msg_log_table}
+                SELECT * FROM ${msg_table}
+                WHERE MSG_ID = '${msgid}'
+            </when>
+        </choose>
+    </insert>
+
+    <delete id="msgResultDelete" parameterType="com.dhn.client.bean.Msg_Log">
+        <choose>
+            <when test="database == 'oracle'">
+                DELETE FROM ${msg_table}
+                WHERE MSG_ID = '${msgid}'
+            </when>
+            <when test="database == 'mysql' or database == 'mariadb'">
+                DELETE FROM ${msg_table}
+                WHERE MSG_ID = '${msgid}'
+            </when>
+        </choose>
+    </delete>
+
+    <select id="msg_log_move_count" parameterType="com.dhn.client.bean.SQLParameter" resultType="int">
+        <choose>
+            <when test="database == 'oracle'">
+                SELECT COUNT(1) as cnt
+                FROM ${msg_table}
+                WHERE STATUS = '9'
+            </when>
+            <when test="database == 'mysql' or database == 'mariadb'">
+                SELECT COUNT(1) as cnt
+                FROM ${msg_table}
+                WHERE STATUS = '9'
+            </when>
+        </choose>
+    </select>
+
+    <update id="update_log_move_groupNo" parameterType="com.dhn.client.bean.SQLParameter">
+        <choose>
+            <when test="database == 'oracle'">
+                UPDATE ${msg_table}
+                SET SEND_GROUP = '${group_no}'
+                WHERE STATUS = '9'
+                AND ROWNUM &lt; 500
+            </when>
+            <when test="database == 'mysql' or database == 'mariadb'">
+                UPDATE ${msg_table}
+                SET SEND_GROUP = '${group_no}'
+                WHERE STATUS = '9'
+                LIMIT 500
+            </when>
+        </choose>
+    </update>
+
+    <insert id="log_move_insert" parameterType="com.dhn.client.bean.SQLParameter">
+
+        <choose>
+            <when test="database == 'oracle'">
+                INSERT INTO ${msg_log_table}
+                SELECT * FROM ${msg_table}
+                WHERE SEND_GROUP = '${group_no}'
+            </when>
+            <when test="database == 'mysql' or database == 'mariadb'">
+                INSERT INTO ${msg_log_table}
+                SELECT * FROM ${msg_table}
+                WHERE SEND_GROUP = '${group_no}'
+            </when>
+        </choose>
+    </insert>
+
+    <delete id="log_move_delete" parameterType="com.dhn.client.bean.SQLParameter">
+        <choose>
+            <when test="database == 'oracle'">
+                DELETE FROM ${msg_table}
+                WHERE SEND_GROUP = '${group_no}'
+            </when>
+            <when test="database == 'mysql' or database == 'mariadb'">
+                DELETE FROM ${msg_table}
+                WHERE SEND_GROUP = '${group_no}'
+            </when>
+        </choose>
+    </delete>
+
+    <select id="req_lms_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
+        <choose>
+            <when test="database == 'oracle'">
+                SELECT count(1) AS cnt
+                FROM ${msg_table}
+                WHERE STATUS = '0'
+                AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+                AND RESPONSE_DT IS NULL
+                AND SMS_KIND = #{msg_type}
+                AND SEND_GROUP IS NULL
+                AND MMS_IMAGE1 IS NULL
+                AND MMS_IMAGE2 IS NULL
+                AND MMS_IMAGE3 IS NULL
+            </when>
+            <when test="database == 'mysql' or database == 'mariadb'">
+                SELECT count(1) AS cnt
+                FROM ${msg_table}
+                WHERE STATUS = '0'
+                AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'))
+                AND RESPONSE_DT IS NULL
+                AND SMS_KIND = #{msg_type}
+                AND SEND_GROUP IS NULL
+                AND MMS_IMAGE1 IS NULL
+                AND MMS_IMAGE2 IS NULL
+                AND MMS_IMAGE3 IS NULL
+            </when>
+        </choose>
+    </select>
+
+    <update id="req_lms_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
+        <choose>
+            <when test="database == 'oracle'">
+                UPDATE ${msg_table}
+                SET STATUS = '1',
+                SEND_GROUP = '${group_no}'
+                WHERE STATUS = '0'
+                AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+                AND RESPONSE_DT IS NULL
+                AND SMS_KIND = #{msg_type}
+                AND SEND_GROUP IS NULL
+                AND MMS_IMAGE1 IS NULL
+                AND MMS_IMAGE2 IS NULL
+                AND MMS_IMAGE3 IS NULL
+                AND ROWNUM &lt;= 500
+            </when>
+            <when test="database == 'mysql' or database == 'mariadb'">
+                UPDATE ${msg_table}
+                SET STATUS = '1',
+                SEND_GROUP = '${group_no}'
+                WHERE STATUS = '0'
+                AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'))
+                AND RESPONSE_DT IS NULL
+                AND SMS_KIND = #{msg_type}
+                AND SEND_GROUP IS NULL
+                AND MMS_IMAGE1 IS NULL
+                AND MMS_IMAGE2 IS NULL
+                AND MMS_IMAGE3 IS NULL
+                LIMIT 500
+            </when>
+        </choose>
+    </update>
+
+    <select id="req_lms_select" parameterType = "com.dhn.client.bean.SQLParameter" resultType= "com.dhn.client.bean.RequestBean">
+        <choose>
+            <when test="database == 'oracle'">
+                SELECT
+                MSG_ID AS msgid,
+                'PH' AS messagetype,
+                MSG AS msg,
+                MSG AS msgsms,
+                PHN AS phn,
+                SMS_SENDER AS smssender,
+                SMSLMS_TIT AS smslmstit,
+                'L' AS smskind,
+                TO_CHAR(REG_DT, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
+                NVL(RESERVE_DT, '00000000000000') AS reservedt
+                from ${msg_table}
+                where STATUS = '1'
+                and SEND_GROUP = #{group_no}
+                and SMS_KIND = #{msg_type}
+            </when>
+            <when test="database == 'mysql' or database == 'mariadb'">
+                SELECT
+                MSG_ID AS msgid,
+                'PH' AS messagetype,
+                MSG AS msg,
+                MSG AS msgsms,
+                PHN AS phn,
+                SMS_SENDER AS smssender,
+                SMSLMS_TIT AS smslmstit,
+                'L' AS smskind,
+                DATA_FORMAT(REG_DT, '%Y-%m-%d %H:%i:%s') AS regdt,
+                IFNULL(RESERVE_DT, '00000000000000') AS reservedt
+                from ${msg_table}
+                where STATUS = '1'
+                and SEND_GROUP = #{group_no}
+                and SMS_KIND = #{msg_type}
+            </when>
+        </choose>
+    </select>
+
+    <select id="req_mms_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
+        <choose>
+            <when test="database == 'oracle'">
+                SELECT count(1) AS cnt
+                FROM ${msg_table}
+                WHERE STATUS = '0'
+                AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+                AND RESPONSE_DT IS NULL
+                AND SMS_KIND = #{msg_type}
+                AND SEND_GROUP IS NULL
+                AND MMS_IMAGE_KEY IS NOT NULL
+            </when>
+            <when test="database == 'mysql' or database == 'mariadb'">
+                SELECT count(1) AS cnt
+                FROM ${msg_table}
+                WHERE STATUS = '0'
+                AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'))
+                AND RESPONSE_DT IS NULL
+                AND SMS_KIND = #{msg_type}
+                AND SEND_GROUP IS NULL
+                AND MMS_IMAGE_KEY IS NOT NULL
+            </when>
+        </choose>
+    </select>
+
+    <update id="req_mms_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
+        <choose>
+            <when test="database == 'oracle'">
+                UPDATE ${msg_table}
+                SET STATUS = '1',
+                SEND_GROUP = '${group_no}'
+                WHERE STATUS = '0'
+                AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+                AND RESPONSE_DT IS NULL
+                AND SMS_KIND = #{msg_type}
+                AND SEND_GROUP IS NULL
+                AND MMS_IMAGE_KEY IS NOT NULL
+                AND ROWNUM &lt;= 500
+            </when>
+            <when test="database == 'mysql' or database == 'mariadb'">
+                UPDATE ${msg_table}
+                SET STATUS = '1',
+                SEND_GROUP = '${group_no}'
+                WHERE STATUS = '0'
+                AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'))
+                AND RESPONSE_DT IS NULL
+                AND SMS_KIND = #{msg_type}
+                AND SEND_GROUP IS NULL
+                AND MMS_IMAGE_KEY IS NOT NULL
+                LIMIT 500
+            </when>
+        </choose>
+    </update>
+
+    <select id="req_mms_select" parameterType = "com.dhn.client.bean.SQLParameter" resultType= "com.dhn.client.bean.RequestBean">
+        <choose>
+            <when test="database == 'oracle'">
+                SELECT
+                    MSG_ID AS msgid,
+                    'PH' AS messagetype,
+                    MSG AS msg,
+                    MSG AS msgsms,
+                    PHN AS phn,
+                    SMS_SENDER AS smssender,
+                    SMSLMS_TIT AS smslmstit,
+                    'M' AS smskind,
+                    MMS_IMAGE_KEY AS pinvoice,
+                    TO_CHAR(REG_DT, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
+                    NVL(RESERVE_DT, '00000000000000') AS reservedt
+                from ${msg_table}
+                where STATUS = '1'
+                    and SEND_GROUP = #{group_no}
+                    and SMS_KIND = #{msg_type}
+            </when>
+            <when test="database == 'mysql' or database == 'mariadb'">
+                SELECT
+                    MSG_ID AS msgid,
+                    'PH' AS messagetype,
+                    MSG AS msg,
+                    MSG AS msgsms,
+                    PHN AS phn,
+                    SMS_SENDER AS smssender,
+                    SMSLMS_TIT AS smslmstit,
+                    'M' AS smskind,
+                    MMS_IMAGE_KEY AS pinvoice,
+                    DATA_FORMAT(REG_DT, '%Y-%m-%d %H:%i:%s') AS regdt,
+                    IFNULL(RESERVE_DT, '00000000000000') AS reservedt
+                from ${msg_table}
+                where STATUS = '1'
+                    and SEND_GROUP = #{group_no}
+                    and SMS_KIND = #{msg_type}
+            </when>
+        </choose>
+    </select>
+
+    <select id="req_mms_image_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
+        <choose>
+            <when test="database == 'oracle'">
+                SELECT count(1) AS cnt
+                FROM ${msg_table}
+                WHERE STATUS = '0'
+                    AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+                    AND MMS_IMAGE_KEY IS NULL
+                    AND RESPONSE_DT IS NULL
+                    AND SMS_KIND = #{msg_type}
+                    AND SEND_GROUP IS NULL
+                    AND (MMS_IMAGE1 IS NOT NULL or MMS_IMAGE2 IS NOT NULL or MMS_IMAGE3 IS NOT NULL)
+            </when>
+            <when test="database == 'mysql' or database == 'mariadb'">
+                SELECT count(1) AS cnt
+                FROM ${msg_table}
+                WHERE STATUS = '0'
+                    AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'))
+                    AND MMS_IMAGE_KEY IS NULL
+                    AND RESPONSE_DT IS NULL
+                    AND SMS_KIND = #{msg_type}
+                    AND SEND_GROUP IS NULL
+                    AND (MMS_IMAGE1 IS NOT NULL or MMS_IMAGE2 IS NOT NULL or MMS_IMAGE3 IS NOT NULL)
+            </when>
+        </choose>
+    </select>
+
+    <select id="req_mms_image" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "com.dhn.client.bean.MMSImageBean">
+        <choose>
+            <when test="database == 'oracle'">
+                SELECT
+                    MSG_ID AS msgid,
+                    MMS_IMAGE1 AS file1,
+                    MMS_IMAGE2 AS file2,
+                    MMS_IMAGE3 AS file3
+                FROM ${msg_table}
+                WHERE STATUS = '0'
+                    AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+                    AND MMS_IMAGE_KEY IS NULL
+                    AND RESPONSE_DT IS NULL
+                    AND SMS_KIND = #{msg_type}
+                    AND SEND_GROUP IS NULL
+                    AND (MMS_IMAGE1 IS NOT NULL or MMS_IMAGE2 IS NOT NULL or MMS_IMAGE3 IS NOT NULL)
+            </when>
+            <when test="database == 'mysql' or database == 'mariadb'">
+                SELECT
+                    MSG_ID AS msgid,
+                    MMS_IMAGE1 AS file1,
+                    MMS_IMAGE2 AS file2,
+                    MMS_IMAGE3 AS file3
+                FROM ${msg_table}
+                WHERE STATUS = '0'
+                    AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'))
+                    AND MMS_IMAGE_KEY IS NULL
+                    AND RESPONSE_DT IS NULL
+                    AND SMS_KIND = #{msg_type}
+                    AND SEND_GROUP IS NULL
+                    AND (MMS_IMAGE1 IS NOT NULL or MMS_IMAGE2 IS NOT NULL or MMS_IMAGE3 IS NOT NULL)
+            </when>
+        </choose>
+    </select>
+
+    <update id="req_mms_key_update" parameterType = "com.dhn.client.bean.SQLParameter">
+        <choose>
+            <when test="database == 'oracle'">
+                UPDATE ${msg_table}
+                SET MMS_IMAGE_KEY = #{mms_key}
+                WHERE MSG_ID = #{msgid}
+            </when>
+            <when test="database == 'mysql' or database == 'mariadb'">
+                UPDATE ${msg_table}
+                SET MMS_IMAGE_KEY = #{mms_key}
+                WHERE MSG_ID = #{msgid}
+            </when>
+        </choose>
+    </update>
+
+</mapper>

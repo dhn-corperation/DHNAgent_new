@@ -3,7 +3,6 @@ package com.dhn.client.controller;
 import com.dhn.client.bean.RequestBean;
 import com.dhn.client.bean.SQLParameter;
 import com.dhn.client.service.MSGRequestService;
-import com.dhn.client.service.RequestService;
 import com.dhn.client.service.SendService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,9 +29,6 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private String dhnServer;
 	private String userid;
 	private String preGroupNo = "";
-	
-	@Autowired
-	private RequestService requestService;
 
 	@Autowired
 	private MSGRequestService msgRequestService;
@@ -72,7 +68,6 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 
 	}
 
-	/*
 	@Scheduled(fixedDelay = 100)
 	private void SendProcess() {
 		if(isStart && !isProc && sendService.getActiveLMSThreads() < SendService.MAX_THREADS) {
@@ -84,13 +79,13 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 			
 			if(!group_no.equals(preGroupNo)) {
 				try {
-					int cnt = requestService.selectLMSReqeustCount(param);
+					int cnt = msgRequestService.selectLMSReqeustCount(param);
 					
 					if(cnt > 0) {
 						param.setGroup_no(group_no);
-						requestService.updateLMSGroupNo(param);
+						msgRequestService.updateLMSGroupNo(param);
 
-						List<RequestBean> _list = requestService.selectLMSRequests(param);
+						List<RequestBean> _list = msgRequestService.selectLMSRequests(param);
 
 						SQLParameter paramCopy = param.toBuilder().build();
 						sendService.LMSSendAsync(_list, paramCopy, group_no);
@@ -106,6 +101,5 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 		}
 	}
 
-	 */
 
 }
