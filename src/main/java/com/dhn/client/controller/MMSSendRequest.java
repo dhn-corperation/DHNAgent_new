@@ -1,6 +1,6 @@
 package com.dhn.client.controller;
 
-import com.dhn.client.bean.MMSImageBean;
+import com.dhn.client.bean.ImageBean;
 import com.dhn.client.bean.RequestBean;
 import com.dhn.client.bean.SQLParameter;
 import com.dhn.client.service.MSGRequestService;
@@ -18,6 +18,7 @@ import org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProc
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -30,11 +31,13 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	
 	public static boolean isStart = false;
 	private boolean isProc = false;
+	private boolean isProcMms = false;
 	private SQLParameter param = new SQLParameter();
 	private String dhnServer;
 	private String userid;
 	private String basepath;
 	private String preGroupNo = "";
+	private String msg_log_table;
 
 	@Autowired
 	private MSGRequestService msgRequestService;
@@ -54,6 +57,7 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 		param.setMms_use(appContext.getEnvironment().getProperty("dhnclient.mms_use"));
 		param.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database"));
 		param.setSequence(appContext.getEnvironment().getProperty("dhnclient.msg_seq"));
+		msg_log_table = appContext.getEnvironment().getProperty("dhnclient.msg_log_table");
 		param.setMsg_type("M");
 		
 
@@ -115,18 +119,17 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	
 	@Scheduled(fixedDelay = 100)
 	private void GETImageKey() {
-		if(isStart && !isProc) {
-			isProc = true;
+		if(isStart && !isProcMms) {
+			isProcMms = true;
 			
 			try {
 
 				int cnt = msgRequestService.selectMMSImageCount(param);
 
 				if(cnt > 0){
-					List<MMSImageBean> imgList = msgRequestService.selectMMSImage(param);
+					List<ImageBean> imgList = msgRequestService.selectMMSImage(param);
 
-					for (MMSImageBean mmsImageBean : imgList) {
-						param.setFkContent(mmsImageBean.getFkContent());
+					for (ImageBean mmsImageBean : imgList) {
 						param.setMsgid(mmsImageBean.getMsgid());
 
 						MultipartBody.Builder builder = new MultipartBody.Builder();
@@ -157,14 +160,26 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 							OkHttpClient client = new OkHttpClient();
 							Response response = client.newCall(request).execute();
 
+							ObjectMapper mapper = new ObjectMapper();
+							Map<String, String> res = mapper.readValue(response.body().string(), Map.class);
+
+
 							if(response.code() == 200) {
-								ObjectMapper mapper = new ObjectMapper();
-								Map<String, String> res = mapper.readValue(response.body().string(), Map.class);
-								//log.info("MMS Image Key : " + res.get("image group"));
+								log.info("MMS Image Key : " + res.toString());
 								if(res.get("image_group") != null && res.get("image_group").length() > 0) {
-									log.info("이미지 들어옴? {}", res.get("image_group"));
 									param.setMms_key(res.get("image_group"));
 									msgRequestService.updateMMSImageGroup(param);
+								}else{
+
+									log.info("MMS 이미지 등록 실패 : "+res.toString());
+
+									LocalDate now = LocalDate.now();
+									DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
+									String currentMonth = now.format(formatter);
+
+									param.setMsg_log_table(msg_log_table+"_"+currentMonth);
+									param.setMsg_image_code("9999");
+									msgRequestService.updateMMSImageFail(param);
 								}
 							}
 							response.close();
@@ -180,7 +195,7 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 				log.error("MMS Image 등록 오류 : " + e.toString());
 			}
 		}
-		isProc = false;
+		isProcMms = false;
 	}
 
 }

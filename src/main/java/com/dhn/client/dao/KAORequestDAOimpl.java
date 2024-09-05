@@ -1,5 +1,6 @@
 package com.dhn.client.dao;
 
+import com.dhn.client.bean.ImageBean;
 import com.dhn.client.bean.KAORequestBean;
 import com.dhn.client.bean.Msg_Log;
 import com.dhn.client.bean.SQLParameter;
@@ -164,6 +165,28 @@ public class KAORequestDAOimpl implements KAORequestDAO{
     @Override
     public List<KAORequestBean> selectFTRequests(SQLParameter param) throws Exception {
         return sqlSession.selectList("com.dhn.client.kakao.mapper.SendRequest.req_ft_select", param);
+    }
+
+    @Override
+    public int selectFtImageCount(SQLParameter param) throws Exception {
+        return sqlSession.selectOne("com.dhn.client.kakao.mapper.SendRequest.ft_image_count",param);
+    }
+
+    @Override
+    public List<ImageBean> selectFtImage(SQLParameter param) throws Exception {
+        return sqlSession.selectList("com.dhn.client.kakao.mapper.SendRequest.ft_image_list", param);
+    }
+
+    @Override
+    public void updateFTImageUrl(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.ft_image_url_update",param);
+    }
+
+    @Override
+    public void updateFTImageFail(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.ft_image_fail_update",param);
+        sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.ft_image_fail_log_Insert", param);
+        sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.ft_image_fail_delete", param);
     }
 
 }

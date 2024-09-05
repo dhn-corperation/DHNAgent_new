@@ -1,5 +1,6 @@
 package com.dhn.client.dao;
 
+import com.dhn.client.bean.ImageBean;
 import com.dhn.client.bean.KAORequestBean;
 import com.dhn.client.bean.Msg_Log;
 import com.dhn.client.bean.SQLParameter;
@@ -41,4 +42,12 @@ public interface KAORequestDAO {
     public void updateFTGroupNo(SQLParameter param) throws Exception;
 
     public List<KAORequestBean> selectFTRequests(SQLParameter param) throws Exception;
+
+    public int selectFtImageCount(SQLParameter param) throws Exception;
+
+    public List<ImageBean> selectFtImage(SQLParameter param) throws Exception;
+
+    public void updateFTImageUrl(SQLParameter param) throws Exception;
+
+    public void updateFTImageFail(SQLParameter param) throws Exception;
 }

@@ -1,6 +1,6 @@
 package com.dhn.client.dao;
 
-import com.dhn.client.bean.MMSImageBean;
+import com.dhn.client.bean.ImageBean;
 import com.dhn.client.bean.Msg_Log;
 import com.dhn.client.bean.RequestBean;
 import com.dhn.client.bean.SQLParameter;
@@ -51,7 +51,9 @@ public interface MSGRequestDAO {
 
     public int selectMMSImageCount(SQLParameter param) throws Exception;
 
-    public List<MMSImageBean> selectMMSImage(SQLParameter param) throws Exception;
+    public List<ImageBean> selectMMSImage(SQLParameter param) throws Exception;
 
     public void updateMMSImageGroup(SQLParameter param) throws Exception;
+
+    public void updateMMSImageFail(SQLParameter param) throws Exception;
 }

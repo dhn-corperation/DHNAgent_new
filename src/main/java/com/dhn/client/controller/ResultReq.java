@@ -24,7 +24,7 @@ import java.util.Map;
 
 @Component
 @Slf4j
-@Order(5)
+@Order(6)
 public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 	
 	public static boolean isStart = false;
@@ -136,7 +136,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
 			String currentMonth = now.format(formatter);
 
-			if(ent.getString("message_type").equalsIgnoreCase("AT")){
+			if(ent.getString("message_type").equalsIgnoreCase("AT") || ent.getString("message_type").equalsIgnoreCase("FI") || ent.getString("message_type").equalsIgnoreCase("FT")){
 				// 알림톡
 				kao_ml.setMsgid(ent.getString("msgid"));
 				kao_ml.setAt_table(atTable);

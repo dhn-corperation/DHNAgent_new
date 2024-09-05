@@ -1,6 +1,6 @@
 package com.dhn.client.service;
 
-import com.dhn.client.bean.MMSImageBean;
+import com.dhn.client.bean.ImageBean;
 import com.dhn.client.bean.Msg_Log;
 import com.dhn.client.bean.RequestBean;
 import com.dhn.client.bean.SQLParameter;
@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -135,12 +134,17 @@ public class MSGRequestServiceimpl implements MSGRequestService {
     }
 
     @Override
-    public List<MMSImageBean> selectMMSImage(SQLParameter param) throws Exception {
+    public List<ImageBean> selectMMSImage(SQLParameter param) throws Exception {
         return msgRequestDAO.selectMMSImage(param);
     }
 
     @Override
     public void updateMMSImageGroup(SQLParameter param) throws Exception {
         msgRequestDAO.updateMMSImageGroup(param);
+    }
+
+    @Override
+    public void updateMMSImageFail(SQLParameter param) throws Exception {
+        msgRequestDAO.updateMMSImageFail(param);
     }
 }

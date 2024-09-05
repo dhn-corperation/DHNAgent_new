@@ -1,6 +1,6 @@
 package com.dhn.client.dao;
 
-import com.dhn.client.bean.MMSImageBean;
+import com.dhn.client.bean.ImageBean;
 import com.dhn.client.bean.Msg_Log;
 import com.dhn.client.bean.RequestBean;
 import com.dhn.client.bean.SQLParameter;
@@ -11,7 +11,6 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -185,12 +184,19 @@ public class MSGRequestDAOimpl implements MSGRequestDAO{
     }
 
     @Override
-    public List<MMSImageBean> selectMMSImage(SQLParameter param) throws Exception {
+    public List<ImageBean> selectMMSImage(SQLParameter param) throws Exception {
         return sqlSession.selectList("com.dhn.client.msg.mapper.SendRequest.req_mms_image", param);
     }
 
     @Override
     public void updateMMSImageGroup(SQLParameter param) throws Exception {
         sqlSession.update("com.dhn.client.msg.mapper.SendRequest.req_mms_key_update", param);
+    }
+
+    @Override
+    public void updateMMSImageFail(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.msg.mapper.SendRequest.mms_image_fail_update",param);
+        sqlSession.update("com.dhn.client.msg.mapper.SendRequest.mms_image_fail_log_Insert", param);
+        sqlSession.update("com.dhn.client.msg.mapper.SendRequest.mms_image_fail_delete", param);
     }
 }

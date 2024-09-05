@@ -31,8 +31,10 @@ public class SQLParameter {
 	private String file1;
 	private String file2;
 	private String file3;
+	private String ft_image_url;
+	private String ft_image_code;
 	private String mms_key;
-	private String fkContent;
+	private String msg_image_code;
 	private String msgid;
 
 }

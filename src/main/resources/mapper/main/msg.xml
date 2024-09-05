@@ -179,21 +179,21 @@
         <choose>
             <when test="database == 'oracle'">
                 UPDATE ${msg_table}
-                SET STATUS = #{status},
-                    RESULT_DT = #{result_dt},
-                    RESULT = #{code},
-                    TELCOINFO = #{telecom},
-                    REAL_MESSAGE_TYPE = #{real_send_type}
-                WHERE MSG_ID = #{msgid}
+                SET STATUS = '${status}',
+                    RESULT_DT = '${result_dt}',
+                    RESULT = '${code}',
+                    TELCOINFO = '${telecom}',
+                    REAL_MESSAGE_TYPE = '${real_send_type}'
+                WHERE MSG_ID = '${msgid}'
             </when>
             <when test="database == 'mysql' or database == 'mariadb'">
                 UPDATE ${msg_table}
-                SET STATUS = #{status},
-                    RESULT_DT = #{result_dt},
-                    RESULT = #{code},
-                    TELCOINFO = #{telecom},
-                    REAL_MESSAGE_TYPE = #{real_send_type}
-                WHERE MSG_ID = #{msgid}
+                SET STATUS = '${status}',
+                    RESULT_DT = '${result_dt}',
+                    RESULT = '${code}',
+                    TELCOINFO = '${telecom}',
+                    REAL_MESSAGE_TYPE = '${real_send_type}'
+                WHERE MSG_ID = '${msgid}'
             </when>
         </choose>
     </update>
@@ -510,7 +510,7 @@
         </choose>
     </select>
 
-    <select id="req_mms_image" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "com.dhn.client.bean.MMSImageBean">
+    <select id="req_mms_image" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "com.dhn.client.bean.ImageBean">
         <choose>
             <when test="database == 'oracle'">
                 SELECT
@@ -559,5 +559,50 @@
             </when>
         </choose>
     </update>
+
+    <update id="mms_image_fail_update" parameterType = "com.dhn.client.bean.SQLParameter" >
+        <choose>
+            <when test="database == 'oracle'">
+                UPDATE ${msg_table}
+                SET RESULT = #{msg_image_code}
+                WHERE MSG_ID = #{msgid}
+                AND MESSAGE_TYPE = #{msg_type}
+            </when>
+            <when test="database == 'mysql' or database == 'mariadb'">
+                UPDATE ${msg_table}
+                SET RESULT = #{msg_image_code}
+                WHERE MSG_ID = #{msgid}
+                AND MESSAGE_TYPE = #{msg_type}
+            </when>
+        </choose>
+    </update>
+
+    <insert id="mms_image_fail_log_Insert" parameterType="com.dhn.client.bean.SQLParameter">
+        <choose>
+            <when test="database == 'oracle'">
+                INSERT INTO ${msg_log_table}
+                SELECT * FROM ${msg_table}
+                WHERE MSG_ID = #{msgid}
+            </when>
+            <when test="database == 'mysql' or database == 'mariadb'">
+                INSERT INTO ${msg_log_table}
+                SELECT * FROM ${msg_table}
+                WHERE MSG_ID = #{msgid}
+            </when>
+        </choose>
+    </insert>
+
+    <delete id="mms_image_fail_delete" parameterType="com.dhn.client.bean.SQLParameter">
+        <choose>
+            <when test="database == 'oracle'">
+                DELETE FROM ${at_table}
+                WHERE MSG_ID = #{msgid}
+            </when>
+            <when test="database == 'mysql' or database == 'mariadb'">
+                DELETE FROM ${at_table}
+                WHERE MSG_ID = #{msgid}
+            </when>
+        </choose>
+    </delete>
 
 </mapper>
