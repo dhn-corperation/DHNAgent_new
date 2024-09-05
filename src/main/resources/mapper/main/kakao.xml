@@ -11,7 +11,7 @@
                 WHERE STATUS = '0'
                     AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
                     AND RESPONSE_DT IS NULL
-                    AND MESSAGE_TYPE IN (${msg_type})
+                    AND MESSAGE_TYPE = #{msg_type}
                     AND SEND_GROUP IS NULL
             </when>
             <when test="database == 'mysql' or database == 'mariadb'">
@@ -20,7 +20,7 @@
                 WHERE STATUS = '0'
                     AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'))
                     AND RESPONSE_DT IS NULL
-                    AND MESSAGE_TYPE IN (${msg_type})
+                    AND MESSAGE_TYPE = #{msg_type}
                     AND SEND_GROUP IS NULL
             </when>
         </choose>
@@ -35,7 +35,7 @@
                 WHERE STATUS = '0'
                     AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
                     AND RESPONSE_DT IS NULL
-                    AND MESSAGE_TYPE IN (${msg_type})
+                    AND MESSAGE_TYPE = #{msg_type}
                     AND SEND_GROUP IS NULL
                     AND ROWNUM &lt;= 500
             </when>
@@ -46,7 +46,7 @@
                 WHERE STATUS = '0'
                     AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'))
                     AND RESPONSE_DT IS NULL
-                    AND MESSAGE_TYPE IN (${msg_type})
+                    AND MESSAGE_TYPE = #{msg_type}
                     AND SEND_GROUP IS NULL
                 LIMIT 500
             </when>
@@ -81,7 +81,7 @@
                 FROM ${at_table}
                 WHERE STATUS = '1'
                     AND SEND_GROUP = #{group_no}
-                    AND MESSAGE_TYPE IN (${msg_type})
+                    AND MESSAGE_TYPE = #{msg_type}
             </when>
             <when test="database == 'mysql' or database == 'mariadb'">
                 SELECT
@@ -109,7 +109,7 @@
                 FROM ${at_table}
                 WHERE STATUS = '1'
                     AND SEND_GROUP = #{group_no}
-                    AND MESSAGE_TYPE IN (${msg_type})
+                    AND MESSAGE_TYPE = #{msg_type}
             </when>
         </choose>
     </select>
@@ -122,7 +122,7 @@
                     RESPONSE_DT = CURRENT_TIMESTAMP
                 WHERE STATUS = '1'
                     AND SEND_GROUP = #{group_no}
-                    AND MESSAGE_TYPE IN (${msg_type})
+                    AND MESSAGE_TYPE = #{msg_type}
             </when>
             <when test="database == 'mysql' or database == 'mariadb'">
                 UPDATE ${at_table}
@@ -130,7 +130,7 @@
                     RESPONSE_DT = CURRENT_TIMESTAMP
                 WHERE STATUS = '1'
                     AND SEND_GROUP = #{group_no}
-                    AND MESSAGE_TYPE IN (${msg_type})
+                    AND MESSAGE_TYPE = #{msg_type}
             </when>
         </choose>
     </update>
@@ -202,23 +202,23 @@
         <choose>
             <when test="database == 'oracle'">
                 UPDATE ${at_table}
-                SET STATUS = '${status}',
-                    RESULT_DT = '${result_dt}',
-                    RESULT = '${s_code}',
-                    RESULT_MSG = '${code}',
-                    TELCOINFO = '${telecom}',
-                    REAL_MESSAGE_TYPE = '${real_send_type}'
-                WHERE MSG_ID = '${msgid}'
+                SET STATUS = #{status},
+                    RESULT_DT = #{result_dt},
+                    RESULT = #{s_code},
+                    RESULT_MSG = #{code},
+                    TELCOINFO = #{telecom},
+                    REAL_MESSAGE_TYPE = #{real_send_type}
+                WHERE MSG_ID = #{msgid}
             </when>
             <when test="database == 'mysql' or database == 'mariadb'">
                 UPDATE ${at_table}
-                SET STATUS = '${status}',
-                    RESULT_DT = '${result_dt}',
-                    RESULT = '${s_code}',
-                    RESULT_MSG = '${code}',
-                    TELCOINFO = '${telecom}',
-                    REAL_MESSAGE_TYPE = '${real_send_type}'
-                WHERE MSG_ID = '${msgid}'
+                SET STATUS = #{status},
+                    RESULT_DT = #{result_dt},
+                    RESULT = #{s_code},
+                    RESULT_MSG = #{code},
+                    TELCOINFO = #{telecom},
+                    REAL_MESSAGE_TYPE = #{real_send_type}
+                WHERE MSG_ID = #{msgid}
             </when>
         </choose>
     </update>
@@ -228,12 +228,12 @@
             <when test="database == 'oracle'">
                 INSERT INTO ${at_log_table}
                 SELECT * FROM ${at_table}
-                WHERE MSG_ID = '${msgid}'
+                WHERE MSG_ID = #{msgid}
             </when>
             <when test="database == 'mysql' or database == 'mariadb'">
                 INSERT INTO ${at_log_table}
                 SELECT * FROM ${at_table}
-                WHERE MSG_ID = '${msgid}'
+                WHERE MSG_ID = #{msgid}
             </when>
         </choose>
     </insert>
@@ -242,11 +242,11 @@
         <choose>
             <when test="database == 'oracle'">
                 DELETE FROM ${at_table}
-                WHERE MSG_ID = '${msgid}'
+                WHERE MSG_ID = #{msgid}
             </when>
             <when test="database == 'mysql' or database == 'mariadb'">
                 DELETE FROM ${at_table}
-                WHERE MSG_ID = '${msgid}'
+                WHERE MSG_ID = #{msgid}
             </when>
         </choose>
     </delete>
@@ -270,13 +270,13 @@
         <choose>
             <when test="database == 'oracle'">
                 UPDATE ${at_table}
-                SET SEND_GROUP = '${group_no}'
+                SET SEND_GROUP = #{group_no}
                 WHERE STATUS = '9'
                     AND ROWNUM &lt; 500
             </when>
             <when test="database == 'mysql' or database == 'mariadb'">
                 UPDATE ${at_table}
-                SET SEND_GROUP = '${group_no}'
+                SET SEND_GROUP = #{group_no}
                 WHERE STATUS = '9'
                 LIMIT 500
             </when>
@@ -289,12 +289,12 @@
             <when test="database == 'oracle'">
                 INSERT INTO ${at_log_table}
                 SELECT * FROM ${at_table}
-                WHERE SEND_GROUP = '${group_no}'
+                WHERE SEND_GROUP = #{group_no}
             </when>
             <when test="database == 'mysql' or database == 'mariadb'">
                 INSERT INTO ${at_log_table}
                 SELECT * FROM ${at_table}
-                WHERE SEND_GROUP = '${group_no}'
+                WHERE SEND_GROUP = #{group_no}
             </when>
         </choose>
     </insert>
@@ -303,11 +303,11 @@
         <choose>
             <when test="database == 'oracle'">
                 DELETE FROM ${at_table}
-                WHERE SEND_GROUP = '${group_no}'
+                WHERE SEND_GROUP = #{group_no}
             </when>
             <when test="database == 'mysql' or database == 'mariadb'">
                 DELETE FROM ${at_table}
-                WHERE SEND_GROUP = '${group_no}'
+                WHERE SEND_GROUP = #{group_no}
             </when>
         </choose>
     </delete>
