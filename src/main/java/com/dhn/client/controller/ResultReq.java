@@ -62,7 +62,8 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 
 		try{
-			if(appContext.getEnvironment().getProperty("dhnclient.kakao_use").equalsIgnoreCase("Y")){
+			if(appContext.getEnvironment().getProperty("dhnclient.kakao_use").equalsIgnoreCase("Y") ||
+			 appContext.getEnvironment().getProperty("dhnclient.ftkao_use").equalsIgnoreCase("Y")){
 				kaoRequestService.atLogTableCheck(atTable,atLogTable, database);
 			}
 

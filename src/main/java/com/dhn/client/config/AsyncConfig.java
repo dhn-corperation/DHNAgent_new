@@ -22,6 +22,18 @@ public class AsyncConfig {
         return executor;
     }
 
+    // FT 작업용 Executor
+    @Bean(name = "ftTaskExecutor")
+    public Executor ftTaskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(5);
+        executor.setMaxPoolSize(5);
+        executor.setQueueCapacity(500);
+        executor.setThreadNamePrefix("FT-task-");
+        executor.initialize();
+        return executor;
+    }
+
     // SMS 작업용 Executor
     @Bean(name = "smsTaskExecutor")
     public Executor smsTaskExecutor() {

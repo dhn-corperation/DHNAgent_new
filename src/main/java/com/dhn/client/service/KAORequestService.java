@@ -34,4 +34,9 @@ public interface KAORequestService {
 
     public void log_move(SQLParameter param) throws Exception;
 
+    public int selectFTRequestCount(SQLParameter param) throws Exception;
+
+    public void updateFTGroupNo(SQLParameter param) throws Exception;
+
+    public List<KAORequestBean> selectFTRequests(SQLParameter param) throws Exception;
 }

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -146,6 +147,23 @@ public class KAORequestDAOimpl implements KAORequestDAO{
     public void log_move(SQLParameter param) throws Exception {
         sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.log_move_insert", param);
         sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.log_move_delete", param);
+    }
+
+    @Override
+    public int selectFTRequestCount(SQLParameter param) throws Exception {
+        int cnt = 0;
+        cnt = sqlSession.selectOne("com.dhn.client.kakao.mapper.SendRequest.req_ft_count",param);
+        return cnt;
+    }
+
+    @Override
+    public void updateFTGroupNo(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.req_ft_group_update",param);
+    }
+
+    @Override
+    public List<KAORequestBean> selectFTRequests(SQLParameter param) throws Exception {
+        return sqlSession.selectList("com.dhn.client.kakao.mapper.SendRequest.req_ft_select", param);
     }
 
 }

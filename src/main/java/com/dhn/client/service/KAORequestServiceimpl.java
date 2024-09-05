@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -95,6 +96,21 @@ public class KAORequestServiceimpl implements KAORequestService{
     @Transactional(rollbackFor = Exception.class)
     public void log_move(SQLParameter param) throws Exception {
         kaoRequestDAO.log_move(param);
+    }
+
+    @Override
+    public int selectFTRequestCount(SQLParameter param) throws Exception {
+        return kaoRequestDAO.selectFTRequestCount(param);
+    }
+
+    @Override
+    public void updateFTGroupNo(SQLParameter param) throws Exception {
+        kaoRequestDAO.updateFTGroupNo(param);
+    }
+
+    @Override
+    public List<KAORequestBean> selectFTRequests(SQLParameter param) throws Exception {
+        return kaoRequestDAO.selectFTRequests(param);
     }
 
 }

@@ -17,6 +17,7 @@ public class SQLParameter {
 	private String sequence;
 	private String database;
 	private String kakao_use;
+	private String ftkao_use;
 	private String sms_use;
 	private String lms_use;
 	private String mms_use;
