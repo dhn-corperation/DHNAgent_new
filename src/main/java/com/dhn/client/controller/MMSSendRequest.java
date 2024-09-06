@@ -132,6 +132,8 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 					for (ImageBean mmsImageBean : imgList) {
 						param.setMsgid(mmsImageBean.getMsgid());
 
+						mmsImageBean.setFile1(null);
+
 						MultipartBody.Builder builder = new MultipartBody.Builder();
 						builder.addFormDataPart("userid", userid);
 						if(mmsImageBean.getFile1() != null && mmsImageBean.getFile1().length() > 0) {
@@ -160,9 +162,14 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 							OkHttpClient client = new OkHttpClient();
 							Response response = client.newCall(request).execute();
 
-							ObjectMapper mapper = new ObjectMapper();
-							Map<String, String> res = mapper.readValue(response.body().string(), Map.class);
+							String responseBody = response.body().string(); // 응답 본문 저장
 
+							ObjectMapper mapper = new ObjectMapper();
+							Map<String, String> res = mapper.readValue(responseBody, Map.class);
+
+							LocalDate now = LocalDate.now();
+							DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
+							String currentMonth = now.format(formatter);
 
 							if(response.code() == 200) {
 								log.info("MMS Image Key : " + res.toString());
@@ -173,18 +180,19 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 
 									log.info("MMS 이미지 등록 실패 : "+res.toString());
 
-									LocalDate now = LocalDate.now();
-									DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
-									String currentMonth = now.format(formatter);
-
 									param.setMsg_log_table(msg_log_table+"_"+currentMonth);
 									param.setMsg_image_code("9999");
 									msgRequestService.updateMMSImageFail(param);
 								}
+							}else{
+								log.info("MMS 이미지 등록 실패 : "+res.toString());
+								param.setMsg_log_table(msg_log_table+"_"+currentMonth);
+								param.setMsg_image_code(String.valueOf(response.code()));
+								msgRequestService.updateMMSImageFail(param);
 							}
 							response.close();
 						} catch (Exception e) {
-							log.error("MMS Image Key 등록 오류 : ", e.toString());
+							log.error("MMS Image Key 등록 오류 : ", e.getMessage());
 						}
 
 					}

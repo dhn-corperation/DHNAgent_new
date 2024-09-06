@@ -511,13 +511,15 @@
         <choose>
             <when test="database == 'oracle'">
                 UPDATE ${at_table}
-                SET RESULT = #{ft_image_code}
+                SET RESULT = #{ft_image_code},
+                    STATUS = 'F'
                 WHERE MSG_ID = #{msgid}
                     AND MESSAGE_TYPE = #{msg_type}
             </when>
             <when test="database == 'mysql' or database == 'mariadb'">
                 UPDATE ${at_table}
-                SET RESULT = #{ft_image_code}
+                SET RESULT = #{ft_image_code},
+                    STATUS = 'F'
                 WHERE MSG_ID = #{msgid}
                     AND MESSAGE_TYPE = #{msg_type}
             </when>

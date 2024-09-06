@@ -564,15 +564,17 @@
         <choose>
             <when test="database == 'oracle'">
                 UPDATE ${msg_table}
-                SET RESULT = #{msg_image_code}
+                SET RESULT = #{msg_image_code},
+                    STATUS = 'F'
                 WHERE MSG_ID = #{msgid}
-                AND MESSAGE_TYPE = #{msg_type}
+                    AND SMS_KIND = #{msg_type}
             </when>
             <when test="database == 'mysql' or database == 'mariadb'">
                 UPDATE ${msg_table}
-                SET RESULT = #{msg_image_code}
+                SET RESULT = #{msg_image_code},
+                    STATUS = 'F'
                 WHERE MSG_ID = #{msgid}
-                AND MESSAGE_TYPE = #{msg_type}
+                    AND SMS_KIND = #{msg_type}
             </when>
         </choose>
     </update>
@@ -595,11 +597,11 @@
     <delete id="mms_image_fail_delete" parameterType="com.dhn.client.bean.SQLParameter">
         <choose>
             <when test="database == 'oracle'">
-                DELETE FROM ${at_table}
+                DELETE FROM ${msg_table}
                 WHERE MSG_ID = #{msgid}
             </when>
             <when test="database == 'mysql' or database == 'mariadb'">
-                DELETE FROM ${at_table}
+                DELETE FROM ${msg_table}
                 WHERE MSG_ID = #{msgid}
             </when>
         </choose>

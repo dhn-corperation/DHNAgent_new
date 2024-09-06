@@ -150,10 +150,18 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
                             OkHttpClient client = new OkHttpClient();
                             Response response = client.newCall(request).execute();
 
-                            if(response.code() == 200) {
+                            String responseBody = response.body().string(); // 응답 본문 저장
+                            log.info("응답 코드: " + response.code());
+                            log.info("응답 본문: " + responseBody);
 
-                                ObjectMapper mapper = new ObjectMapper();
-                                Map<String, Object> res = mapper.readValue(response.body().string(), Map.class);
+                            ObjectMapper mapper = new ObjectMapper();
+                            Map<String, String> res = mapper.readValue(responseBody, Map.class);
+
+                            LocalDate now = LocalDate.now();
+                            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
+                            String currentMonth = now.format(formatter);
+
+                            if(response.code() == 200) {
 
                                 param.setFt_image_code((String) res.get("code"));
                                 param.setMsgid(ftimage.getMsgid());
@@ -165,16 +173,20 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
 
                                     log.info("친구톡 이미지 등록 실패 : "+res.toString());
 
-                                    LocalDate now = LocalDate.now();
-                                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
-                                    String currentMonth = now.format(formatter);
-
                                     param.setAt_log_table(at_log_table+"_"+currentMonth);
                                     if(param.getFt_image_code().equals("error")){
                                         param.setFt_image_code("9999");
                                     }
                                     kaoRequestService.updateFTImageFail(param);
                                 }
+                            }else{
+                                log.info("친구톡 이미지 등록 실패 : "+res.toString());
+
+                                param.setAt_log_table(at_log_table+"_"+currentMonth);
+                                if(param.getFt_image_code().equals("error")){
+                                    param.setFt_image_code("9999");
+                                }
+                                kaoRequestService.updateFTImageFail(param);
                             }
                             response.close();
                         } catch (Exception e) {
