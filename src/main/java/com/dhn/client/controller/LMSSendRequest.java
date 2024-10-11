@@ -49,7 +49,7 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 		param.setLms_use(appContext.getEnvironment().getProperty("dhnclient.lms_use"));
 		param.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database"));
 		param.setSequence(appContext.getEnvironment().getProperty("dhnclient.msg_seq"));
-		param.setMsg_type("M");
+		param.setMsg_type("L");
 
 		dhnServer = appContext.getEnvironment().getProperty("dhnclient.server");
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");

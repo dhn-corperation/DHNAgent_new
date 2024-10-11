@@ -14,9 +14,14 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.*;
+import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.io.IOException;
@@ -117,6 +122,7 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
         }
     }
 
+
     @Scheduled(fixedDelay = 100)
     public void GetFTImage(){
         if(isStart && !isProcImg) {
@@ -129,49 +135,48 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
                     List<ImageBean> ftimages = kaoRequestService.selectFtImage(param);
 
                     for (ImageBean ftimage : ftimages) {
-                        MultipartBody.Builder builder = new MultipartBody.Builder();
-                        builder.addFormDataPart("userid", userid);
 
-                        if(ftimage.getFtimagepath() != null && !ftimage.getFtimagepath().isEmpty()) {
+                        // 헤더 설정
+                        HttpHeaders headers = new HttpHeaders();
+                        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+                        headers.set("userid", userid);
+
+                        // MultiValueMap을 사용해 파일 데이터 전송 준비
+                        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+                        body.add("userid", userid);
+
+                        if (ftimage.getFtimagepath() != null && !ftimage.getFtimagepath().isEmpty()) {
                             File file = new File(basepath + ftimage.getFtimagepath());
-                            builder.addFormDataPart("image", ftimage.getFtimagepath(), RequestBody.create(MultipartBody.FORM,file));
+                            body.add("image", new org.springframework.core.io.FileSystemResource(file));
                         }
 
-                        builder.setType(MultipartBody.FORM);
+                        // HttpEntity 생성
+                        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 
-                        RequestBody reqbody = builder.build();
-
-                        Request request = new Request.Builder()
-                                .url(dhnServer + "ft/image")
-                                .post(reqbody)
-                                .build();
-
-                        try {
-                            OkHttpClient client = new OkHttpClient();
-                            Response response = client.newCall(request).execute();
-
-                            String responseBody = response.body().string(); // 응답 본문 저장
-                            log.info("응답 코드: " + response.code());
-                            log.info("응답 본문: " + responseBody);
-
-                            ObjectMapper mapper = new ObjectMapper();
-                            Map<String, String> res = mapper.readValue(responseBody, Map.class);
+                        RestTemplate restTemplate = new RestTemplate();
+                        try{
+                            ResponseEntity<String> response = restTemplate.exchange(dhnServer + "ft/image", HttpMethod.POST, requestEntity, String.class);
 
                             LocalDate now = LocalDate.now();
                             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
                             String currentMonth = now.format(formatter);
 
-                            if(response.code() == 200) {
+                            if (response.getStatusCode() == HttpStatus.OK) {
+                                String responseBody = response.getBody();
+                                ObjectMapper mapper = new ObjectMapper();
+                                Map<String, String> res = mapper.readValue(responseBody, Map.class);
 
-                                param.setFt_image_code((String) res.get("code"));
+                                param.setFt_image_code(res.get("code"));
                                 param.setMsgid(ftimage.getMsgid());
 
                                 if(param.getFt_image_code().equals("0000")){
-                                    param.setFt_image_url((String)res.get("image"));
+                                    log.info("친구톡 이미지 URL : "+res.get("image"));
+
+                                    param.setFt_image_url(res.get("image"));
                                     kaoRequestService.updateFTImageUrl(param);
                                 }else{
 
-                                    log.info("친구톡 이미지 등록 실패 : "+res.toString());
+                                    log.error("친구톡 이미지 등록 실패 : "+res.toString());
 
                                     param.setAt_log_table(at_log_table+"_"+currentMonth);
                                     if(param.getFt_image_code().equals("error")){
@@ -179,18 +184,17 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
                                     }
                                     kaoRequestService.updateFTImageFail(param);
                                 }
-                            }else{
-                                log.info("친구톡 이미지 등록 실패 : "+res.toString());
-
+                            } else {
+                                log.error("친구톡 이미지 등록 실패 통신오류 : "+response.getBody());
                                 param.setAt_log_table(at_log_table+"_"+currentMonth);
                                 if(param.getFt_image_code().equals("error")){
                                     param.setFt_image_code("9999");
                                 }
                                 kaoRequestService.updateFTImageFail(param);
                             }
-                            response.close();
-                        } catch (Exception e) {
-                            log.error("FT Image URL 등록 오류: ", e);
+
+                        }catch (Exception e){
+                            log.error("FT Image URL 등록 오류: ", e.getMessage());
                         }
                     }
                 }

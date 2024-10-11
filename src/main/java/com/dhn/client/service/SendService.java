@@ -370,6 +370,8 @@ public class SendService {
                     ObjectMapper om = new ObjectMapper();
                     om.writeValue(sw, _list);
 
+                    log.info(sw.toString());
+
                     HttpHeaders header = new HttpHeaders();
 
                     header.setContentType(MediaType.APPLICATION_JSON);

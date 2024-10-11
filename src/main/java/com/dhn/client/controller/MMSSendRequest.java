@@ -13,9 +13,14 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.*;
+import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.time.LocalDate;
@@ -115,13 +120,12 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 			//log.info("SMS 스케줄러: 최대 활성화된 쓰레드 수에 도달했습니다. 다음 주기에 다시 시도합니다.");
 		}
 	}
-	
-	
+
 	@Scheduled(fixedDelay = 100)
 	private void GETImageKey() {
 		if(isStart && !isProcMms) {
 			isProcMms = true;
-			
+
 			try {
 
 				int cnt = msgRequestService.selectMMSImageCount(param);
@@ -132,73 +136,69 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 					for (ImageBean mmsImageBean : imgList) {
 						param.setMsgid(mmsImageBean.getMsgid());
 
-						mmsImageBean.setFile1(null);
+						// 헤더 설정
+						HttpHeaders headers = new HttpHeaders();
+						headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+						headers.set("userid", userid);
 
-						MultipartBody.Builder builder = new MultipartBody.Builder();
-						builder.addFormDataPart("userid", userid);
-						if(mmsImageBean.getFile1() != null && mmsImageBean.getFile1().length() > 0) {
+						// MultiValueMap을 사용해 파일 데이터 전송 준비
+						MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+						body.add("userid", userid);
+
+						if (mmsImageBean.getFile1() != null && mmsImageBean.getFile1().length() > 0) {
 							File file = new File(basepath + mmsImageBean.getFile1());
-							builder.addFormDataPart("image1", mmsImageBean.getFile1(), RequestBody.create(MultipartBody.FORM,file));
+							body.add("image1", new org.springframework.core.io.FileSystemResource(file));
 						}
-						if(mmsImageBean.getFile2() != null && mmsImageBean.getFile2().length() > 0) {
+						if (mmsImageBean.getFile2() != null && mmsImageBean.getFile2().length() > 0) {
 							File file = new File(basepath + mmsImageBean.getFile2());
-							builder.addFormDataPart("image2", mmsImageBean.getFile2(), RequestBody.create(MultipartBody.FORM, file));
+							body.add("image2", new org.springframework.core.io.FileSystemResource(file));
 						}
-						if(mmsImageBean.getFile3() != null && mmsImageBean.getFile3().length() > 0) {
+						if (mmsImageBean.getFile3() != null && mmsImageBean.getFile3().length() > 0) {
 							File file = new File(basepath + mmsImageBean.getFile3());
-							builder.addFormDataPart("image3", mmsImageBean.getFile3(), RequestBody.create(MultipartBody.FORM, file));
+							body.add("image3", new org.springframework.core.io.FileSystemResource(file));
 						}
 
-						builder.setType(MultipartBody.FORM);
+						// HttpEntity 생성
+						HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 
-						RequestBody reqbody = builder.build();
+						RestTemplate restTemplate = new RestTemplate();
 
-						Request request = new Request.Builder()
-								.url(dhnServer + "mms/image")
-								.post(reqbody)
-								.build();
-
-						try {
-							OkHttpClient client = new OkHttpClient();
-							Response response = client.newCall(request).execute();
-
-							String responseBody = response.body().string(); // 응답 본문 저장
-
-							ObjectMapper mapper = new ObjectMapper();
-							Map<String, String> res = mapper.readValue(responseBody, Map.class);
+						try{
+							ResponseEntity<String> response = restTemplate.exchange(dhnServer + "mms/image", HttpMethod.POST, requestEntity, String.class);
 
 							LocalDate now = LocalDate.now();
 							DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
 							String currentMonth = now.format(formatter);
 
-							if(response.code() == 200) {
+							if (response.getStatusCode() == HttpStatus.OK) {
+								String responseBody = response.getBody();
+								ObjectMapper mapper = new ObjectMapper();
+								Map<String, String> res = mapper.readValue(responseBody, Map.class);
+
 								log.info("MMS Image Key : " + res.toString());
-								if(res.get("image_group") != null && res.get("image_group").length() > 0) {
+
+								if (res.get("image_group") != null && res.get("image_group").length() > 0) {
 									param.setMms_key(res.get("image_group"));
 									msgRequestService.updateMMSImageGroup(param);
-								}else{
-
-									log.info("MMS 이미지 등록 실패 : "+res.toString());
-
-									param.setMsg_log_table(msg_log_table+"_"+currentMonth);
+								} else {
+									log.info("MMS 이미지 등록 실패 : " + res.toString());
+									param.setMsg_log_table(msg_log_table + "_" + currentMonth);
 									param.setMsg_image_code("9999");
 									msgRequestService.updateMMSImageFail(param);
 								}
-							}else{
-								log.info("MMS 이미지 등록 실패 : "+res.toString());
-								param.setMsg_log_table(msg_log_table+"_"+currentMonth);
-								param.setMsg_image_code(String.valueOf(response.code()));
+							} else {
+								log.info("MMS 이미지 등록 실패 : " + response.getBody());
+								param.setMsg_log_table(msg_log_table + "_" + currentMonth);
+								param.setMsg_image_code(String.valueOf(response.getStatusCodeValue()));
 								msgRequestService.updateMMSImageFail(param);
 							}
-							response.close();
-						} catch (Exception e) {
+						}catch (Exception e){
 							log.error("MMS Image Key 등록 오류 : ", e.getMessage());
 						}
-
 					}
 
 				}
-				
+
 			} catch (Exception e) {
 				log.error("MMS Image 등록 오류 : " + e.toString());
 			}

@@ -100,12 +100,27 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 											
 					if(response.getStatusCode() ==  HttpStatus.OK)
 					{
-						JSONArray json = new JSONArray(response.getBody().toString());
-						if(json.length()>0) {
-							Thread res = new Thread(() ->ResultProc(json, procCnt) );
-							res.start();
+						String responseBody = response.getBody();
+						JSONObject jsonObject = new JSONObject(responseBody);
+						if (jsonObject.has("data")) {
+							JSONObject dataObject = jsonObject.getJSONObject("data");
+
+							if (dataObject.has("detail")) {
+								JSONArray jsonArray = dataObject.getJSONArray("detail");
+
+								if (jsonArray.length() > 0) {
+									Thread res = new Thread(() -> ResultProc(jsonArray, procCnt));
+									res.start();
+								} else {
+									Thread.sleep(5000);
+									procCnt--;
+								}
+							} else {
+								log.error("결과 수신 오류 : 결과 배열(detail)이 없습니다.");
+								procCnt--;
+							}
 						} else {
-							Thread.sleep(5000);
+							log.error("결과 수신 오류 : (data) 필드가 없습니다.");
 							procCnt--;
 						}
 					} else {
@@ -191,14 +206,12 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 
 			try{
 				if (msg_ml.getMsg_table() != null && msg_ml.getMsg_log_table() != null) {
-					log.info("MSG 결과처리 : {}",msg_ml.toString());
 					msgRequestService.msgResultInsert(msg_ml);
 				}else if (kao_ml.getAt_table() != null && kao_ml.getAt_log_table() != null) {
-					log.info("KAO 결과처리 : {}",kao_ml.toString());
 					kaoRequestService.kaoResultInsert(kao_ml);
 				}
 			}catch (Exception e){
-
+				log.error("결과 처리 오류 : "+ e.getMessage());
 			}
 
 		}

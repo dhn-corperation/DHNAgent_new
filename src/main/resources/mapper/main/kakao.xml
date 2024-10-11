@@ -66,6 +66,7 @@
                         WHEN PHN LIKE '010%' THEN '82' || SUBSTR(PHN, 2, 15)
                         ELSE '82' || SUBSTR(PHN, 2, 15)
                     END AS phn,
+                    P_INVOICE as pinvoice,
                     SMS_SENDER AS smssender,
                     SMSLMS_TIT AS smslmstit,
                     SMS_KIND as smskind,
@@ -94,6 +95,7 @@
                         WHEN PHN LIKE '010%' THEN CONCAT('82', SUBSTRING(PHN, 2, 15))
                         ELSE CONCAT('82', SUBSTRING(PHN, 2, 15))
                     END AS phn,
+                    P_INVOICE as pinvoice,
                     SMS_SENDER AS smssender,
                     SMSLMS_TIT AS smslmstit,
                     SMS_KIND as smskind,
@@ -380,6 +382,7 @@
                         WHEN PHN LIKE '010%' THEN '82' || SUBSTR(PHN, 2, 15)
                         ELSE '82' || SUBSTR(PHN, 2, 15)
                     END AS phn,
+                    P_INVOICE as pinvoice,
                     AD_FLAG as adflag,
                     SMS_SENDER AS smssender,
                     SMSLMS_TIT AS smslmstit,
@@ -410,6 +413,7 @@
                         WHEN PHN LIKE '010%' THEN CONCAT('82', SUBSTRING(PHN, 2, 15))
                         ELSE CONCAT('82', SUBSTRING(PHN, 2, 15))
                     END AS phn,
+                    P_INVOICE as pinvoice,
                     AD_FLAG as adflag,
                     SMS_SENDER AS smssender,
                     SMSLMS_TIT AS smslmstit,
