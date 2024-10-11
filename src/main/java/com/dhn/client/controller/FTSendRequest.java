@@ -65,7 +65,7 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
         basepath = appContext.getEnvironment().getProperty("dhnclient.file_base_path")==null?"":appContext.getEnvironment().getProperty("dhnclient.file_base_path");
         param.setMsg_type("FT");
 
-        dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
+        dhnServer = appContext.getEnvironment().getProperty("dhnclient.server");
         userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 
         if (param.getFtkao_use() != null && param.getFtkao_use().equalsIgnoreCase("Y")) {

@@ -54,7 +54,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 		param.setSequence(appContext.getEnvironment().getProperty("dhnclient.at_seq"));
 		param.setMsg_type("AT");
 
-		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
+		dhnServer = appContext.getEnvironment().getProperty("dhnclient.server");
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 
 		if (param.getKakao_use() != null && param.getKakao_use().equalsIgnoreCase("Y")) {

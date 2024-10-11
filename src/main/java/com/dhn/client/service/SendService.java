@@ -38,7 +38,7 @@ public class SendService {
     private final String userid;
 
     public SendService(ApplicationContext appContext) {
-        this.dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
+        this.dhnServer = appContext.getEnvironment().getProperty("dhnclient.server");
         this.userid = appContext.getEnvironment().getProperty("dhnclient.userid");
     }
 

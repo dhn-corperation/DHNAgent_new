@@ -50,7 +50,7 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 		param.setSequence(appContext.getEnvironment().getProperty("dhnclient.msg_seq"));
 		param.setMsg_type("S");
 		
-		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
+		dhnServer = appContext.getEnvironment().getProperty("dhnclient.server");
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 
 		if (param.getSms_use() != null && param.getSms_use().equalsIgnoreCase("Y")) {
