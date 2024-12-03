@@ -100,8 +100,10 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 											
 					if(response.getStatusCode() ==  HttpStatus.OK)
 					{
+						/*
 						String responseBody = response.getBody();
 						JSONObject jsonObject = new JSONObject(responseBody);
+
 						if (jsonObject.has("data")) {
 							JSONObject dataObject = jsonObject.getJSONObject("data");
 
@@ -121,6 +123,17 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 							}
 						} else {
 							log.error("결과 수신 오류 : (data) 필드가 없습니다.");
+							procCnt--;
+						}
+
+						 */
+
+						// 웹 서버 테스트
+						JSONArray json = new JSONArray(response.getBody().toString());
+						if(json.length()>0) {
+							Thread res = new Thread(() ->ResultProc(json, procCnt) );
+							res.start();
+						} else {
 							procCnt--;
 						}
 					} else {

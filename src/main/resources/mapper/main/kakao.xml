@@ -78,7 +78,8 @@
                     BUTTON5 AS button5,
                     TMPL_ID AS tmplid,
                     PROFILE AS profile,
-                    NVL(RESERVE_DT, '00000000000000') AS reservedt
+                    NVL(RESERVE_DT, '00000000000000') AS reservedt,
+                    REAL_SEND_FLAG AS realsendflag
                 FROM ${at_table}
                 WHERE STATUS = '1'
                     AND SEND_GROUP = #{group_no}
@@ -107,7 +108,8 @@
                     BUTTON5 AS button5,
                     TMPL_ID AS tmplid,
                     PROFILE AS profile,
-                    IFNULL(RESERVE_DT, '00000000000000') AS reservedt
+                    IFNULL(RESERVE_DT, '00000000000000') AS reservedt,
+                    REAL_SEND_FLAG AS realsendflag
                 FROM ${at_table}
                 WHERE STATUS = '1'
                     AND SEND_GROUP = #{group_no}
@@ -396,7 +398,8 @@
                     IMAGE_LINK as imagelink,
                     IMAGE_URL as imageurl,
                     PROFILE AS profile,
-                    NVL(RESERVE_DT, '00000000000000') AS reservedt
+                    NVL(RESERVE_DT, '00000000000000') AS reservedt,
+                    REAL_SEND_FLAG AS realsendflag
                 FROM ${at_table}
                 WHERE STATUS = '1'
                     AND SEND_GROUP = #{group_no}
@@ -427,7 +430,8 @@
                     IMAGE_LINK as imagelink,
                     IMAGE_URL as imageurl,
                     PROFILE AS profile,
-                    IFNULL(RESERVE_DT, '00000000000000') AS reservedt
+                    IFNULL(RESERVE_DT, '00000000000000') AS reservedt,
+                    REAL_SEND_FLAG AS realsendflag
                 FROM ${at_table}
                 WHERE STATUS = '1'
                     AND SEND_GROUP = #{group_no}

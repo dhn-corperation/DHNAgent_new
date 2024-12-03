@@ -46,5 +46,6 @@ public class KAORequestBean {
 	private String btn_name;
 	private String btn_url;
 	private String button;
+	private String realsendflag;
 	  
 }

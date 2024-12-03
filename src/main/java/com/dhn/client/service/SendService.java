@@ -106,6 +106,8 @@ public class SendService {
                     ObjectMapper om = new ObjectMapper();
                     om.writeValue(sw, _list); // List를 Json화 하여 문자열 저장
 
+                    log.info(sw.toString());
+
                     HttpHeaders header = new HttpHeaders();
 
                     header.setContentType(MediaType.APPLICATION_JSON);

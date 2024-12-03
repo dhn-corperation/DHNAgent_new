@@ -459,7 +459,7 @@
                     SMS_SENDER AS smssender,
                     SMSLMS_TIT AS smslmstit,
                     'M' AS smskind,
-                    MMS_IMAGE_KEY AS mms_image_id,
+                    MMS_IMAGE_KEY AS mmsimageid,
                     TO_CHAR(REG_DT, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
                     NVL(RESERVE_DT, '00000000000000') AS reservedt
                 from ${msg_table}
