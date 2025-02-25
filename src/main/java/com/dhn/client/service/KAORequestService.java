@@ -9,10 +9,6 @@ import java.util.List;
 
 public interface KAORequestService {
 
-    public void atTableCheck(SQLParameter param) throws Exception;
-
-    public void atLogTableCheck(String atTable, String atLogTable, String database) throws Exception;
-
     public int selectKAORequestCount(SQLParameter param) throws Exception;
 
     public void updateKAOGroupNo(SQLParameter param) throws Exception;

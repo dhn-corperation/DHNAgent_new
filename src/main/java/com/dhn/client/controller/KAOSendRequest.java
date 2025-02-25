@@ -21,7 +21,6 @@ import java.util.List;
 
 @Component
 @Slf4j
-@Order(1)
 public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent> {
 
 	public static boolean isStart = false;
@@ -48,7 +47,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
-		param.setAt_table(appContext.getEnvironment().getProperty("dhnclient.at_table"));
+		param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
 		param.setKakao_use(appContext.getEnvironment().getProperty("dhnclient.kakao_use"));
 		param.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database"));
 		param.setSequence(appContext.getEnvironment().getProperty("dhnclient.at_seq"));
@@ -58,13 +57,8 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 
 		if (param.getKakao_use() != null && param.getKakao_use().equalsIgnoreCase("Y")) {
-			try{
-				kaoRequestService.atTableCheck(param);
-				isStart = true;
-				log.info("KAO 초기화 완료");
-			}catch (Exception e){
-				log.error("{}테이블 생성 오류 : ", param.getAt_table() + e.getMessage());
-			}
+			isStart = true;
+			log.info("KAO 초기화 완료");
 		} else {
 			posts.postProcessBeforeDestruction(this, null);
 		}

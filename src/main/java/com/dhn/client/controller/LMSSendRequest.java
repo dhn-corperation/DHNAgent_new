@@ -20,7 +20,6 @@ import java.util.List;
 
 @Component
 @Slf4j
-@Order(2)
 public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent>{
 	
 	public static boolean isStart = false;
@@ -46,7 +45,7 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		param.setMsg_table( appContext.getEnvironment().getProperty("dhnclient.msg_table"));
-		param.setLms_use(appContext.getEnvironment().getProperty("dhnclient.lms_use"));
+		param.setMsg_use(appContext.getEnvironment().getProperty("dhnclient.msg_use"));
 		param.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database"));
 		param.setSequence(appContext.getEnvironment().getProperty("dhnclient.msg_seq"));
 		param.setMsg_type("L");
@@ -54,14 +53,9 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 		dhnServer = appContext.getEnvironment().getProperty("dhnclient.server");
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 
-		if (param.getLms_use() != null && param.getLms_use().equalsIgnoreCase("Y")) {
-			try{
-				msgRequestService.msgTableCheck(param);
-				isStart = true;
-				log.info("LMS 초기화 완료");
-			}catch (Exception e){
-				log.error("{}테이블 생성 오류 : ", param.getAt_table() + e.getMessage());
-			}
+		if (param.getMsg_use() != null && param.getMsg_use().equalsIgnoreCase("Y")) {
+			isStart = true;
+			log.info("LMS 초기화 완료");
 		} else {
 				posts.postProcessBeforeDestruction(this, null);
 		}

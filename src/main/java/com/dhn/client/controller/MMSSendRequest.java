@@ -31,7 +31,6 @@ import java.util.Map;
 
 @Component
 @Slf4j
-@Order(3)
 public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent>{
 	
 	public static boolean isStart = false;
@@ -42,7 +41,7 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private String userid;
 	private String basepath;
 	private String preGroupNo = "";
-	private String msg_log_table;
+	private String log_table;
 
 	@Autowired
 	private MSGRequestService msgRequestService;
@@ -59,10 +58,10 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
-		param.setMms_use(appContext.getEnvironment().getProperty("dhnclient.mms_use"));
+		param.setMsg_use(appContext.getEnvironment().getProperty("dhnclient.msg_use"));
 		param.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database"));
 		param.setSequence(appContext.getEnvironment().getProperty("dhnclient.msg_seq"));
-		msg_log_table = appContext.getEnvironment().getProperty("dhnclient.msg_log_table");
+		log_table = appContext.getEnvironment().getProperty("dhnclient.log_table");
 		param.setMsg_type("M");
 		
 
@@ -72,14 +71,9 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 		// 풀 경로를 DB에 담는듯.
 		basepath = appContext.getEnvironment().getProperty("dhnclient.file_base_path")==null?"":appContext.getEnvironment().getProperty("dhnclient.file_base_path");
 
-		if (param.getMms_use() != null && param.getMms_use().equalsIgnoreCase("Y")) {
-			try{
-				msgRequestService.msgTableCheck(param);
-				isStart = true;
-				log.info("MMS 초기화 완료");
-			}catch (Exception e){
-				log.error("{}테이블 생성 오류 : ", param.getAt_table() + e.getMessage());
-			}
+		if (param.getMsg_use() != null && param.getMsg_use().equalsIgnoreCase("Y")) {
+			isStart = true;
+			log.info("MMS 초기화 완료");
 		} else {
 			posts.postProcessBeforeDestruction(this, null);
 		}
@@ -182,13 +176,13 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 									msgRequestService.updateMMSImageGroup(param);
 								} else {
 									log.info("MMS 이미지 등록 실패 : " + res.toString());
-									param.setMsg_log_table(msg_log_table + "_" + currentMonth);
+									param.setLog_table(log_table + "_" + currentMonth);
 									param.setMsg_image_code("9999");
 									msgRequestService.updateMMSImageFail(param);
 								}
 							} else {
 								log.info("MMS 이미지 등록 실패 : " + response.getBody());
-								param.setMsg_log_table(msg_log_table + "_" + currentMonth);
+								param.setLog_table(log_table + "_" + currentMonth);
 								param.setMsg_image_code(String.valueOf(response.getStatusCodeValue()));
 								msgRequestService.updateMMSImageFail(param);
 							}

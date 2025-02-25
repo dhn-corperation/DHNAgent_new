@@ -13,7 +13,7 @@
                     AND SMS_KIND = #{msg_type}
                     AND SEND_GROUP IS NULL
             </when>
-            <when test="database == 'mysql' or database == 'mariadb'">
+            <when test="database == 'mysql'">
                 SELECT count(1) AS cnt
                 FROM ${msg_table}
                 WHERE STATUS = '0'
@@ -38,7 +38,7 @@
                     AND SEND_GROUP IS NULL
                     AND ROWNUM &lt;= 500
             </when>
-            <when test="database == 'mysql' or database == 'mariadb'">
+            <when test="database == 'mysql'">
                 UPDATE ${msg_table}
                 SET STATUS = '1',
                     SEND_GROUP = #{group_no}
@@ -72,7 +72,7 @@
                   and SEND_GROUP = #{group_no}
                   and SMS_KIND = #{msg_type}
             </when>
-            <when test="database == 'mysql' or database == 'mariadb'">
+            <when test="database == 'mysql'">
                 SELECT
                     MSG_ID AS msgid,
                     'PH' AS messagetype,
@@ -103,7 +103,7 @@
                 AND SEND_GROUP = #{group_no}
                 AND SMS_KIND = #{msg_type}
             </when>
-            <when test="database == 'mysql' or database == 'mariadb'">
+            <when test="database == 'mysql'">
                 UPDATE ${msg_table}
                 SET STATUS = '2',
                 RESPONSE_DT = CURRENT_TIMESTAMP
@@ -124,7 +124,7 @@
                 WHERE STATUS = '1'
                     AND SEND_GROUP = #{group_no}
             </when>
-            <when test="database == 'mysql' or database == 'mariadb'">
+            <when test="database == 'mysql'">
                 UPDATE ${msg_table}
                 SET STATUS = '0',
                     SEND_GROUP = NULL,
@@ -145,7 +145,7 @@
                 WHERE STATUS = '1'
                     AND SEND_GROUP = #{group_no}
             </when>
-            <when test="database == 'mysql' or database == 'mariadb'">
+            <when test="database == 'mysql'">
                 UPDATE ${msg_table}
                 SET STATUS = '7',
                     SEND_GROUP = NULL,
@@ -166,7 +166,7 @@
                     #{msgid}
                 </foreach>
             </when>
-            <when test="database == 'mysql' or database == 'mariadb'">
+            <when test="database == 'mysql'">
                 UPDATE ${param.msg_table}
                 SET STATUS = '8'
                 WHERE MSG_ID IN
@@ -188,7 +188,7 @@
                     REAL_MESSAGE_TYPE = '${real_send_type}'
                 WHERE MSG_ID = '${msgid}'
             </when>
-            <when test="database == 'mysql' or database == 'mariadb'">
+            <when test="database == 'mysql'">
                 UPDATE ${msg_table}
                 SET STATUS = '${status}',
                     RESULT_DT = '${result_dt}',
@@ -203,12 +203,12 @@
     <insert id="msgLogInsert" parameterType="com.dhn.client.bean.Msg_Log">
         <choose>
             <when test="database == 'oracle'">
-                INSERT INTO ${msg_log_table}
+                INSERT INTO ${log_table}
                 SELECT * FROM ${msg_table}
                 WHERE MSG_ID = #{msgid}
             </when>
-            <when test="database == 'mysql' or database == 'mariadb'">
-                INSERT INTO ${msg_log_table}
+            <when test="database == 'mysql'">
+                INSERT INTO ${log_table}
                 SELECT * FROM ${msg_table}
                 WHERE MSG_ID = #{msgid}
             </when>
@@ -221,7 +221,7 @@
                 DELETE FROM ${msg_table}
                 WHERE MSG_ID = #{msgid}
             </when>
-            <when test="database == 'mysql' or database == 'mariadb'">
+            <when test="database == 'mysql'">
                 DELETE FROM ${msg_table}
                 WHERE MSG_ID = #{msgid}
             </when>
@@ -235,7 +235,7 @@
                 FROM ${msg_table}
                 WHERE STATUS = '9'
             </when>
-            <when test="database == 'mysql' or database == 'mariadb'">
+            <when test="database == 'mysql'">
                 SELECT COUNT(1) as cnt
                 FROM ${msg_table}
                 WHERE STATUS = '9'
@@ -251,7 +251,7 @@
                 WHERE STATUS = '9'
                 AND ROWNUM &lt; 500
             </when>
-            <when test="database == 'mysql' or database == 'mariadb'">
+            <when test="database == 'mysql'">
                 UPDATE ${msg_table}
                 SET SEND_GROUP = #{group_no}
                 WHERE STATUS = '9'
@@ -264,12 +264,12 @@
 
         <choose>
             <when test="database == 'oracle'">
-                INSERT INTO ${msg_log_table}
+                INSERT INTO ${log_table}
                 SELECT * FROM ${msg_table}
                 WHERE SEND_GROUP = #{group_no}
             </when>
-            <when test="database == 'mysql' or database == 'mariadb'">
-                INSERT INTO ${msg_log_table}
+            <when test="database == 'mysql'">
+                INSERT INTO ${log_table}
                 SELECT * FROM ${msg_table}
                 WHERE SEND_GROUP = #{group_no}
             </when>
@@ -282,7 +282,7 @@
                 DELETE FROM ${msg_table}
                 WHERE SEND_GROUP = #{group_no}
             </when>
-            <when test="database == 'mysql' or database == 'mariadb'">
+            <when test="database == 'mysql'">
                 DELETE FROM ${msg_table}
                 WHERE SEND_GROUP = #{group_no}
             </when>
@@ -303,7 +303,7 @@
                 AND MMS_IMAGE2 IS NULL
                 AND MMS_IMAGE3 IS NULL
             </when>
-            <when test="database == 'mysql' or database == 'mariadb'">
+            <when test="database == 'mysql'">
                 SELECT count(1) AS cnt
                 FROM ${msg_table}
                 WHERE STATUS = '0'
@@ -334,7 +334,7 @@
                 AND MMS_IMAGE3 IS NULL
                 AND ROWNUM &lt;= 500
             </when>
-            <when test="database == 'mysql' or database == 'mariadb'">
+            <when test="database == 'mysql'">
                 UPDATE ${msg_table}
                 SET STATUS = '1',
                 SEND_GROUP = #{group_no}
@@ -371,7 +371,7 @@
                 and SEND_GROUP = #{group_no}
                 and SMS_KIND = #{msg_type}
             </when>
-            <when test="database == 'mysql' or database == 'mariadb'">
+            <when test="database == 'mysql'">
                 SELECT
                 MSG_ID AS msgid,
                 'PH' AS messagetype,
@@ -404,7 +404,7 @@
                 AND SEND_GROUP IS NULL
                 AND MMS_IMAGE_KEY IS NOT NULL
             </when>
-            <when test="database == 'mysql' or database == 'mariadb'">
+            <when test="database == 'mysql'">
                 SELECT count(1) AS cnt
                 FROM ${msg_table}
                 WHERE STATUS = '0'
@@ -431,7 +431,7 @@
                 AND MMS_IMAGE_KEY IS NOT NULL
                 AND ROWNUM &lt;= 500
             </when>
-            <when test="database == 'mysql' or database == 'mariadb'">
+            <when test="database == 'mysql'">
                 UPDATE ${msg_table}
                 SET STATUS = '1',
                 SEND_GROUP = #{group_no}
@@ -467,7 +467,7 @@
                     and SEND_GROUP = #{group_no}
                     and SMS_KIND = #{msg_type}
             </when>
-            <when test="database == 'mysql' or database == 'mariadb'">
+            <when test="database == 'mysql'">
                 SELECT
                     MSG_ID AS msgid,
                     'PH' AS messagetype,
@@ -502,7 +502,7 @@
                     AND SEND_GROUP IS NULL
                     AND (MMS_IMAGE1 IS NOT NULL or MMS_IMAGE2 IS NOT NULL or MMS_IMAGE3 IS NOT NULL)
             </when>
-            <when test="database == 'mysql' or database == 'mariadb'">
+            <when test="database == 'mysql'">
                 SELECT count(1) AS cnt
                 FROM ${msg_table}
                 WHERE STATUS = '0'
@@ -533,7 +533,7 @@
                     AND SEND_GROUP IS NULL
                     AND (MMS_IMAGE1 IS NOT NULL or MMS_IMAGE2 IS NOT NULL or MMS_IMAGE3 IS NOT NULL)
             </when>
-            <when test="database == 'mysql' or database == 'mariadb'">
+            <when test="database == 'mysql'">
                 SELECT
                     MSG_ID AS msgid,
                     MMS_IMAGE1 AS file1,
@@ -558,7 +558,7 @@
                 SET MMS_IMAGE_KEY = #{mms_key}
                 WHERE MSG_ID = #{msgid}
             </when>
-            <when test="database == 'mysql' or database == 'mariadb'">
+            <when test="database == 'mysql'">
                 UPDATE ${msg_table}
                 SET MMS_IMAGE_KEY = #{mms_key}
                 WHERE MSG_ID = #{msgid}
@@ -575,7 +575,7 @@
                 WHERE MSG_ID = #{msgid}
                     AND SMS_KIND = #{msg_type}
             </when>
-            <when test="database == 'mysql' or database == 'mariadb'">
+            <when test="database == 'mysql'">
                 UPDATE ${msg_table}
                 SET RESULT = #{msg_image_code},
                     STATUS = 'F'
@@ -588,12 +588,12 @@
     <insert id="mms_image_fail_log_Insert" parameterType="com.dhn.client.bean.SQLParameter">
         <choose>
             <when test="database == 'oracle'">
-                INSERT INTO ${msg_log_table}
+                INSERT INTO ${log_table}
                 SELECT * FROM ${msg_table}
                 WHERE MSG_ID = #{msgid}
             </when>
-            <when test="database == 'mysql' or database == 'mariadb'">
-                INSERT INTO ${msg_log_table}
+            <when test="database == 'mysql'">
+                INSERT INTO ${log_table}
                 SELECT * FROM ${msg_table}
                 WHERE MSG_ID = #{msgid}
             </when>
@@ -606,7 +606,7 @@
                 DELETE FROM ${msg_table}
                 WHERE MSG_ID = #{msgid}
             </when>
-            <when test="database == 'mysql' or database == 'mariadb'">
+            <when test="database == 'mysql'">
                 DELETE FROM ${msg_table}
                 WHERE MSG_ID = #{msgid}
             </when>

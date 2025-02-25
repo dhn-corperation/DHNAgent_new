@@ -33,11 +33,9 @@ public class MSGLogMove implements ApplicationListener<ContextRefreshedEvent> {
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
-        param.setMsg_log_table(appContext.getEnvironment().getProperty("dhnclient.msg_log_table"));
+        param.setLog_table(appContext.getEnvironment().getProperty("dhnclient.log_table"));
         param.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database"));
-        if(appContext.getEnvironment().getProperty("dhnclient.lms_use").equalsIgnoreCase("Y") ||
-                appContext.getEnvironment().getProperty("dhnclient.sms_use").equalsIgnoreCase("Y")||
-                appContext.getEnvironment().getProperty("dhnclient.mms_use").equalsIgnoreCase("Y")){
+        if(appContext.getEnvironment().getProperty("dhnclient.msg_use").equalsIgnoreCase("Y")){
             isStart = true;
         }
     }
@@ -60,7 +58,7 @@ public class MSGLogMove implements ApplicationListener<ContextRefreshedEvent> {
                         DateTimeFormatter log_formatter = DateTimeFormatter.ofPattern("yyyyMM");
                         String currentMonth = logdate.format(log_formatter);
 
-                        param.setMsg_log_table(param.getMsg_log_table()+"_"+currentMonth);
+                        param.setLog_table(param.getLog_table()+"_"+currentMonth);
 
                         param.setGroup_no(group_no);
 

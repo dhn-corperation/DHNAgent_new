@@ -33,7 +33,6 @@ import java.util.Map;
 
 @Component
 @Slf4j
-@Order(5)
 public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent> {
     public static boolean isStart = false;
     private boolean isProc = false;
@@ -43,7 +42,7 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
     private String userid;
     private String preGroupNo = "";
     private String basepath = "";
-    private String at_log_table;
+    private String log_table;
 
     @Autowired
     private KAORequestService kaoRequestService;
@@ -62,25 +61,20 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
-        param.setAt_table(appContext.getEnvironment().getProperty("dhnclient.at_table"));
-        at_log_table = appContext.getEnvironment().getProperty("dhnclient.at_log_table");
-        param.setFtkao_use(appContext.getEnvironment().getProperty("dhnclient.ftkao_use"));
+        param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
+        log_table = appContext.getEnvironment().getProperty("dhnclient.log_table");
+        param.setKakao_use(appContext.getEnvironment().getProperty("dhnclient.kakao_use"));
         param.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database"));
-        param.setSequence(appContext.getEnvironment().getProperty("dhnclient.at_seq"));
+        param.setSequence(appContext.getEnvironment().getProperty("dhnclient.msg_seq"));
         basepath = appContext.getEnvironment().getProperty("dhnclient.file_base_path")==null?"":appContext.getEnvironment().getProperty("dhnclient.file_base_path");
         param.setMsg_type("FT");
 
         dhnServer = appContext.getEnvironment().getProperty("dhnclient.server");
         userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 
-        if (param.getFtkao_use() != null && param.getFtkao_use().equalsIgnoreCase("Y")) {
-            try{
-                kaoRequestService.atTableCheck(param);
-                isStart = true;
-                log.info("FT 초기화 완료");
-            }catch (Exception e){
-                log.error("{}테이블 생성 오류 : ", param.getAt_table() + e.getMessage());
-            }
+        if (param.getKakao_use() != null && param.getKakao_use().equalsIgnoreCase("Y")) {
+            isStart = true;
+            log.info("FT 초기화 완료");
         } else {
             posts.postProcessBeforeDestruction(this, null);
         }
@@ -178,7 +172,7 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
 
                                     log.error("친구톡 이미지 등록 실패 : "+res.toString());
 
-                                    param.setAt_log_table(at_log_table+"_"+currentMonth);
+                                    param.setLog_table(log_table+"_"+currentMonth);
                                     if(param.getFt_image_code().equals("error")){
                                         param.setFt_image_code("9999");
                                     }
@@ -186,7 +180,7 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
                                 }
                             } else {
                                 log.error("친구톡 이미지 등록 실패 통신오류 : "+response.getBody());
-                                param.setAt_log_table(at_log_table+"_"+currentMonth);
+                                param.setLog_table(log_table+"_"+currentMonth);
                                 if(param.getFt_image_code().equals("error")){
                                     param.setFt_image_code("9999");
                                 }

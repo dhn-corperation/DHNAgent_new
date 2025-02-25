@@ -9,12 +9,6 @@ import java.util.List;
 
 public interface MSGRequestDAO {
 
-    public int msgTableCheck(SQLParameter param) throws Exception;
-
-    public void msgTableCreate(SQLParameter param) throws Exception;
-
-    public void msgLogTableCheck(String msgTable, String msgLogTable, String database) throws Exception;
-
     public int selectSMSReqeustCount(SQLParameter param) throws Exception;
 
     public void updateSMSGroupNo(SQLParameter param) throws Exception;

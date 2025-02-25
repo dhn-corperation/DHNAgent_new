@@ -24,7 +24,6 @@ import java.util.Map;
 
 @Component
 @Slf4j
-@Order(6)
 public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 	
 	public static boolean isStart = false;
@@ -34,10 +33,8 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 	private String userid;
 	private Map<String, String> _kaoCode = new HashMap<String,String>();
 	private static int procCnt = 0;
-	private String atTable = "";
-	private String atLogTable = "";
-	private String msgTable = "";
-	private String msgLogTable = "";
+	private String msg_table = "";
+	private String log_table = "";
 	private String database = "";
 	
 	@Autowired
@@ -51,30 +48,12 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
-
-		atTable = appContext.getEnvironment().getProperty("dhnclient.at_table");
-		atLogTable = appContext.getEnvironment().getProperty("dhnclient.at_log_table");
-		msgTable = appContext.getEnvironment().getProperty("dhnclient.msg_table");
-		msgLogTable = appContext.getEnvironment().getProperty("dhnclient.msg_log_table");
+		msg_table = appContext.getEnvironment().getProperty("dhnclient.msg_table");
+		log_table = appContext.getEnvironment().getProperty("dhnclient.log_table");
 		database = appContext.getEnvironment().getProperty("dhnclient.database");
 
 		dhnServer = appContext.getEnvironment().getProperty("dhnclient.server");
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
-
-		try{
-			if(appContext.getEnvironment().getProperty("dhnclient.kakao_use").equalsIgnoreCase("Y") ||
-			 appContext.getEnvironment().getProperty("dhnclient.ftkao_use").equalsIgnoreCase("Y")){
-				kaoRequestService.atLogTableCheck(atTable,atLogTable, database);
-			}
-
-			if(appContext.getEnvironment().getProperty("dhnclient.lms_use").equalsIgnoreCase("Y") ||
-					appContext.getEnvironment().getProperty("dhnclient.sms_use").equalsIgnoreCase("Y")||
-					appContext.getEnvironment().getProperty("dhnclient.mms_use").equalsIgnoreCase("Y")){
-				msgRequestService.msgLogTableCheck(msgTable, msgLogTable, database);
-			}
-		}catch (Exception e){
-			log.error("log 테이블 생성 오류 : "+e.getMessage());
-		}
 		
 		isStart = true;
 	}
@@ -100,7 +79,6 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 											
 					if(response.getStatusCode() ==  HttpStatus.OK)
 					{
-						/*
 						String responseBody = response.getBody();
 						JSONObject jsonObject = new JSONObject(responseBody);
 
@@ -126,9 +104,9 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 							procCnt--;
 						}
 
-						 */
 
 						// 웹 서버 테스트
+						/*
 						JSONArray json = new JSONArray(response.getBody().toString());
 						if(json.length()>0) {
 							Thread res = new Thread(() ->ResultProc(json, procCnt) );
@@ -136,6 +114,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 						} else {
 							procCnt--;
 						}
+						 */
 					} else {
 						procCnt--;
 					}
@@ -164,11 +143,11 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
 			String currentMonth = now.format(formatter);
 
-			if(ent.getString("message_type").equalsIgnoreCase("AT") || ent.getString("message_type").equalsIgnoreCase("FI") || ent.getString("message_type").equalsIgnoreCase("FT")){
+			if(ent.getString("message_type").equalsIgnoreCase("AT") || ent.getString("message_type").equalsIgnoreCase("AI") || ent.getString("message_type").equalsIgnoreCase("FI") || ent.getString("message_type").equalsIgnoreCase("FT")){
 				// 알림톡
 				kao_ml.setMsgid(ent.getString("msgid"));
-				kao_ml.setAt_table(atTable);
-				kao_ml.setAt_log_table(atLogTable+"_"+currentMonth);
+				kao_ml.setMsg_table(msg_table);
+				kao_ml.setLog_table(log_table+"_"+currentMonth);
 				kao_ml.setDatabase(database);
 
 				kao_ml.setResult_dt(ent.getString("res_dt"));
@@ -183,8 +162,8 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			}else if(ent.getString("message_type").equalsIgnoreCase("PH") && ent.has("s_code") && !ent.isNull("s_code") && ent.getString("s_code").length() > 1){
 				// 알림톡 실패 문자
 				kao_ml.setMsgid(ent.getString("msgid"));
-				kao_ml.setAt_table(atTable);
-				kao_ml.setAt_log_table(atLogTable+"_"+currentMonth);
+				kao_ml.setMsg_table(msg_table);
+				kao_ml.setLog_table(log_table+"_"+currentMonth);
 				kao_ml.setDatabase(database);
 
 				kao_ml.setS_code(ent.getString("s_code"));
@@ -202,8 +181,8 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			}else{
 				// 문자
 				msg_ml.setMsgid(ent.getString("msgid"));
-				msg_ml.setMsg_table(msgTable);
-				msg_ml.setMsg_log_table(msgLogTable+"_"+currentMonth);
+				msg_ml.setMsg_table(msg_table);
+				msg_ml.setLog_table(log_table+"_"+currentMonth);
 				msg_ml.setDatabase(database);
 
 				msg_ml.setCode(ent.getString("code"));
@@ -218,9 +197,9 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			}
 
 			try{
-				if (msg_ml.getMsg_table() != null && msg_ml.getMsg_log_table() != null) {
+				if (msg_ml.getMsg_table() != null && msg_ml.getLog_table() != null) {
 					msgRequestService.msgResultInsert(msg_ml);
-				}else if (kao_ml.getAt_table() != null && kao_ml.getAt_log_table() != null) {
+				}else if (kao_ml.getMsg_table() != null && kao_ml.getLog_table() != null) {
 					kaoRequestService.kaoResultInsert(kao_ml);
 				}
 			}catch (Exception e){

@@ -9,12 +9,6 @@ import java.util.List;
 
 public interface KAORequestDAO {
 
-    public int atTableCheck(SQLParameter param) throws Exception;
-
-    public void atTableCreate(SQLParameter param) throws Exception;
-
-    public void atLogTableCheck(String atTable, String atLogTable, String database);
-
     public int selectKAORequestCount(SQLParameter param) throws Exception;
 
     public void updateKAOGroupNo(SQLParameter param) throws Exception;

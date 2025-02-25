@@ -10,17 +10,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SQLParameter {
-	private String at_table;
-	private String at_log_table;
 	private String msg_table;
-	private String msg_log_table;
+	private String log_table;
 	private String sequence;
 	private String database;
 	private String kakao_use;
-	private String ftkao_use;
-	private String sms_use;
-	private String lms_use;
-	private String mms_use;
+	private String msg_use;
 	private String group_no;
 	private String msg_type;
 	private String log_mv_flag;

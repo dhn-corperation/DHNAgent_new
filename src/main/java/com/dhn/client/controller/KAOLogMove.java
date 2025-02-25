@@ -31,8 +31,8 @@ public class KAOLogMove implements ApplicationListener<ContextRefreshedEvent> {
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
-        param.setAt_table(appContext.getEnvironment().getProperty("dhnclient.at_table"));
-        param.setAt_log_table(appContext.getEnvironment().getProperty("dhnclient.at_log_table"));
+        param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
+        param.setLog_table(appContext.getEnvironment().getProperty("dhnclient.log_table"));
         param.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database"));
         if(appContext.getEnvironment().getProperty("dhnclient.kakao_use").equalsIgnoreCase("Y")){
             isStart = true;
@@ -57,7 +57,7 @@ public class KAOLogMove implements ApplicationListener<ContextRefreshedEvent> {
                         DateTimeFormatter log_formatter = DateTimeFormatter.ofPattern("yyyyMM");
                         String currentMonth = logdate.format(log_formatter);
 
-                        param.setAt_log_table(param.getAt_log_table()+"_"+currentMonth);
+                        param.setLog_table(param.getLog_table()+"_"+currentMonth);
 
                         param.setGroup_no(group_no);
 

@@ -21,28 +21,6 @@ public class KAORequestServiceimpl implements KAORequestService{
     private KAORequestDAO kaoRequestDAO;
 
     @Override
-    public void atTableCheck(SQLParameter param) throws Exception {
-        int result = kaoRequestDAO.atTableCheck(param);
-
-        try{
-            if(result == 0){
-                kaoRequestDAO.atTableCreate(param);
-                log.info("{} 테이블 생성 완료",param.getAt_table());
-            }else{
-                log.info("{} 테이블이 존재합니다.",param.getAt_table());
-            }
-        }catch (Exception e){
-            log.error("{} 테이블 생성 중 오류 발생: {}", param.getAt_table(), e.getMessage());
-            throw e;
-        }
-    }
-
-    @Override
-    public void atLogTableCheck(String atTable, String atLogTable, String database) throws Exception{
-        kaoRequestDAO.atLogTableCheck(atTable, atLogTable, database);
-    }
-
-    @Override
     public int selectKAORequestCount(SQLParameter param) throws Exception {
         return kaoRequestDAO.selectKAORequestCount(param);
     }

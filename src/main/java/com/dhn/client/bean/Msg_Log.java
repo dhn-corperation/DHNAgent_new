@@ -4,10 +4,8 @@ import lombok.Data;
 
 @Data
 public class Msg_Log {
-	private String at_table;
-	private String at_log_table;
 	private String msg_table;
-	private String msg_log_table;
+	private String log_table;
 	private String msgid;
 	private String code;
 	private String s_code;
