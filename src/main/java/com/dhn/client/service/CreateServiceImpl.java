@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
-public class CreateServiceimpl implements CreateService {
+public class CreateServiceImpl implements CreateService {
 
     @Autowired
     private CreateDAO createDAO;
@@ -28,7 +28,6 @@ public class CreateServiceimpl implements CreateService {
             log.error("{} 테이블 생성 중 오류 발생: {}", param.getMsg_table(), e.getMessage());
             throw e;
         }
-        createDAO.tableCheck(param);
     }
 
     @Override

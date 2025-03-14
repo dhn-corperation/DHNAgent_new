@@ -13,7 +13,7 @@ import java.util.Map;
 
 @Repository
 @Slf4j
-public class CreateDAOimpl implements CreateDAO {
+public class CreateDAOImpl implements CreateDAO{
 
     @Autowired
     private SqlSession sqlSession;
@@ -25,19 +25,7 @@ public class CreateDAOimpl implements CreateDAO {
 
     @Override
     public void tableCreate(SQLParameter param) throws Exception {
-        if(param.getDatabase().equals("oracle")){
-            int seqcnt = sqlSession.selectOne("com.dhn.client.create.mapper.SendRequest.seqCheck_oracle",param);
-
-            if(seqcnt == 0){
-                sqlSession.update("com.dhn.client.create.mapper.SendRequest.createSequence_oracle", param);
-            }
-            sqlSession.update("com.dhn.client.create.mapper.SendRequest.createTable_oracle", param);
-            sqlSession.update("com.dhn.client.create.mapper.SendRequest.createIndex1_oracle", param);
-            sqlSession.update("com.dhn.client.create.mapper.SendRequest.createIndex2_oracle", param);
-            sqlSession.update("com.dhn.client.create.mapper.SendRequest.createIndex3_oracle", param);
-        }else if(param.getDatabase().equals("mysql") || param.getDatabase().equals("mariadb")){
-            sqlSession.update("com.dhn.client.create.mapper.SendRequest.createTable_mysql", param);
-        }
+        sqlSession.update("com.dhn.client.create.mapper.SendRequest.tableCreate", param);
     }
 
     @Override
@@ -54,29 +42,28 @@ public class CreateDAOimpl implements CreateDAO {
         String logTableNext = param.getLog_table()+"_"+nextMonth;
 
         Map<String, String> map = new HashMap<>();
-        map.put("msgTable", param.getMsg_table());
-        map.put("database", param.getDatabase());
+        map.put("msg_table", param.getMsg_table());
 
-        map.put("logTable",logTableLast);
+        map.put("log_table",logTableLast);
         int result_last = sqlSession.selectOne("com.dhn.client.create.mapper.SendRequest.logTableCheck", map);
         if(result_last == 0){
-            sqlSession.update("com.dhn.client.create.mapper.SendRequest.createLogTable", map);
-            log.info("{} 테이블 생성",map.get("logTable"));
+            sqlSession.update("com.dhn.client.create.mapper.SendRequest.logTableCreate", map);
+            log.info("{} 테이블 생성",map.get("log_table"));
         }
 
-        map.put("logTable",logTableCurrent);
+        map.put("log_table",logTableCurrent);
         int result_current = sqlSession.selectOne("com.dhn.client.create.mapper.SendRequest.logTableCheck", map);
         if(result_current == 0){
-            sqlSession.update("com.dhn.client.create.mapper.SendRequest.createLogTable", map);
-            log.info("{} 테이블 생성",map.get("logTable"));
+            sqlSession.update("com.dhn.client.create.mapper.SendRequest.logTableCreate", map);
+            log.info("{} 테이블 생성",map.get("log_table"));
 
         }
 
-        map.put("logTable",logTableNext);
+        map.put("log_table",logTableNext);
         int result_next = sqlSession.selectOne("com.dhn.client.create.mapper.SendRequest.logTableCheck", map);
         if(result_next == 0){
-            sqlSession.update("com.dhn.client.create.mapper.SendRequest.createLogTable", map);
-            log.info("{} 테이블 생성",map.get("logTable"));
+            sqlSession.update("com.dhn.client.create.mapper.SendRequest.logTableCreate", map);
+            log.info("{} 테이블 생성",map.get("log_table"));
 
         }
     }

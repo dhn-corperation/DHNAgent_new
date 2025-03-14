@@ -44,4 +44,5 @@ public class CreateTable implements ApplicationListener<ContextRefreshedEvent> {
             log.error(param.getLog_table() + " 테이블 생성 오류 : " + e.getMessage());
         }
     }
+
 }
