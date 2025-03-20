@@ -70,11 +70,6 @@ public class SendService {
     }
 
     @Async("kaoTaskExecutor") // 비동기 처리
-    @Retryable(
-            value = {Exception.class}, // 재시도할 예외 유형
-            maxAttempts = 3, // 최대 시도 횟수
-            backoff = @Backoff(delay = 2000) // 재시도 간의 대기 시간 (밀리초)
-    )
     public void KAOSendAsync(List<KAORequestBean> _list, SQLParameter paramCopy, String group_no) throws Exception {
         if (activeKAOThreads.incrementAndGet() <= MAX_THREADS) {
             boolean apiCalled = false;
@@ -123,12 +118,6 @@ public class SendService {
                         if (response.getStatusCode() == HttpStatus.OK) { // 데이터 정상적으로 전달
                             kaoRequestService.updateKAOSendComplete(paramCopy);
                             log.info("KAO 메세지 전송 완료 : " + response.getStatusCode() + " / " + group_no + " / " + _list.size() + " 건");
-                        } else if(response.getStatusCode() == HttpStatus.BAD_REQUEST){ // 데이터 전달 시 데이터 손상 즉, json 깨질떄
-                            kaoRequestService.updateKAOSendInit(paramCopy);
-                            log.info("({}) KAO 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
-                        } else if(response.getStatusCode() == HttpStatus.NOT_ACCEPTABLE){ // 허가되지않은 계정 & IP
-                            kaoRequestService.updateKAOAuthFail(paramCopy);
-                            log.info("({}) KAO 허가되지않은 사용자 입니다. : {}",res.get("userid"), res.get("message"));
                         }else { // API 전송 실패시
                             log.info("({}) KAO 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
                             kaoRequestService.updateKAOSendInit(paramCopy);
@@ -160,11 +149,6 @@ public class SendService {
 
 
     @Async("smsTaskExecutor")
-    @Retryable(
-            value = {Exception.class}, // 재시도할 예외 유형
-            maxAttempts = 3, // 최대 시도 횟수
-            backoff = @Backoff(delay = 2000) // 재시도 간의 대기 시간 (밀리초)
-    )
     public void SMSSendAsync(List<RequestBean> _list, SQLParameter paramCopy, String group_no) throws Exception {
         if (activeSMSThreads.incrementAndGet() <= MAX_THREADS) {
             boolean apiCalled = false;
@@ -211,12 +195,6 @@ public class SendService {
                         {
                             msgRequestService.updateSMSSendComplete(paramCopy);
                             log.info("SMS 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
-                        } else if(response.getStatusCode() == HttpStatus.BAD_REQUEST){
-                            msgRequestService.updateSMSSendInit(paramCopy);
-                            log.info("({}) SMS 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
-                        } else if(response.getStatusCode() == HttpStatus.NOT_ACCEPTABLE){ // 허가되지않은 계정 & IP
-                            msgRequestService.updateMSGAuthFail(paramCopy);
-                            log.info("({}) KAO 허가되지않은 사용자 입니다. : {}",res.get("userid"), res.get("message"));
                         } else {
                             log.info("({}) SMS 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
                             msgRequestService.updateSMSSendInit(paramCopy);
@@ -247,11 +225,6 @@ public class SendService {
     }
 
     @Async("lmsTaskExecutor")
-    @Retryable(
-            value = {Exception.class}, // 재시도할 예외 유형
-            maxAttempts = 3, // 최대 시도 횟수
-            backoff = @Backoff(delay = 2000) // 재시도 간의 대기 시간 (밀리초)
-    )
     public void LMSSendAsync(List<RequestBean> _list, SQLParameter paramCopy, String group_no) throws Exception {
         if (activeLMSThreads.incrementAndGet() <= MAX_THREADS) {
             boolean apiCalled = false;
@@ -299,12 +272,6 @@ public class SendService {
                         {
                             msgRequestService.updateSMSSendComplete(paramCopy);
                             log.info("LMS 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
-                        } else if(response.getStatusCode() == HttpStatus.BAD_REQUEST){
-                            msgRequestService.updateSMSSendInit(paramCopy);
-                            log.info("({}) LMS 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
-                        } else if(response.getStatusCode() == HttpStatus.NOT_ACCEPTABLE){ // 허가되지않은 계정 & IP
-                            msgRequestService.updateMSGAuthFail(paramCopy);
-                            log.info("({}) KAO 허가되지않은 사용자 입니다. : {}",res.get("userid"), res.get("message"));
                         } else {
                             log.info("({}) LMS 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
                             msgRequestService.updateSMSSendInit(paramCopy);
@@ -335,11 +302,6 @@ public class SendService {
     }
 
     @Async("mmsTaskExecutor")
-    @Retryable(
-            value = {Exception.class}, // 재시도할 예외 유형
-            maxAttempts = 3, // 최대 시도 횟수
-            backoff = @Backoff(delay = 2000) // 재시도 간의 대기 시간 (밀리초)
-    )
     public void MMSSendAsync(List<RequestBean> _list, SQLParameter paramCopy, String group_no) throws Exception {
         if (activeMMSThreads.incrementAndGet() <= MAX_THREADS) {
             boolean apiCalled = false;
@@ -389,12 +351,6 @@ public class SendService {
                         {
                             msgRequestService.updateSMSSendComplete(paramCopy);
                             log.info("MMS 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
-                        } else if(response.getStatusCode() == HttpStatus.BAD_REQUEST){
-                            msgRequestService.updateSMSSendInit(paramCopy);
-                            log.info("({}) MMS 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
-                        } else if(response.getStatusCode() == HttpStatus.NOT_ACCEPTABLE){ // 허가되지않은 계정 & IP
-                            msgRequestService.updateMSGAuthFail(paramCopy);
-                            log.info("({}) KAO 허가되지않은 사용자 입니다. : {}",res.get("userid"), res.get("message"));
                         } else {
                             log.info("({}) MMS 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
                             msgRequestService.updateSMSSendInit(paramCopy);
@@ -425,11 +381,6 @@ public class SendService {
     }
 
     @Async("ftTaskExecutor") // 비동기 처리
-    @Retryable(
-            value = {Exception.class}, // 재시도할 예외 유형
-            maxAttempts = 3, // 최대 시도 횟수
-            backoff = @Backoff(delay = 2000) // 재시도 간의 대기 시간 (밀리초)
-    )
     public void FTSendAsync(List<KAORequestBean> _list, SQLParameter paramCopy, String group_no) throws Exception {
         if (activeFTThreads.incrementAndGet() <= MAX_THREADS) {
             boolean apiCalled = false;
@@ -476,13 +427,7 @@ public class SendService {
                         if (response.getStatusCode() == HttpStatus.OK) { // 데이터 정상적으로 전달
                             kaoRequestService.updateKAOSendComplete(paramCopy);
                             log.info("FT 메세지 전송 완료 : " + response.getStatusCode() + " / " + group_no + " / " + _list.size() + " 건");
-                        } else if(response.getStatusCode() == HttpStatus.BAD_REQUEST){ // 데이터 전달 시 데이터 손상 즉, json 깨질떄
-                            kaoRequestService.updateKAOSendInit(paramCopy);
-                            log.info("({}) FT 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
-                        } else if(response.getStatusCode() == HttpStatus.NOT_ACCEPTABLE){ // 허가되지않은 계정 & IP
-                            kaoRequestService.updateKAOAuthFail(paramCopy);
-                            log.info("({}) FT 허가되지않은 사용자 입니다. : {}",res.get("userid"), res.get("message"));
-                        }else { // API 전송 실패시
+                        } else { // API 전송 실패시
                             log.info("({}) FT 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
                             kaoRequestService.updateKAOSendInit(paramCopy);
                         }
