@@ -174,6 +174,7 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
 
                                 param.setFt_image_code(res.get("code"));
                                 param.setMsgid(ftimage.getMsgid());
+                                param.setImg_err_msg(res.get("message"));
 
                                 if(param.getFt_image_code().equals("0000")){
                                     log.info("친구톡 이미지 URL : "+res.get("image"));
@@ -196,6 +197,7 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
                                 if(param.getFt_image_code().equals("error")){
                                     param.setFt_image_code("9999");
                                 }
+                                param.setImg_err_msg("KAKAO 통신 오류");
                                 kaoRequestService.updateFTImageFail(param);
                             }
 

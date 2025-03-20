@@ -57,7 +57,8 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 		param.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database"));
 		param.setSequence(appContext.getEnvironment().getProperty("dhnclient.msg_seq"));
 		log_table = appContext.getEnvironment().getProperty("dhnclient.log_table");
-		param.setMsg_type("M");
+		param.setMsg_type("PH");
+		param.setSms_kind("M");
 		
 
 		dhnServer = appContext.getEnvironment().getProperty("dhnclient.server");

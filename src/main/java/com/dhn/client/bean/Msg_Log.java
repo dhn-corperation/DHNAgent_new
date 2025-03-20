@@ -9,6 +9,7 @@ public class Msg_Log {
 	private String msgid;
 	private String code;
 	private String s_code;
+	private String result_message;
 	private String result_dt;
 	private String telecom;
 	private String status;

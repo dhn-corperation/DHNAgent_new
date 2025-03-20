@@ -18,6 +18,7 @@ public class SQLParameter {
 	private String msg_use;
 	private String group_no;
 	private String msg_type;
+	private String sms_kind;
 	private String log_mv_flag;
 	private String bktable;
 	private String dist_proc_option;
@@ -31,5 +32,6 @@ public class SQLParameter {
 	private String mms_key;
 	private String msg_image_code;
 	private String msgid;
+	private String img_err_msg;
 
 }

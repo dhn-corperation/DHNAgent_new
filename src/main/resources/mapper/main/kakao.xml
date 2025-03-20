@@ -82,7 +82,8 @@
                     TITLE as title,
                     HEADER as header,
                     LINK AS link,
-                    ATTACHMENTS as attachments
+                    ATTACHMENTS as attachments,
+                    REAL_SEND_FLAG as realsendflag
                 FROM ${msg_table}
                 WHERE STATUS = '1'
                     AND SEND_GROUP = #{group_no}
@@ -115,7 +116,8 @@
                     TITLE as title,
                     HEADER as header,
                     LINK AS link,
-                    ATTACHMENTS as attachments
+                    ATTACHMENTS as attachments,
+                    REAL_SEND_FLAG as realsendflag
                 FROM ${msg_table}
                 WHERE STATUS = '1'
                     AND SEND_GROUP = #{group_no}
@@ -216,6 +218,7 @@
                     RESULT_DT = '${result_dt}',
                     RESULT = '${s_code}',
                     RESULT_MSG = '${code}',
+                    RESULT_MESSAGE = #{result_message},
                     TELCOINFO = '${telecom}',
                     REAL_MESSAGE_TYPE = '${real_send_type}'
                 WHERE MSG_ID = '${msgid}'
@@ -226,6 +229,7 @@
                     RESULT_DT = '${result_dt}',
                     RESULT = '${s_code}',
                     RESULT_MSG = '${code}',
+                    RESULT_MESSAGE = #{result_message},
                     TELCOINFO = '${telecom}',
                     REAL_MESSAGE_TYPE = '${real_send_type}'
                 WHERE MSG_ID = '${msgid}'
@@ -524,14 +528,16 @@
             <when test="database == 'oracle'">
                 UPDATE ${msg_table}
                 SET RESULT = #{ft_image_code},
-                    STATUS = 'F'
+                    STATUS = 'F',
+                    RESULT_MESSAGE = #{img_err_msg}
                 WHERE MSG_ID = #{msgid}
                     AND MESSAGE_TYPE = #{msg_type}
             </when>
             <when test="database == 'mysql'">
                 UPDATE ${msg_table}
                 SET RESULT = #{ft_image_code},
-                    STATUS = 'F'
+                    STATUS = 'F',
+                    RESULT_MESSAGE = #{img_err_msg}
                 WHERE MSG_ID = #{msgid}
                     AND MESSAGE_TYPE = #{msg_type}
             </when>

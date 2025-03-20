@@ -152,6 +152,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 
 				kao_ml.setResult_dt(ent.getString("res_dt"));
 				kao_ml.setS_code(ent.getString("s_code"));
+				kao_ml.setResult_message(ent.getString("message"));
 
 				if(ent.getString("s_code").equals("0000")){
 					kao_ml.setStatus("3");
@@ -170,6 +171,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 				kao_ml.setCode(ent.getString("code"));
 				kao_ml.setTelecom(ent.getString("remark1"));
 				kao_ml.setResult_dt(ent.getString("remark2"));
+				kao_ml.setResult_message(ent.getString("message"));
 
 				if(ent.getString("code").equals("0000")){
 					kao_ml.setStatus("3");
@@ -189,6 +191,8 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 				msg_ml.setReal_send_type(ent.getString("sms_kind"));
 				msg_ml.setTelecom(ent.getString("remark1"));
 				msg_ml.setResult_dt(ent.getString("remark2"));
+				kao_ml.setResult_message(ent.getString("message"));
+
 				if(ent.getString("code").equals("0000")){
 					msg_ml.setStatus("3");
 				}else{

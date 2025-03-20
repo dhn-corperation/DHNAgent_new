@@ -56,10 +56,10 @@
            "BUTTON4" VARCHAR2(300 CHAR) DEFAULT NULL,
            "BUTTON5" VARCHAR2(300 CHAR) DEFAULT NULL,
            "TMPL_ID" VARCHAR2(100 CHAR) DEFAULT NULL,
-           "PROFILE" VARCHAR2(40 CHAR) NOT NULL,
+           "PROFILE" VARCHAR2(40 CHAR) DEFAULT NULL,
            "TITLE" VARCHAR2(50 CHAR) DEFAULT NULL,
            "HEADER" VARCHAR2(50 CHAR) DEFAULT NULL,
-           "AD_FLAG" VARCHAR2(1 CHAR) DEFAULT NULL,
+           "AD_FLAG" VARCHAR2(1 CHAR) DEFAULT 'N',
            "FI_IMAGE_PATH" VARCHAR2(200 CHAR) DEFAULT NULL,
            "IMAGE_LINK" VARCHAR2(200 CHAR) DEFAULT NULL,
            "IMAGE_URL" VARCHAR2(200 CHAR) DEFAULT NULL,
@@ -76,6 +76,7 @@
            "SEND_GROUP" VARCHAR2(50 CHAR) DEFAULT NULL,
            "RESULT" VARCHAR2(5 CHAR) DEFAULT NULL,
            "RESULT_MSG" VARCHAR2(5 CHAR) DEFAULT NULL,
+           "RESULT_MESSAGE" VARCHAR(2000 CHAR) DEFAULT NULL,
            "TELCOINFO" VARCHAR2(5 CHAR) DEFAULT NULL,
            "REAL_MESSAGE_TYPE" VARCHAR2(4 CHAR) DEFAULT NULL,
            "REAL_SEND_FLAG" VARCHAR2(4 CHAR) DEFAULT NULL,
@@ -90,15 +91,15 @@
 
     <!-- 인덱스 생성 SQL -->
     <update id="createIndex1_oracle" parameterType="com.dhn.client.bean.SQLParameter">
-        CREATE INDEX "${msg_table}_SEND_GROUP_IDX" ON "${msg_table}" ("SEND_GROUP", "MESSAGE_TYPE", "RESERVE_DT")
+        CREATE INDEX "${msg_table}_IDX1" ON "${msg_table}" ("SEND_GROUP", "MESSAGE_TYPE","SMS_KIND", "RESERVE_DT")
     </update>
 
     <update id="createIndex2_oracle" parameterType="com.dhn.client.bean.SQLParameter">
-        CREATE INDEX "${msg_table}_STATUS_IDX" ON "${msg_table}" ("STATUS", "SEND_GROUP", "MESSAGE_TYPE")
+        CREATE INDEX "${msg_table}_IDX2" ON "${msg_table}" ("STATUS", "SEND_GROUP", "MESSAGE_TYPE")
     </update>
 
     <update id="createIndex3_oracle" parameterType="com.dhn.client.bean.SQLParameter">
-        CREATE INDEX "${msg_table}_MSG_ID_IDX" ON "${msg_table}" ("MSG_ID")
+        CREATE INDEX "${msg_table}_MSGID_IDX" ON "${msg_table}" ("MSG_ID")
     </update>
 
     <update id="createTable_mysql" parameterType="com.dhn.client.bean.SQLParameter">
@@ -121,10 +122,10 @@
            `BUTTON4` varchar(300) DEFAULT NULL,
            `BUTTON5` varchar(300) DEFAULT NULL,
            `TMPL_ID` varchar(100) DEFAULT NULL,
-           `PROFILE` varchar(40) NOT NULL,
+           `PROFILE` varchar(40) DEFAULT NULL,
            `TITLE` varchar(50) DEFAULT NULL,
            `HEADER` varchar(50) DEFAULT NULL,
-           `AD_FLAG` varchar(1) DEFAULT NULL,
+           `AD_FLAG` varchar(1) DEFAULT 'N',
            `FI_IMAGE_PATH` varchar(200) DEFAULT NULL,
            `IMAGE_LINK` varchar(200) DEFAULT NULL,
            `IMAGE_URL` varchar(200) DEFAULT NULL,
@@ -141,6 +142,7 @@
            `SEND_GROUP` varchar(50) DEFAULT NULL,
            `RESULT` varchar(5) DEFAULT NULL,
            `RESULT_MSG` varchar(5) DEFAULT NULL,
+           `RESULT_MESSAGE` varchar(2000) DEFAULT NULL,
            `TELCOINFO` varchar(5) DEFAULT NULL,
            `REAL_MESSAGE_TYPE` varchar(4) DEFAULT NULL,
            `REAL_SEND_FLAG` varchar(4) DEFAULT NULL,
@@ -150,9 +152,9 @@
            `ETC4` varchar(100) DEFAULT NULL,
            `ETC5` varchar(100) DEFAULT NULL,
            PRIMARY KEY (`id`),
-           KEY `${msg_table}_send_group_IDX` (`SEND_GROUP`,`MESSAGE_TYPE`,`RESERVE_DT`) USING BTREE,
-           KEY `${msg_table}_status_IDX` (`STATUS`,`SEND_GROUP`,`MESSAGE_TYPE`) USING BTREE,
-           KEY `${msg_table}_msgid_IDX` (`MSG_ID`) USING BTREE
+           KEY `${msg_table}_IDX1` (`SEND_GROUP`,`MESSAGE_TYPE`,`SMS_KIND`,`RESERVE_DT`) USING BTREE,
+           KEY `${msg_table}_IDX2` (`STATUS`,`SEND_GROUP`,`MESSAGE_TYPE`) USING BTREE,
+           KEY `${msg_table}_MSGID_IDX` (`MSG_ID`) USING BTREE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
     </update>
 
