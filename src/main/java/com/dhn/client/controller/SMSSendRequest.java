@@ -3,20 +3,24 @@ package com.dhn.client.controller;
 import com.dhn.client.bean.RequestBean;
 import com.dhn.client.bean.SQLParameter;
 import com.dhn.client.service.MSGRequestService;
-import com.dhn.client.service.SendService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
+import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 @Component
 @Slf4j
@@ -35,9 +39,6 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	
 	@Autowired
 	private ApplicationContext appContext;
-
-	@Autowired
-	private SendService sendService;
 
 	@Autowired
 	private ScheduledAnnotationBeanPostProcessor posts;
@@ -64,7 +65,7 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 
 	@Scheduled(fixedDelay = 100)
 	private void SendProcess() {
-		if(isStart && !isProc && sendService.getActiveSMSThreads() < SendService.MAX_THREADS) {
+		if(isStart && !isProc) {
 			isProc = true;
 			
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
@@ -81,8 +82,33 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 						
 						List<RequestBean> _list = msgRequestService.selectSMSRequests(param);
 
-						SQLParameter paramCopy = param.toBuilder().build();
-						sendService.SMSSendAsync(_list, paramCopy, group_no);
+						StringWriter sw = new StringWriter();
+						ObjectMapper om = new ObjectMapper();
+						om.writeValue(sw, _list);
+
+						HttpHeaders header = new HttpHeaders();
+
+						header.setContentType(MediaType.APPLICATION_JSON);
+						header.set("userid", userid);
+
+						RestTemplate rt = new RestTemplate();
+						HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
+
+						try {
+							ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
+							Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
+							if(response.getStatusCode() ==  HttpStatus.OK)
+							{
+								msgRequestService.updateSMSSendComplete(param);
+								log.info("SMS 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
+							} else {
+								log.info("({}) SMS 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
+								msgRequestService.updateSMSSendInit(param);
+							}
+						}catch (Exception e) {
+							log.error("SMS 메세지 전송 오류 : " + e.toString());
+							msgRequestService.updateSMSSendInit(param);
+						}
 					}
 				}catch (Exception e) {
 					log.error("SMS 메세지 전송 오류 : " + e.toString());
@@ -90,8 +116,6 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 				preGroupNo = group_no;
 			}
 			isProc = false;
-		}else if (sendService.getActiveSMSThreads() >= SendService.MAX_THREADS) {
-			//log.info("SMS 스케줄러: 최대 활성화된 쓰레드 수에 도달했습니다. 다음 주기에 다시 시도합니다.");
 		}
 	}
 

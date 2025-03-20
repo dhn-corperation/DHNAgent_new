@@ -4,16 +4,12 @@ import com.dhn.client.bean.ImageBean;
 import com.dhn.client.bean.KAORequestBean;
 import com.dhn.client.bean.SQLParameter;
 import com.dhn.client.service.KAORequestService;
-import com.dhn.client.service.KAOService;
-import com.dhn.client.service.SendService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.core.annotation.Order;
 import org.springframework.http.*;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -24,7 +20,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
-import java.io.IOException;
+import java.io.StringWriter;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -48,13 +44,7 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
     private KAORequestService kaoRequestService;
 
     @Autowired
-    private KAOService kaoService;
-
-    @Autowired
     private ApplicationContext appContext;
-
-    @Autowired
-    private SendService sendService;
 
     @Autowired
     private ScheduledAnnotationBeanPostProcessor posts;
@@ -82,7 +72,7 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
 
     @Scheduled(fixedDelay = 100)
     public void SendProcess() {
-        if(isStart && !isProc && sendService.getActiveFTThreads() < SendService.MAX_THREADS) {
+        if(isStart && !isProc) {
             isProc = true;
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
@@ -99,9 +89,33 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
                         kaoRequestService.updateFTGroupNo(param);
                         List<KAORequestBean> _list = kaoRequestService.selectFTRequests(param);
 
-                        SQLParameter paramCopy = param.toBuilder().build();
+                        StringWriter sw = new StringWriter();
+                        ObjectMapper om = new ObjectMapper();
+                        om.writeValue(sw, _list); // List를 Json화 하여 문자열 저장
 
-                        sendService.FTSendAsync(_list, paramCopy, group_no);
+                        HttpHeaders header = new HttpHeaders();
+
+                        header.setContentType(MediaType.APPLICATION_JSON);
+                        header.set("userid", userid);
+
+                        RestTemplate rt = new RestTemplate();
+                        HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
+
+                        try {
+                            ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
+                            Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
+                            log.info(res.toString());
+                            if (response.getStatusCode() == HttpStatus.OK) { // 데이터 정상적으로 전달
+                                kaoRequestService.updateKAOSendComplete(param);
+                                log.info("FT 메세지 전송 완료 : " + response.getStatusCode() + " / " + group_no + " / " + _list.size() + " 건");
+                            } else { // API 전송 실패시
+                                log.info("({}) FT 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
+                                kaoRequestService.updateKAOSendInit(param);
+                            }
+                        } catch (Exception e) {
+                            log.error("KAO 메세지 전송 오류 : " + e.toString());
+                            kaoRequestService.updateKAOSendInit(param);
+                        }
 
                     }
 
@@ -111,8 +125,6 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
                 preGroupNo = group_no;
             }
             isProc = false;
-        } else if (sendService.getActiveFTThreads() >= SendService.MAX_THREADS) {
-            //log.info("KAO 스케줄러: 최대 활성화된 쓰레드 수에 도달했습니다. 다음 주기에 다시 시도합니다.");
         }
     }
 
