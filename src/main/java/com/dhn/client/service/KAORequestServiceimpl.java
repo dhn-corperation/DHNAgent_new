@@ -8,7 +8,6 @@ import com.dhn.client.dao.KAORequestDAO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
@@ -46,17 +45,6 @@ public class KAORequestServiceimpl implements KAORequestService{
     }
 
     @Override
-    public void updateKAOAuthFail(SQLParameter param) throws Exception {
-        kaoRequestDAO.updateKAOAuthFail(param);
-    }
-
-    @Override
-    public void kaoJsonErrMessage(SQLParameter param, List<String> jsonErrMsgid) throws Exception {
-        kaoRequestDAO.kaoJsonErrMessage(param, jsonErrMsgid);
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
     public void kaoResultInsert(Msg_Log ml) throws Exception {
         kaoRequestDAO.kaoResultInsert(ml);
     }
@@ -72,7 +60,6 @@ public class KAORequestServiceimpl implements KAORequestService{
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void log_move(SQLParameter param) throws Exception {
         kaoRequestDAO.log_move(param);
     }
@@ -108,7 +95,6 @@ public class KAORequestServiceimpl implements KAORequestService{
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void updateFTImageFail(SQLParameter param) throws Exception {
         kaoRequestDAO.updateFTImageFail(param);
     }

@@ -23,6 +23,7 @@ public class MSGLogMove implements ApplicationListener<ContextRefreshedEvent> {
     private boolean isProc = false;
     private SQLParameter param = new SQLParameter();
     private String preGroupNo = "";
+    private String log_table;
 
     @Autowired
     private MSGRequestService msgRequestService;
@@ -33,8 +34,8 @@ public class MSGLogMove implements ApplicationListener<ContextRefreshedEvent> {
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
-        param.setLog_table(appContext.getEnvironment().getProperty("dhnclient.log_table"));
         param.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database"));
+        log_table = appContext.getEnvironment().getProperty("dhnclient.log_table");
         if(appContext.getEnvironment().getProperty("dhnclient.msg_use").equalsIgnoreCase("Y")){
             isStart = true;
         }
@@ -47,7 +48,7 @@ public class MSGLogMove implements ApplicationListener<ContextRefreshedEvent> {
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
             LocalDateTime now = LocalDateTime.now();
-            String group_no = "9" + now.format(formatter);
+            String group_no = "M9" + now.format(formatter);
 
             if(!group_no.equals(preGroupNo)){
                 try {
@@ -58,7 +59,7 @@ public class MSGLogMove implements ApplicationListener<ContextRefreshedEvent> {
                         DateTimeFormatter log_formatter = DateTimeFormatter.ofPattern("yyyyMM");
                         String currentMonth = logdate.format(log_formatter);
 
-                        param.setLog_table(param.getLog_table()+"_"+currentMonth);
+                        param.setLog_table(log_table+"_"+currentMonth);
 
                         param.setGroup_no(group_no);
 

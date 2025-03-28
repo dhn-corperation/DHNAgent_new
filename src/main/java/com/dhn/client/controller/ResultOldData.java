@@ -1,7 +1,8 @@
 package com.dhn.client.controller;
 
 import com.dhn.client.bean.SQLParameter;
-import com.dhn.client.service.KAORequestService;
+import com.dhn.client.service.MSGRequestService;
+import com.dhn.client.service.OldDataService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -16,7 +17,7 @@ import java.time.format.DateTimeFormatter;
 
 @Component
 @Slf4j
-public class KAOLogMove implements ApplicationListener<ContextRefreshedEvent> {
+public class ResultOldData implements ApplicationListener<ContextRefreshedEvent> {
 
     public static boolean isStart = false;
     private boolean isProc = false;
@@ -25,7 +26,7 @@ public class KAOLogMove implements ApplicationListener<ContextRefreshedEvent> {
     private String log_table;
 
     @Autowired
-    private KAORequestService kaoRequestService;
+    private OldDataService oldDataService;
 
     @Autowired
     private ApplicationContext appContext;
@@ -35,43 +36,38 @@ public class KAOLogMove implements ApplicationListener<ContextRefreshedEvent> {
         param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
         param.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database"));
         log_table = appContext.getEnvironment().getProperty("dhnclient.log_table");
-        if(appContext.getEnvironment().getProperty("dhnclient.kakao_use").equalsIgnoreCase("Y")){
-            isStart = true;
-        }
+
+        param.setTime("4");
+
+        isStart = true;
     }
 
-    @Scheduled(fixedDelay = 2000)
+    @Scheduled(fixedDelay = 60000)
     private void LogRemove() {
         if(isStart && !isProc) {
             isProc = true;
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
             LocalDateTime now = LocalDateTime.now();
-            String group_no = "K9" + now.format(formatter);
+            String group_no = "8" + now.format(formatter);
 
             if(!group_no.equals(preGroupNo)){
                 try {
-                    int cnt = kaoRequestService.log_move_count(param);
+                    int cnt = oldDataService.old_data_count(param);
                     if(cnt > 0){
-
                         LocalDate logdate = LocalDate.now();
                         DateTimeFormatter log_formatter = DateTimeFormatter.ofPattern("yyyyMM");
                         String currentMonth = logdate.format(log_formatter);
-
                         param.setLog_table(log_table+"_"+currentMonth);
-
                         param.setGroup_no(group_no);
 
-                        kaoRequestService.update_log_move_groupNo(param);
+                        oldDataService.old_data_group_update(param);
+                        oldDataService.old_data_result(param);
 
-                        kaoRequestService.log_move(param);
-
-                        log.info("Log 테이블 이동 그룹 : {}",param.getGroup_no());
-                    }else{
-                        Thread.sleep(5000);
+                        log.info("과거데이터 결과처리 [ {} ]",param.getGroup_no());
                     }
                 }catch (Exception e){
-                    log.error("Log 테이블로 이동중 오류 발생 : " + e.toString());
+                    log.error("과거데이터 결과처리 오류 발생 : " + e.toString());
                 }
 
                 preGroupNo = group_no;
@@ -79,5 +75,4 @@ public class KAOLogMove implements ApplicationListener<ContextRefreshedEvent> {
             isProc = false;
         }
     }
-
 }

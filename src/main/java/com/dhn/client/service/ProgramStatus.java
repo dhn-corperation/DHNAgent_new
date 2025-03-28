@@ -31,6 +31,7 @@ public class ProgramStatus implements CommandLineRunner, ApplicationListener<Con
         KAOLogMove.isStart = false;
         MSGLogMove.isStart = false;
         ResultReq.isStart = false;
+        ResultOldData.isStart = false;
         LogTableCreate.isStart = false;
 
         log.info("프로그램 종료 처리 중.....");

@@ -19,10 +19,6 @@ public interface MSGRequestService {
 
     public void updateSMSSendInit(SQLParameter param) throws Exception;
 
-    public void updateMSGAuthFail(SQLParameter param) throws Exception;
-
-    public void jsonErrMessage(SQLParameter param, List<String> jsonErrMsgid) throws Exception;
-
     public void msgResultInsert(Msg_Log ml) throws Exception;
 
     public int log_move_count(SQLParameter param) throws Exception;

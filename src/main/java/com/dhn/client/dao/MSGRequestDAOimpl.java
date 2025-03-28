@@ -48,19 +48,6 @@ public class MSGRequestDAOimpl implements MSGRequestDAO{
     }
 
     @Override
-    public void updateMSGAuthFail(SQLParameter param) throws Exception {
-        sqlSession.update("com.dhn.client.msg.mapper.SendRequest.msg_auth_fail",param);
-    }
-
-    @Override
-    public void jsonErrMessage(SQLParameter param, List<String> jsonErrMsgid) throws Exception {
-        Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put("param", param);
-        paramMap.put("jsonErrMsgid", jsonErrMsgid);
-        sqlSession.update("com.dhn.client.msg.mapper.SendRequest.msg_json_err_message",paramMap);
-    }
-
-    @Override
     public void msgResultInsert(Msg_Log ml) throws Exception {
         sqlSession.update("com.dhn.client.msg.mapper.SendRequest.msgResultUpdate", ml);
         sqlSession.update("com.dhn.client.msg.mapper.SendRequest.msgLogInsert", ml);

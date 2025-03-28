@@ -8,8 +8,7 @@
                 SELECT count(1) AS cnt
                 FROM ${msg_table}
                 WHERE STATUS = '0'
-                    AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
-                    AND RESPONSE_DT IS NULL
+                    AND RESERVE_DT &lt;= SYSDATE
                     AND MESSAGE_TYPE = #{msg_type}
                     AND SMS_KIND = #{sms_kind}
                     AND SEND_GROUP IS NULL
@@ -18,8 +17,7 @@
                 SELECT count(1) AS cnt
                 FROM ${msg_table}
                 WHERE STATUS = '0'
-                    AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'))
-                    AND RESPONSE_DT IS NULL
+                    AND RESERVE_DT &lt;= NOW()
                     AND MESSAGE_TYPE = #{msg_type}
                     AND SMS_KIND = #{sms_kind}
                     AND SEND_GROUP IS NULL
@@ -34,8 +32,7 @@
                 SET STATUS = '1',
                     SEND_GROUP = #{group_no}
                 WHERE STATUS = '0'
-                    AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
-                    AND RESPONSE_DT IS NULL
+                    AND RESERVE_DT &lt;= SYSDATE
                     AND MESSAGE_TYPE = #{msg_type}
                     AND SMS_KIND = #{sms_kind}
                     AND SEND_GROUP IS NULL
@@ -46,8 +43,7 @@
                 SET STATUS = '1',
                     SEND_GROUP = #{group_no}
                 WHERE STATUS = '0'
-                    AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'))
-                    AND RESPONSE_DT IS NULL
+                    AND RESERVE_DT &lt;= NOW()
                     AND MESSAGE_TYPE = #{msg_type}
                     AND SMS_KIND = #{sms_kind}
                     AND SEND_GROUP IS NULL
@@ -69,13 +65,10 @@
                     SMS_SENDER AS smssender,
                     SMSLMS_TIT AS smslmstit,
                     SMS_KIND AS smskind,
-                    TO_CHAR(REG_DT, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
-                    NVL(RESERVE_DT, '00000000000000') AS reservedt
+                    TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
+                    '00000000000000' AS reservedt
                 from ${msg_table}
-                where STATUS = '1'
-                  and SEND_GROUP = #{group_no}
-                  and MESSAGE_TYPE = #{msg_type}
-                  and SMS_KIND = #{sms_kind}
+                where SEND_GROUP = #{group_no}
             </when>
             <when test="database == 'mysql'">
                 SELECT
@@ -88,13 +81,10 @@
                     SMS_SENDER AS smssender,
                     SMSLMS_TIT AS smslmstit,
                     SMS_KIND AS smskind,
-                    DATE_FORMAT(REG_DT, '%Y-%m-%d %H:%i:%s') AS regdt,
-                    IFNULL(RESERVE_DT, '00000000000000') AS reservedt
+                    DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s') AS regdt,
+                    '00000000000000' AS reservedt
                 from ${msg_table}
-                where STATUS = '1'
-                    and SEND_GROUP = #{group_no}
-                    and MESSAGE_TYPE = #{msg_type}
-                    and SMS_KIND = #{sms_kind}
+                where SEND_GROUP = #{group_no}
             </when>
         </choose>
     </select>
@@ -103,21 +93,15 @@
         <choose>
             <when test="database == 'oracle'">
                 UPDATE ${msg_table}
-                SET STATUS = '2',
-                RESPONSE_DT = CURRENT_TIMESTAMP
-                WHERE STATUS = '1'
-                AND SEND_GROUP = #{group_no}
-                AND MESSAGE_TYPE = #{msg_type}
-                AND SMS_KIND = #{sms_kind}
+                    SET STATUS = '2',
+                    RESPONSE_DT = CURRENT_TIMESTAMP
+                WHERE SEND_GROUP = #{group_no}
             </when>
             <when test="database == 'mysql'">
                 UPDATE ${msg_table}
-                SET STATUS = '2',
-                RESPONSE_DT = CURRENT_TIMESTAMP
-                WHERE STATUS = '1'
-                AND SEND_GROUP = #{group_no}
-                AND MESSAGE_TYPE = #{msg_type}
-                AND SMS_KIND = #{sms_kind}
+                    SET STATUS = '2',
+                    RESPONSE_DT = CURRENT_TIMESTAMP
+                WHERE SEND_GROUP = #{group_no}
             </when>
         </choose>
     </update>
@@ -129,58 +113,14 @@
                 SET STATUS = '0',
                     SEND_GROUP = NULL,
                     RESPONSE_DT = NULL
-                WHERE STATUS = '1'
-                    AND SEND_GROUP = #{group_no}
+                WHERE SEND_GROUP = #{group_no}
             </when>
             <when test="database == 'mysql'">
                 UPDATE ${msg_table}
                 SET STATUS = '0',
                     SEND_GROUP = NULL,
                     RESPONSE_DT = NULL
-                WHERE STATUS = '1'
-                    AND SEND_GROUP = #{group_no}
-            </when>
-        </choose>
-    </update>
-
-    <update id="msg_auth_fail" parameterType = "com.dhn.client.bean.SQLParameter" >
-        <choose>
-            <when test="database == 'oracle'">
-                UPDATE ${msg_table}
-                SET STATUS = '7',
-                    SEND_GROUP = NULL,
-                    RESPONSE_DT = NULL
-                WHERE STATUS = '1'
-                    AND SEND_GROUP = #{group_no}
-            </when>
-            <when test="database == 'mysql'">
-                UPDATE ${msg_table}
-                SET STATUS = '7',
-                    SEND_GROUP = NULL,
-                    RESPONSE_DT = NULL
-                WHERE STATUS = '1'
-                    AND SEND_GROUP = #{group_no}
-            </when>
-        </choose>
-    </update>
-
-    <update id="msg_json_err_message" parameterType="map">
-        <choose>
-            <when test="param.database == 'oracle'">
-                UPDATE ${param.msg_table}
-                SET STATUS = '8'
-                WHERE MSG_ID IN
-                <foreach item="msgid" collection="jsonErrMsgid" open="(" separator="," close=")">
-                    #{msgid}
-                </foreach>
-            </when>
-            <when test="database == 'mysql'">
-                UPDATE ${param.msg_table}
-                SET STATUS = '8'
-                WHERE MSG_ID IN
-                <foreach item="msgid" collection="jsonErrMsgid" open="(" separator="," close=")">
-                    #{msgid}
-                </foreach>
+                WHERE SEND_GROUP = #{group_no}
             </when>
         </choose>
     </update>
@@ -192,7 +132,7 @@
                 SET STATUS = '${status}',
                     RESULT_DT = '${result_dt}',
                     RESULT_MSG = '${code}',
-                    RESULT_MESSAGE = #{result_message},
+                    RESULT_MESSAGE = '${result_message}',
                     TELCOINFO = '${telecom}',
                     REAL_MESSAGE_TYPE = '${real_send_type}'
                 WHERE MSG_ID = '${msgid}'
@@ -202,7 +142,7 @@
                 SET STATUS = '${status}',
                     RESULT_DT = '${result_dt}',
                     RESULT_MSG = '${code}',
-                    RESULT_MESSAGE = #{result_message},
+                    RESULT_MESSAGE = '${result_message}',
                     TELCOINFO = '${telecom}',
                     REAL_MESSAGE_TYPE = '${real_send_type}'
                 WHERE MSG_ID = '${msgid}'
@@ -305,8 +245,7 @@
                 SELECT count(1) AS cnt
                 FROM ${msg_table}
                 WHERE STATUS = '0'
-                    AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
-                    AND RESPONSE_DT IS NULL
+                    AND RESERVE_DT &lt;= SYSDATE
                     AND MESSAGE_TYPE = #{msg_type}
                     AND SMS_KIND = #{sms_kind}
                     AND SEND_GROUP IS NULL
@@ -315,8 +254,7 @@
                 SELECT count(1) AS cnt
                 FROM ${msg_table}
                 WHERE STATUS = '0'
-                    AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'))
-                    AND RESPONSE_DT IS NULL
+                    AND RESERVE_DT &lt;= NOW()
                     AND MESSAGE_TYPE = #{msg_type}
                     AND SMS_KIND = #{sms_kind}
                     AND SEND_GROUP IS NULL
@@ -331,8 +269,7 @@
                     SET STATUS = '1',
                     SEND_GROUP = #{group_no}
                 WHERE STATUS = '0'
-                    AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
-                    AND RESPONSE_DT IS NULL
+                    AND RESERVE_DT &lt;= SYSDATE
                     AND MESSAGE_TYPE = #{msg_type}
                     AND SMS_KIND = #{sms_kind}
                     AND SEND_GROUP IS NULL
@@ -343,8 +280,7 @@
                     SET STATUS = '1',
                     SEND_GROUP = #{group_no}
                 WHERE STATUS = '0'
-                    AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'))
-                    AND RESPONSE_DT IS NULL
+                    AND RESERVE_DT &lt;= NOW()
                     AND MESSAGE_TYPE = #{msg_type}
                     AND SMS_KIND = #{sms_kind}
                     AND SEND_GROUP IS NULL
@@ -366,13 +302,10 @@
                     SMS_SENDER AS smssender,
                     SMSLMS_TIT AS smslmstit,
                     'L' AS smskind,
-                    TO_CHAR(REG_DT, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
-                    NVL(RESERVE_DT, '00000000000000') AS reservedt
+                    TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
+                    '00000000000000' AS reservedt
                 from ${msg_table}
-                where STATUS = '1'
-                    and SEND_GROUP = #{group_no}
-                    AND MESSAGE_TYPE = #{msg_type}
-                    AND SMS_KIND = #{sms_kind}
+                where SEND_GROUP = #{group_no}
             </when>
             <when test="database == 'mysql'">
                 SELECT
@@ -385,13 +318,10 @@
                     SMS_SENDER AS smssender,
                     SMSLMS_TIT AS smslmstit,
                     'L' AS smskind,
-                    DATE_FORMAT(REG_DT, '%Y-%m-%d %H:%i:%s') AS regdt,
-                    IFNULL(RESERVE_DT, '00000000000000') AS reservedt
+                    DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s') AS regdt,
+                    '00000000000000' AS reservedt
                 from ${msg_table}
-                where STATUS = '1'
-                    and SEND_GROUP = #{group_no}
-                    AND MESSAGE_TYPE = #{msg_type}
-                    AND SMS_KIND = #{sms_kind}
+                where SEND_GROUP = #{group_no}
             </when>
         </choose>
     </select>
@@ -402,8 +332,7 @@
                 SELECT count(1) AS cnt
                 FROM ${msg_table}
                 WHERE STATUS = '0'
-                    AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
-                    AND RESPONSE_DT IS NULL
+                    AND RESERVE_DT &lt;= SYSDATE
                     AND MESSAGE_TYPE = #{msg_type}
                     AND SMS_KIND = #{sms_kind}
                     AND SEND_GROUP IS NULL
@@ -413,8 +342,7 @@
                 SELECT count(1) AS cnt
                 FROM ${msg_table}
                 WHERE STATUS = '0'
-                    AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'))
-                    AND RESPONSE_DT IS NULL
+                    AND RESERVE_DT &lt;= NOW()
                     AND MESSAGE_TYPE = #{msg_type}
                     AND SMS_KIND = #{sms_kind}
                     AND SEND_GROUP IS NULL
@@ -430,8 +358,7 @@
                     SET STATUS = '1',
                     SEND_GROUP = #{group_no}
                 WHERE STATUS = '0'
-                    AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
-                    AND RESPONSE_DT IS NULL
+                    AND RESERVE_DT &lt;= SYSDATE
                     AND MESSAGE_TYPE = #{msg_type}
                     AND SMS_KIND = #{sms_kind}
                     AND SEND_GROUP IS NULL
@@ -443,8 +370,7 @@
                     SET STATUS = '1',
                     SEND_GROUP = #{group_no}
                 WHERE STATUS = '0'
-                    AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'))
-                    AND RESPONSE_DT IS NULL
+                    AND RESERVE_DT &lt;= NOW()
                     AND MESSAGE_TYPE = #{msg_type}
                     AND SMS_KIND = #{sms_kind}
                     AND SEND_GROUP IS NULL
@@ -468,13 +394,10 @@
                     SMSLMS_TIT AS smslmstit,
                     'M' AS smskind,
                     MMS_IMAGE_KEY AS mmsimageid,
-                    TO_CHAR(REG_DT, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
-                    NVL(RESERVE_DT, '00000000000000') AS reservedt
+                    TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
+                    '00000000000000' AS reservedt
                 from ${msg_table}
-                where STATUS = '1'
-                    and SEND_GROUP = #{group_no}
-                    AND MESSAGE_TYPE = #{msg_type}
-                    AND SMS_KIND = #{sms_kind}
+                where SEND_GROUP = #{group_no}
             </when>
             <when test="database == 'mysql'">
                 SELECT
@@ -488,13 +411,10 @@
                     SMSLMS_TIT AS smslmstit,
                     'M' AS smskind,
                     MMS_IMAGE_KEY AS mmsimageid,
-                    DATE_FORMAT(REG_DT, '%Y-%m-%d %H:%i:%s') AS regdt,
-                    IFNULL(RESERVE_DT, '00000000000000') AS reservedt
+                    DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s') AS regdt,
+                    '00000000000000' AS reservedt
                 from ${msg_table}
-                where STATUS = '1'
-                    and SEND_GROUP = #{group_no}
-                    AND MESSAGE_TYPE = #{msg_type}
-                    AND SMS_KIND = #{sms_kind}
+                where SEND_GROUP = #{group_no}
             </when>
         </choose>
     </select>
@@ -505,25 +425,21 @@
                 SELECT count(1) AS cnt
                 FROM ${msg_table}
                 WHERE STATUS = '0'
-                    AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
-                    AND MMS_IMAGE_KEY IS NULL
-                    AND RESPONSE_DT IS NULL
+                    AND RESERVE_DT &lt;= SYSDATE
                     AND MESSAGE_TYPE = #{msg_type}
                     AND SMS_KIND = #{sms_kind}
                     AND SEND_GROUP IS NULL
-                    AND (MMS_IMAGE1 IS NOT NULL or MMS_IMAGE2 IS NOT NULL or MMS_IMAGE3 IS NOT NULL)
+                    AND MMS_IMAGE_KEY IS NULL
             </when>
             <when test="database == 'mysql'">
                 SELECT count(1) AS cnt
                 FROM ${msg_table}
                 WHERE STATUS = '0'
-                    AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'))
-                    AND MMS_IMAGE_KEY IS NULL
-                    AND RESPONSE_DT IS NULL
+                    AND RESERVE_DT &lt;= NOW()
                     AND MESSAGE_TYPE = #{msg_type}
                     AND SMS_KIND = #{sms_kind}
                     AND SEND_GROUP IS NULL
-                    AND (MMS_IMAGE1 IS NOT NULL or MMS_IMAGE2 IS NOT NULL or MMS_IMAGE3 IS NOT NULL)
+                    AND MMS_IMAGE_KEY IS NULL
             </when>
         </choose>
     </select>
@@ -538,13 +454,11 @@
                     MMS_IMAGE3 AS file3
                 FROM ${msg_table}
                 WHERE STATUS = '0'
-                    AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
-                    AND MMS_IMAGE_KEY IS NULL
-                    AND RESPONSE_DT IS NULL
+                    AND RESERVE_DT &lt;= SYSDATE
                     AND MESSAGE_TYPE = #{msg_type}
                     AND SMS_KIND = #{sms_kind}
                     AND SEND_GROUP IS NULL
-                    AND (MMS_IMAGE1 IS NOT NULL or MMS_IMAGE2 IS NOT NULL or MMS_IMAGE3 IS NOT NULL)
+                    AND MMS_IMAGE_KEY IS NULL
             </when>
             <when test="database == 'mysql'">
                 SELECT
@@ -554,13 +468,11 @@
                     MMS_IMAGE3 AS file3
                 FROM ${msg_table}
                 WHERE STATUS = '0'
-                    AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'))
-                    AND MMS_IMAGE_KEY IS NULL
-                    AND RESPONSE_DT IS NULL
+                    AND RESERVE_DT &lt;= NOW()
                     AND MESSAGE_TYPE = #{msg_type}
                     AND SMS_KIND = #{sms_kind}
                     AND SEND_GROUP IS NULL
-                    AND (MMS_IMAGE1 IS NOT NULL or MMS_IMAGE2 IS NOT NULL or MMS_IMAGE3 IS NOT NULL)
+                    AND MMS_IMAGE_KEY IS NULL
             </when>
         </choose>
     </select>
@@ -584,13 +496,17 @@
         <choose>
             <when test="database == 'oracle'">
                 UPDATE ${msg_table}
-                SET RESULT = #{msg_image_code},
+                SET RESULT = '${msg_image_code}',
+                    RESULT_MESSAGE = '이미지 등록 실패',
+                    RESULT_DT = TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS'),
                     STATUS = 'F'
                 WHERE MSG_ID = #{msgid}
             </when>
             <when test="database == 'mysql'">
                 UPDATE ${msg_table}
-                SET RESULT = #{msg_image_code},
+                SET RESULT = '${msg_image_code}',
+                    RESULT_MESSAGE = '이미지 등록 실패',
+                    RESULT_DT = NOW(),
                     STATUS = 'F'
                 WHERE MSG_ID = #{msgid}
             </when>

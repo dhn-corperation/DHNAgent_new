@@ -143,6 +143,8 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
 			String currentMonth = now.format(formatter);
 
+			String result_message = ent.getString("message").isEmpty()?"":ent.getString("message");
+
 			if(ent.getString("message_type").equalsIgnoreCase("AT") || ent.getString("message_type").equalsIgnoreCase("AI") || ent.getString("message_type").equalsIgnoreCase("FI") || ent.getString("message_type").equalsIgnoreCase("FT")){
 				// 알림톡
 				kao_ml.setMsgid(ent.getString("msgid"));
@@ -152,7 +154,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 
 				kao_ml.setResult_dt(ent.getString("res_dt"));
 				kao_ml.setS_code(ent.getString("s_code"));
-				kao_ml.setResult_message(ent.getString("message"));
+				kao_ml.setResult_message(result_message.equalsIgnoreCase("")?"":result_message);
 
 				if(ent.getString("s_code").equals("0000")){
 					kao_ml.setStatus("3");
@@ -171,7 +173,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 				kao_ml.setCode(ent.getString("code"));
 				kao_ml.setTelecom(ent.getString("remark1"));
 				kao_ml.setResult_dt(ent.getString("remark2"));
-				kao_ml.setResult_message(ent.getString("message"));
+				kao_ml.setResult_message(result_message.equalsIgnoreCase("")?"":result_message);
 
 				if(ent.getString("code").equals("0000")){
 					kao_ml.setStatus("3");
@@ -191,7 +193,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 				msg_ml.setReal_send_type(ent.getString("sms_kind"));
 				msg_ml.setTelecom(ent.getString("remark1"));
 				msg_ml.setResult_dt(ent.getString("remark2"));
-				kao_ml.setResult_message(ent.getString("message"));
+				kao_ml.setResult_message(result_message.equalsIgnoreCase("")?"":result_message);
 
 				if(ent.getString("code").equals("0000")){
 					msg_ml.setStatus("3");

@@ -51,19 +51,6 @@ public class KAORequestDAOimpl implements KAORequestDAO{
     }
 
     @Override
-    public void updateKAOAuthFail(SQLParameter param) throws Exception {
-        sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.kao_auth_fail", param);
-    }
-
-    @Override
-    public void kaoJsonErrMessage(SQLParameter param, List<String> jsonErrMsgid) {
-        Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put("param", param);
-        paramMap.put("jsonErrMsgid", jsonErrMsgid);
-        sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.kao_json_err_message",paramMap);
-    }
-
-    @Override
     public void kaoResultInsert(Msg_Log ml) throws Exception {
         sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.kaoResultUpdate", ml);
         sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.kaoLogInsert", ml);

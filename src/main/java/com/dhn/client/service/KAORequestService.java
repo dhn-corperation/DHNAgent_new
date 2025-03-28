@@ -19,9 +19,6 @@ public interface KAORequestService {
 
     public void updateKAOSendInit(SQLParameter param) throws Exception;
 
-    public void updateKAOAuthFail(SQLParameter param) throws Exception;
-
-    public void kaoJsonErrMessage(SQLParameter param, List<String> jsonErrMsgid) throws Exception;
 
     public void kaoResultInsert(Msg_Log ml) throws Exception;
 

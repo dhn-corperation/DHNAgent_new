@@ -100,7 +100,7 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 						ObjectMapper om = new ObjectMapper();
 						om.writeValue(sw, _list);
 
-						log.info(sw.toString());
+//						log.info(sw.toString());
 
 						HttpHeaders header = new HttpHeaders();
 
@@ -178,12 +178,12 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 
 						RestTemplate restTemplate = new RestTemplate();
 
+						LocalDate now = LocalDate.now();
+						DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
+						String currentMonth = now.format(formatter);
+
 						try{
 							ResponseEntity<String> response = restTemplate.exchange(dhnServer + "mms/image", HttpMethod.POST, requestEntity, String.class);
-
-							LocalDate now = LocalDate.now();
-							DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
-							String currentMonth = now.format(formatter);
 
 							if (response.getStatusCode() == HttpStatus.OK) {
 								String responseBody = response.getBody();
@@ -209,6 +209,9 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 							}
 						}catch (Exception e){
 							log.error("MMS Image Key 등록 오류 : ", e.getMessage());
+							param.setLog_table(log_table + "_" + currentMonth);
+							param.setMsg_image_code("9999");
+							msgRequestService.updateMMSImageFail(param);
 						}
 					}
 
