@@ -83,10 +83,14 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 
 				if(!group_no.equals(preGroupNo)) {
 					try{
-						param.setGroup_no(group_no);
-						msgRequestService.updateLMSGroupNo(param);
+						int cnt = msgRequestService.selectLMSReqeustCount(param);
 
-						executorService.submit(() -> APIProcess(group_no));
+						if(cnt > 0) {
+							param.setGroup_no(group_no);
+							msgRequestService.updateLMSGroupNo(param);
+
+							executorService.submit(() -> APIProcess(group_no));
+						}
 
 					}catch (Exception e){
 						log.error("LMS 메세지 전송 오류 : " + e.toString());
