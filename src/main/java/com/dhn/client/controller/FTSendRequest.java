@@ -205,7 +205,7 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
             sendParam.setMsg_type(param.getMsg_type());
 
 
-            List<KAORequestBean> _list = kaoRequestService.selectFTRequests(param);
+            List<KAORequestBean> _list = kaoRequestService.selectFTRequests(sendParam);
 
             StringWriter sw = new StringWriter();
             ObjectMapper om = new ObjectMapper();
@@ -224,15 +224,15 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
                 Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
                 log.info(res.toString());
                 if (response.getStatusCode() == HttpStatus.OK) { // 데이터 정상적으로 전달
-                    kaoRequestService.updateKAOSendComplete(param);
+                    kaoRequestService.updateKAOSendComplete(sendParam);
                     log.info("FT 메세지 전송 완료 : " + response.getStatusCode() + " / " + group_no + " / " + _list.size() + " 건");
                 } else { // API 전송 실패시
                     log.info("({}) FT 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
-                    kaoRequestService.updateKAOSendInit(param);
+                    kaoRequestService.updateKAOSendInit(sendParam);
                 }
             } catch (Exception e) {
                 log.error("FT 메세지 전송 오류 : " + e.toString());
-                kaoRequestService.updateKAOSendInit(param);
+                kaoRequestService.updateKAOSendInit(sendParam);
             }
         }catch (Exception e){
             log.error("FT 메세지 전송 오류 : " + e.toString());

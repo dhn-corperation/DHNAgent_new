@@ -20,6 +20,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 @Component
 @Slf4j
@@ -31,6 +34,8 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private String dhnServer;
 	private String userid;
 	private String preGroupNo = "";
+
+	private static final ExecutorService executorService = Executors.newFixedThreadPool(3);
 
 	@Autowired
 	private MSGRequestService msgRequestService;
@@ -67,55 +72,75 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private void SendProcess() {
 		if(isStart && !isProc) {
 			isProc = true;
-			
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
-			LocalDateTime now = LocalDateTime.now();
-			String group_no = "L" + now.format(formatter);
-			
-			if(!group_no.equals(preGroupNo)) {
-				try {
-					int cnt = msgRequestService.selectLMSReqeustCount(param);
-					
-					if(cnt > 0) {
+
+			ThreadPoolExecutor poolExecutor = (ThreadPoolExecutor) executorService;
+			int activeThreads = poolExecutor.getActiveCount();
+
+			if(activeThreads < 5){
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
+				LocalDateTime now = LocalDateTime.now();
+				String group_no = "L" + now.format(formatter);
+
+				if(!group_no.equals(preGroupNo)) {
+					try{
 						param.setGroup_no(group_no);
 						msgRequestService.updateLMSGroupNo(param);
 
-						List<RequestBean> _list = msgRequestService.selectLMSRequests(param);
+						executorService.submit(() -> APIProcess(group_no));
 
-						StringWriter sw = new StringWriter();
-						ObjectMapper om = new ObjectMapper();
-						om.writeValue(sw, _list);
-
-						HttpHeaders header = new HttpHeaders();
-
-						header.setContentType(MediaType.APPLICATION_JSON);
-						header.set("userid", userid);
-
-						RestTemplate rt = new RestTemplate();
-						HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
-
-						try {
-							ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
-							Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-							if(response.getStatusCode() ==  HttpStatus.OK)
-							{
-								msgRequestService.updateSMSSendComplete(param);
-								log.info("LMS 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
-							} else {
-								log.info("({}) LMS 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
-								msgRequestService.updateSMSSendInit(param);
-							}
-						}catch (Exception e) {
-							log.error("LMS 메세지 전송 오류 : " + e.toString());
-							msgRequestService.updateSMSSendInit(param);
-						}
+					}catch (Exception e){
+						log.error("LMS 메세지 전송 오류 : " + e.toString());
 					}
-				} catch (Exception e) {
-					log.error("LMS 메세지 전송 오류 : " + e.toString());
+
+					preGroupNo = group_no;
 				}
-				preGroupNo = group_no;
 			}
 			isProc = false;
+		}
+	}
+
+	private void APIProcess(String group_no) {
+		try {
+
+			SQLParameter sendParam = new SQLParameter();
+			sendParam.setGroup_no(group_no);
+			sendParam.setMsg_table(param.getMsg_table());
+			sendParam.setDatabase(param.getDatabase());
+			sendParam.setSequence(param.getSequence());
+			sendParam.setMsg_type(param.getMsg_type());
+			sendParam.setSms_kind(param.getSms_kind());
+
+			List<RequestBean> _list = msgRequestService.selectLMSRequests(sendParam);
+
+			StringWriter sw = new StringWriter();
+			ObjectMapper om = new ObjectMapper();
+			om.writeValue(sw, _list);
+
+			HttpHeaders header = new HttpHeaders();
+
+			header.setContentType(MediaType.APPLICATION_JSON);
+			header.set("userid", userid);
+
+			RestTemplate rt = new RestTemplate();
+			HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
+
+			try {
+				ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
+				Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
+				if(response.getStatusCode() ==  HttpStatus.OK)
+				{
+					msgRequestService.updateSMSSendComplete(sendParam);
+					log.info("LMS 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
+				} else {
+					log.info("({}) LMS 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
+					msgRequestService.updateSMSSendInit(sendParam);
+				}
+			}catch (Exception e) {
+				log.error("LMS 메세지 전송 오류 : " + e.toString());
+				msgRequestService.updateSMSSendInit(sendParam);
+			}
+		}catch (Exception e){
+			log.error("LMS 메세지 전송 오류 : " + e.toString());
 		}
 	}
 
