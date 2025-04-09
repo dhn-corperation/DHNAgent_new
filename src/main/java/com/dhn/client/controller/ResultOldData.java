@@ -49,7 +49,7 @@ public class ResultOldData implements ApplicationListener<ContextRefreshedEvent>
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
             LocalDateTime now = LocalDateTime.now();
-            String group_no = "8" + now.format(formatter);
+            String group_no = "OD" + now.format(formatter);
 
             if(!group_no.equals(preGroupNo)){
                 try {

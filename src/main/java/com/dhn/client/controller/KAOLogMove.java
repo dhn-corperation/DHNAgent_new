@@ -47,7 +47,7 @@ public class KAOLogMove implements ApplicationListener<ContextRefreshedEvent> {
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
             LocalDateTime now = LocalDateTime.now();
-            String group_no = "K9" + now.format(formatter);
+            String group_no = "KV" + now.format(formatter);
 
             if(!group_no.equals(preGroupNo)){
                 try {

@@ -71,7 +71,7 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 			
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
 			LocalDateTime now = LocalDateTime.now();
-			String group_no = "2" + now.format(formatter);
+			String group_no = "S" + now.format(formatter);
 			
 			if(!group_no.equals(preGroupNo)) {
 				try {

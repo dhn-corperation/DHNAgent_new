@@ -70,7 +70,7 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 			
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
 			LocalDateTime now = LocalDateTime.now();
-			String group_no = "3" + now.format(formatter);
+			String group_no = "L" + now.format(formatter);
 			
 			if(!group_no.equals(preGroupNo)) {
 				try {

@@ -26,6 +26,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 @Component
 @Slf4j
@@ -39,6 +42,8 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
     private String preGroupNo = "";
     private String basepath = "";
     private String log_table;
+
+    private static final ExecutorService executorService = Executors.newFixedThreadPool(3);
 
     @Autowired
     private KAORequestService kaoRequestService;
@@ -75,54 +80,30 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
         if(isStart && !isProc) {
             isProc = true;
 
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
-            LocalDateTime now = LocalDateTime.now();
-            String group_no = "5" + now.format(formatter);
+            ThreadPoolExecutor poolExecutor = (ThreadPoolExecutor) executorService;
+            int activeThreads = poolExecutor.getActiveCount();
 
-            if(!group_no.equals(preGroupNo)) {
+            if(activeThreads < 3){
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
+                LocalDateTime now = LocalDateTime.now();
+                String group_no = "F" + now.format(formatter);
 
-                try {
-                    int cnt = kaoRequestService.selectFTRequestCount(param);
+                if(!group_no.equals(preGroupNo)) {
+                    try {
+                        int cnt = kaoRequestService.selectFTRequestCount(param);
 
-                    if(cnt > 0) {
-                        param.setGroup_no(group_no);
-                        kaoRequestService.updateFTGroupNo(param);
-                        List<KAORequestBean> _list = kaoRequestService.selectFTRequests(param);
+                        if(cnt > 0){
+                            param.setGroup_no(group_no);
+                            kaoRequestService.updateFTGroupNo(param);
 
-                        StringWriter sw = new StringWriter();
-                        ObjectMapper om = new ObjectMapper();
-                        om.writeValue(sw, _list); // List를 Json화 하여 문자열 저장
-
-                        HttpHeaders header = new HttpHeaders();
-
-                        header.setContentType(MediaType.APPLICATION_JSON);
-                        header.set("userid", userid);
-
-                        RestTemplate rt = new RestTemplate();
-                        HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
-
-                        try {
-                            ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
-                            Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-                            log.info(res.toString());
-                            if (response.getStatusCode() == HttpStatus.OK) { // 데이터 정상적으로 전달
-                                kaoRequestService.updateKAOSendComplete(param);
-                                log.info("FT 메세지 전송 완료 : " + response.getStatusCode() + " / " + group_no + " / " + _list.size() + " 건");
-                            } else { // API 전송 실패시
-                                log.info("({}) FT 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
-                                kaoRequestService.updateKAOSendInit(param);
-                            }
-                        } catch (Exception e) {
-                            log.error("KAO 메세지 전송 오류 : " + e.toString());
-                            kaoRequestService.updateKAOSendInit(param);
+                            executorService.submit(() -> APIProcess(group_no));
                         }
 
+                    }catch (Exception e){
+                        log.error("FT 메세지 전송 오류 : " + e.toString());
                     }
-
-                }catch (Exception e) {
-                    log.error("FT 메세지 전송 오류 : " + e.toString());
+                    preGroupNo = group_no;
                 }
-                preGroupNo = group_no;
             }
             isProc = false;
         }
@@ -212,5 +193,49 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
             }
         }
         isProcImg = false;
+    }
+
+    private void APIProcess(String group_no) {
+        try{
+            SQLParameter sendParam = new SQLParameter();
+            sendParam.setGroup_no(group_no);
+            sendParam.setMsg_table(param.getMsg_table());
+            sendParam.setDatabase(param.getDatabase());
+            sendParam.setSequence(param.getSequence());
+            sendParam.setMsg_type(param.getMsg_type());
+
+
+            List<KAORequestBean> _list = kaoRequestService.selectFTRequests(param);
+
+            StringWriter sw = new StringWriter();
+            ObjectMapper om = new ObjectMapper();
+            om.writeValue(sw, _list); // List를 Json화 하여 문자열 저장
+
+            HttpHeaders header = new HttpHeaders();
+
+            header.setContentType(MediaType.APPLICATION_JSON);
+            header.set("userid", userid);
+
+            RestTemplate rt = new RestTemplate();
+            HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
+
+            try {
+                ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
+                Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
+                log.info(res.toString());
+                if (response.getStatusCode() == HttpStatus.OK) { // 데이터 정상적으로 전달
+                    kaoRequestService.updateKAOSendComplete(param);
+                    log.info("FT 메세지 전송 완료 : " + response.getStatusCode() + " / " + group_no + " / " + _list.size() + " 건");
+                } else { // API 전송 실패시
+                    log.info("({}) FT 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
+                    kaoRequestService.updateKAOSendInit(param);
+                }
+            } catch (Exception e) {
+                log.error("FT 메세지 전송 오류 : " + e.toString());
+                kaoRequestService.updateKAOSendInit(param);
+            }
+        }catch (Exception e){
+            log.error("FT 메세지 전송 오류 : " + e.toString());
+        }
     }
 }

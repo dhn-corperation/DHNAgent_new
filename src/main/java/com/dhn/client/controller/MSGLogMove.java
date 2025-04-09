@@ -48,7 +48,7 @@ public class MSGLogMove implements ApplicationListener<ContextRefreshedEvent> {
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
             LocalDateTime now = LocalDateTime.now();
-            String group_no = "M9" + now.format(formatter);
+            String group_no = "MV" + now.format(formatter);
 
             if(!group_no.equals(preGroupNo)){
                 try {

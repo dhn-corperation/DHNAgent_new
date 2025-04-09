@@ -82,7 +82,7 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 			
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
 			LocalDateTime now = LocalDateTime.now();
-			String group_no = "4" + now.format(formatter);
+			String group_no = "M" + now.format(formatter);
 			
 			if(!group_no.equals(preGroupNo)) {
 				
