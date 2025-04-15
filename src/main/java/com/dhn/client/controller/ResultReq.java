@@ -106,9 +106,11 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 							log.error("결과 수신 오류 : (data) 필드가 없습니다.");
 						}
 					} else {
+						log.info("결과 수신 오류 (Http Err) : " + response.getStatusCode());
 					}
 				} catch(Exception ex) {
-					log.error("결과 수신 오류 : " + ex.toString());
+					log.info("결과 수신 오류 (response Err): " + ex.toString());
+					Thread.sleep(10000);
 				}
 				
 			}catch (Exception e) {
