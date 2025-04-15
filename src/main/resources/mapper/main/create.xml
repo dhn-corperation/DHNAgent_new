@@ -8,7 +8,7 @@
             <!-- oracle용 테이블 존재 여부 확인 -->
             <when test="database == 'oracle'">
                 SELECT COUNT(1)
-                FROM ALL_TABLES
+                FROM USER_TABLES
                 WHERE TABLE_NAME = UPPER(#{msg_table})
             </when>
 
@@ -24,12 +24,12 @@
 
     <select id="seqCheck_oracle" parameterType="com.dhn.client.bean.SQLParameter" resultType="int">
         SELECT COUNT(1)
-        FROM ALL_SEQUENCES
-        WHERE SEQUENCE_NAME = '${sequence}'
+        FROM USER_SEQUENCES
+        WHERE SEQUENCE_NAME = UPPER(#{sequence})
     </select>
 
     <update id="createSequence_oracle" parameterType="com.dhn.client.bean.SQLParameter">
-        CREATE SEQUENCE '${sequence}'
+        CREATE SEQUENCE ${sequence}
             START WITH 1
             INCREMENT BY 1
             NOCACHE
