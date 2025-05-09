@@ -39,7 +39,7 @@
     <update id="createTable_oracle" parameterType="com.dhn.client.bean.SQLParameter">
         CREATE TABLE "${msg_table}" (
            "ID" NUMBER,
-           "MSG_ID" VARCHAR2(40 CHAR) NOT NULL,
+           "MSG_ID" VARCHAR2(20 CHAR) NOT NULL,
            "MESSAGE_TYPE" VARCHAR2(4 CHAR) NOT NULL,
            "MESSAGE" VARCHAR2(4000 CHAR) NOT NULL,
            "STATUS" VARCHAR2(1 CHAR) DEFAULT '0',
@@ -112,7 +112,7 @@
     <update id="createTable_mysql" parameterType="com.dhn.client.bean.SQLParameter">
         CREATE TABLE `${msg_table}` (
            `ID` bigint(20) NOT NULL AUTO_INCREMENT,
-           `MSG_ID` varchar(40) NOT NULL,
+           `MSG_ID` varchar(20) NOT NULL,
            `MESSAGE_TYPE` varchar(4) NOT NULL,
            `MESSAGE` varchar(4000) DEFAULT NULL,
            `STATUS` varchar(1) DEFAULT '0',

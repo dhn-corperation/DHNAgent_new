@@ -135,7 +135,7 @@
                     RESULT_MESSAGE = '${result_message}',
                     TELCOINFO = '${telecom}',
                     REAL_MESSAGE_TYPE = '${real_send_type}'
-                WHERE MSG_ID = '${msgid}'
+                WHERE MSG_ID = #{msgid}
             </when>
             <when test="database == 'mysql'">
                 UPDATE ${msg_table}
@@ -145,7 +145,7 @@
                     RESULT_MESSAGE = '${result_message}',
                     TELCOINFO = '${telecom}',
                     REAL_MESSAGE_TYPE = '${real_send_type}'
-                WHERE MSG_ID = '${msgid}'
+                WHERE MSG_ID = #{msgid}
             </when>
         </choose>
     </update>
