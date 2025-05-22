@@ -35,7 +35,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private String userid;
 	private String preGroupNo = "";
 
-	private static final ExecutorService executorService = Executors.newFixedThreadPool(5);
+	private static final ExecutorService executorService = Executors.newFixedThreadPool(4);
 
     @Autowired
 	private KAORequestService kaoRequestService;
@@ -74,7 +74,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 			ThreadPoolExecutor poolExecutor = (ThreadPoolExecutor) executorService;
 			int activeThreads = poolExecutor.getActiveCount();
 
-			if(activeThreads < 5){
+			if(activeThreads < 4){
 				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
 				LocalDateTime now = LocalDateTime.now();
 				String group_no = "K" + now.format(formatter);
