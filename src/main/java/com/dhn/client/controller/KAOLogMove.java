@@ -35,7 +35,7 @@ public class KAOLogMove implements ApplicationListener<ContextRefreshedEvent> {
         param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
         param.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database"));
         param.setLog_back(appContext.getEnvironment().getProperty("dhnclient.log_back"));
-        log_table = appContext.getEnvironment().getProperty("dhnclient.log_table");
+        log_table = appContext.getEnvironment().getProperty("dhnclient.log_table","Y");
         if(appContext.getEnvironment().getProperty("dhnclient.kakao_use").equalsIgnoreCase("Y")){
             isStart = true;
         }

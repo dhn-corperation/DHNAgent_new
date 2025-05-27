@@ -29,7 +29,7 @@ public class CreateTable implements ApplicationListener<ContextRefreshedEvent> {
         param.setLog_table(appContext.getEnvironment().getProperty("dhnclient.log_table"));
         param.setSequence(appContext.getEnvironment().getProperty("dhnclient.msg_seq"));
         param.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database"));
-        param.setLog_back(appContext.getEnvironment().getProperty("dhnclient.log_back"));
+        param.setLog_back(appContext.getEnvironment().getProperty("dhnclient.log_back","Y"));
 
         try{
             createService.tableCheck(param);

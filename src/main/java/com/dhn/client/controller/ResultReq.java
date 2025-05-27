@@ -57,7 +57,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		msg_table = appContext.getEnvironment().getProperty("dhnclient.msg_table");
 		log_table = appContext.getEnvironment().getProperty("dhnclient.log_table");
 		database = appContext.getEnvironment().getProperty("dhnclient.database");
-		log_back = appContext.getEnvironment().getProperty("dhnclient.log_back");
+		log_back = appContext.getEnvironment().getProperty("dhnclient.log_back","Y");
 
 		dhnServer = appContext.getEnvironment().getProperty("dhnclient.server");
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");

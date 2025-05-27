@@ -35,7 +35,7 @@ public class ResultOldData implements ApplicationListener<ContextRefreshedEvent>
     public void onApplicationEvent(ContextRefreshedEvent event) {
         param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
         param.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database"));
-        param.setLog_back(appContext.getEnvironment().getProperty("dhnclient.log_back"));
+        param.setLog_back(appContext.getEnvironment().getProperty("dhnclient.log_back","Y"));
         log_table = appContext.getEnvironment().getProperty("dhnclient.log_table");
 
         param.setTime("4");
