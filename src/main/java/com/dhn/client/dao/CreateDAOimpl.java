@@ -44,42 +44,57 @@ public class CreateDAOimpl implements CreateDAO {
 
     @Override
     public void logTableCheck(SQLParameter param) throws Exception {
-        LocalDate now = LocalDate.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
 
-        String lastMonth = now.minusMonths(1).format(formatter);
-        String currentMonth = now.format(formatter);
-        String nextMonth = now.plusMonths(1).format(formatter);
+        if(param.getLog_back().equalsIgnoreCase("Y")){
+            LocalDate now = LocalDate.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
 
-        String logTableLast = param.getLog_table()+"_"+lastMonth;
-        String logTableCurrent = param.getLog_table()+"_"+currentMonth;
-        String logTableNext = param.getLog_table()+"_"+nextMonth;
+            String lastMonth = now.minusMonths(1).format(formatter);
+            String currentMonth = now.format(formatter);
+            String nextMonth = now.plusMonths(1).format(formatter);
 
-        Map<String, String> map = new HashMap<>();
-        map.put("msgTable", param.getMsg_table());
-        map.put("database", param.getDatabase());
+            String logTableLast = param.getLog_table()+"_"+lastMonth;
+            String logTableCurrent = param.getLog_table()+"_"+currentMonth;
+            String logTableNext = param.getLog_table()+"_"+nextMonth;
 
-        map.put("logTable",logTableLast);
-        int result_last = sqlSession.selectOne("com.dhn.client.create.mapper.SendRequest.logTableCheck", map);
-        if(result_last == 0){
-            sqlSession.update("com.dhn.client.create.mapper.SendRequest.createLogTable", map);
-            log.info("{} 테이블 생성",map.get("logTable"));
-        }
+            Map<String, String> map = new HashMap<>();
+            map.put("msgTable", param.getMsg_table());
+            map.put("database", param.getDatabase());
 
-        map.put("logTable",logTableCurrent);
-        int result_current = sqlSession.selectOne("com.dhn.client.create.mapper.SendRequest.logTableCheck", map);
-        if(result_current == 0){
-            sqlSession.update("com.dhn.client.create.mapper.SendRequest.createLogTable", map);
-            log.info("{} 테이블 생성",map.get("logTable"));
+            map.put("logTable",logTableLast);
+            int result_last = sqlSession.selectOne("com.dhn.client.create.mapper.SendRequest.logTableCheck", map);
+            if(result_last == 0){
+                sqlSession.update("com.dhn.client.create.mapper.SendRequest.createLogTable", map);
+                log.info("{} 테이블 생성",map.get("logTable"));
+            }
 
-        }
+            map.put("logTable",logTableCurrent);
+            int result_current = sqlSession.selectOne("com.dhn.client.create.mapper.SendRequest.logTableCheck", map);
+            if(result_current == 0){
+                sqlSession.update("com.dhn.client.create.mapper.SendRequest.createLogTable", map);
+                log.info("{} 테이블 생성",map.get("logTable"));
 
-        map.put("logTable",logTableNext);
-        int result_next = sqlSession.selectOne("com.dhn.client.create.mapper.SendRequest.logTableCheck", map);
-        if(result_next == 0){
-            sqlSession.update("com.dhn.client.create.mapper.SendRequest.createLogTable", map);
-            log.info("{} 테이블 생성",map.get("logTable"));
+            }
 
+            map.put("logTable",logTableNext);
+            int result_next = sqlSession.selectOne("com.dhn.client.create.mapper.SendRequest.logTableCheck", map);
+            if(result_next == 0){
+                sqlSession.update("com.dhn.client.create.mapper.SendRequest.createLogTable", map);
+                log.info("{} 테이블 생성",map.get("logTable"));
+
+            }
+        }else{
+            Map<String, String> map = new HashMap<>();
+            map.put("msgTable", param.getMsg_table());
+            map.put("database", param.getDatabase());
+            map.put("logTable",param.getLog_table());
+
+            int result_next = sqlSession.selectOne("com.dhn.client.create.mapper.SendRequest.logTableCheck", map);
+            if(result_next == 0){
+                sqlSession.update("com.dhn.client.create.mapper.SendRequest.createLogTable", map);
+                log.info("{} 테이블 생성",map.get("logTable"));
+
+            }
         }
     }
 }

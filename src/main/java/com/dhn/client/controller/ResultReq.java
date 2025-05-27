@@ -39,6 +39,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 	private String msg_table = "";
 	private String log_table = "";
 	private String database = "";
+	private String log_back = "";
 
 	private static final ExecutorService executorService = Executors.newFixedThreadPool(10);
 
@@ -56,6 +57,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		msg_table = appContext.getEnvironment().getProperty("dhnclient.msg_table");
 		log_table = appContext.getEnvironment().getProperty("dhnclient.log_table");
 		database = appContext.getEnvironment().getProperty("dhnclient.database");
+		log_back = appContext.getEnvironment().getProperty("dhnclient.log_back");
 
 		dhnServer = appContext.getEnvironment().getProperty("dhnclient.server");
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
@@ -138,7 +140,11 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 				// 알림톡
 				kao_ml.setMsgid(ent.getString("msgid"));
 				kao_ml.setMsg_table(msg_table);
-				kao_ml.setLog_table(log_table+"_"+currentMonth);
+				if(log_back.equalsIgnoreCase("Y")){
+					kao_ml.setLog_table(log_table+"_"+currentMonth);
+				}else{
+					kao_ml.setLog_table(log_table);
+				}
 				kao_ml.setDatabase(database);
 
 				kao_ml.setResult_dt(ent.getString("res_dt"));
@@ -155,7 +161,11 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 				// 알림톡 실패 문자
 				kao_ml.setMsgid(ent.getString("msgid"));
 				kao_ml.setMsg_table(msg_table);
-				kao_ml.setLog_table(log_table+"_"+currentMonth);
+				if(log_back.equalsIgnoreCase("Y")){
+					kao_ml.setLog_table(log_table+"_"+currentMonth);
+				}else{
+					kao_ml.setLog_table(log_table);
+				}
 				kao_ml.setDatabase(database);
 
 				kao_ml.setS_code(ent.getString("s_code"));
@@ -184,24 +194,28 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 				// 문자
 				msg_ml.setMsgid(ent.getString("msgid"));
 				msg_ml.setMsg_table(msg_table);
-				msg_ml.setLog_table(log_table+"_"+currentMonth);
+				if(log_back.equalsIgnoreCase("Y")){
+					msg_ml.setLog_table(log_table+"_"+currentMonth);
+				}else{
+					msg_ml.setLog_table(log_table);
+				}
 				msg_ml.setDatabase(database);
 
 				msg_ml.setCode(ent.getString("code"));
 				msg_ml.setReal_send_type(ent.getString("sms_kind"));
 
 				if(ent.getString("remark1").equalsIgnoreCase("LGT") || ent.getString("remark1").equals("019")){
-					kao_ml.setTelecom("LGT");
+					msg_ml.setTelecom("LGT");
 				}else if(ent.getString("remark1").equalsIgnoreCase("SKT") || ent.getString("remark1").equals("011")){
-					kao_ml.setTelecom("SKT");
+					msg_ml.setTelecom("SKT");
 				}else if(ent.getString("remark1").equalsIgnoreCase("KTF") || ent.getString("remark1").equalsIgnoreCase("KT") || ent.getString("remark1").equals("016")){
-					kao_ml.setTelecom("KTF");
+					msg_ml.setTelecom("KTF");
 				}else{
-					kao_ml.setTelecom("ETC");
+					msg_ml.setTelecom("ETC");
 				}
 
 				msg_ml.setResult_dt(ent.getString("remark2"));
-				kao_ml.setResult_message(result_message.equalsIgnoreCase("")?"":result_message);
+				msg_ml.setResult_message(result_message.equalsIgnoreCase("")?"":result_message);
 
 				if(ent.getString("code").equals("0000")){
 					msg_ml.setStatus("3");

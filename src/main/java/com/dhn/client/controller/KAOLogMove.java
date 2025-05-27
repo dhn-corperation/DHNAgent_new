@@ -34,6 +34,7 @@ public class KAOLogMove implements ApplicationListener<ContextRefreshedEvent> {
     public void onApplicationEvent(ContextRefreshedEvent event) {
         param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
         param.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database"));
+        param.setLog_back(appContext.getEnvironment().getProperty("dhnclient.log_back"));
         log_table = appContext.getEnvironment().getProperty("dhnclient.log_table");
         if(appContext.getEnvironment().getProperty("dhnclient.kakao_use").equalsIgnoreCase("Y")){
             isStart = true;
@@ -53,12 +54,14 @@ public class KAOLogMove implements ApplicationListener<ContextRefreshedEvent> {
                 try {
                     int cnt = kaoRequestService.log_move_count(param);
                     if(cnt > 0){
-
-                        LocalDate logdate = LocalDate.now();
-                        DateTimeFormatter log_formatter = DateTimeFormatter.ofPattern("yyyyMM");
-                        String currentMonth = logdate.format(log_formatter);
-
-                        param.setLog_table(log_table+"_"+currentMonth);
+                        if(param.getLog_back().equalsIgnoreCase("Y")){
+                            LocalDate logdate = LocalDate.now();
+                            DateTimeFormatter log_formatter = DateTimeFormatter.ofPattern("yyyyMM");
+                            String currentMonth = logdate.format(log_formatter);
+                            param.setLog_table(log_table+"_"+currentMonth);
+                        }else{
+                            param.setLog_table(log_table);
+                        }
 
                         param.setGroup_no(group_no);
 
