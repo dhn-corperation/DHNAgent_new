@@ -61,6 +61,7 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
         param.setKakao_use(appContext.getEnvironment().getProperty("dhnclient.kakao_use"));
         param.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database"));
         param.setSequence(appContext.getEnvironment().getProperty("dhnclient.msg_seq"));
+        param.setLog_back(appContext.getEnvironment().getProperty("dhnclient.log_back","Y"));
         basepath = appContext.getEnvironment().getProperty("dhnclient.file_base_path")==null?"":appContext.getEnvironment().getProperty("dhnclient.file_base_path");
         param.setMsg_type("FT");
 
@@ -166,7 +167,11 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
 
                                     log.error("친구톡 이미지 등록 실패 : "+res.toString());
 
-                                    param.setLog_table(log_table+"_"+currentMonth);
+                                    if(param.getLog_back() != null && param.getLog_back().equalsIgnoreCase("Y")){
+                                        param.setLog_table(log_table + "_" + currentMonth);
+                                    }else{
+                                        param.setLog_table(log_table);
+                                    }
                                     if(param.getFt_image_code().equals("error")){
                                         param.setFt_image_code("9999");
                                     }
@@ -174,7 +179,11 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
                                 }
                             } else {
                                 log.error("친구톡 이미지 등록 실패 통신오류 : "+response.getBody());
-                                param.setLog_table(log_table+"_"+currentMonth);
+                                if(param.getLog_back() != null && param.getLog_back().equalsIgnoreCase("Y")){
+                                    param.setLog_table(log_table + "_" + currentMonth);
+                                }else{
+                                    param.setLog_table(log_table);
+                                }
                                 if(param.getFt_image_code().equals("error")){
                                     param.setFt_image_code("9999");
                                 }

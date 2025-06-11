@@ -61,6 +61,7 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 		param.setMsg_use(appContext.getEnvironment().getProperty("dhnclient.msg_use"));
 		param.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database"));
 		param.setSequence(appContext.getEnvironment().getProperty("dhnclient.msg_seq"));
+		param.setLog_back(appContext.getEnvironment().getProperty("dhnclient.log_back","Y"));
 		log_table = appContext.getEnvironment().getProperty("dhnclient.log_table");
 		param.setMsg_type("PH");
 		param.setSms_kind("M");
@@ -176,19 +177,31 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 									msgRequestService.updateMMSImageGroup(param);
 								} else {
 									log.info("MMS 이미지 등록 실패 : " + res.toString());
-									param.setLog_table(log_table + "_" + currentMonth);
+									if(param.getLog_back() != null && param.getLog_back().equalsIgnoreCase("Y")){
+										param.setLog_table(log_table + "_" + currentMonth);
+									}else{
+										param.setLog_table(log_table);
+									}
 									param.setMsg_image_code("9999");
 									msgRequestService.updateMMSImageFail(param);
 								}
 							} else {
 								log.info("MMS 이미지 등록 실패 : " + response.getBody());
-								param.setLog_table(log_table + "_" + currentMonth);
+								if(param.getLog_back() != null && param.getLog_back().equalsIgnoreCase("Y")){
+									param.setLog_table(log_table + "_" + currentMonth);
+								}else{
+									param.setLog_table(log_table);
+								}
 								param.setMsg_image_code(String.valueOf(response.getStatusCodeValue()));
 								msgRequestService.updateMMSImageFail(param);
 							}
 						}catch (Exception e){
 							log.error("MMS Image Key 등록 오류 : ", e.getMessage());
-							param.setLog_table(log_table + "_" + currentMonth);
+							if(param.getLog_back() != null && param.getLog_back().equalsIgnoreCase("Y")){
+								param.setLog_table(log_table + "_" + currentMonth);
+							}else{
+								param.setLog_table(log_table);
+							}
 							param.setMsg_image_code("9999");
 							msgRequestService.updateMMSImageFail(param);
 						}
