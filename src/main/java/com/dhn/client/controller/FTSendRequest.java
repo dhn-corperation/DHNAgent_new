@@ -124,6 +124,8 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
 
                     for (ImageBean ftimage : ftimages) {
 
+                        param.setMsgid(ftimage.getMsgid());
+
                         // 헤더 설정
                         HttpHeaders headers = new HttpHeaders();
                         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
@@ -155,7 +157,6 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
                                 Map<String, String> res = mapper.readValue(responseBody, Map.class);
 
                                 param.setFt_image_code(res.get("code"));
-                                param.setMsgid(ftimage.getMsgid());
                                 param.setImg_err_msg(res.get("message"));
 
                                 if(param.getFt_image_code().equals("0000")){
