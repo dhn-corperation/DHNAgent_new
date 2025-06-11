@@ -4,91 +4,75 @@
 <mapper namespace="com.dhn.client.msg.mapper.SendRequest">
 
     <select id = "msgSendDataCount" parameterType="com.dhn.client.bean.SQLParameter" resultType="int">
-        SELECT count(ID) AS cnt
+        SELECT count(1) AS cnt
         FROM ${msg_table}
         WHERE STATUS = '0'
-          AND MESSAGE_TYPE = '${msg_type}'
-          AND SMS_KIND = '${sms_kind}'
-          AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'))
+          AND RESERVE_DT &lt;= SYSDATE
+          AND MESSAGE_TYPE = #{msg_type}
+          AND SMS_KIND = #{sms_kind}
           AND SEND_GROUP IS NULL
     </select>
 
     <update id="msgGroupUpdate" parameterType="com.dhn.client.bean.SQLParameter">
         UPDATE ${msg_table}
-        SET SEND_GROUP = '${send_group}',
-            STATUS = '1'
+        SET STATUS = '1',
+            SEND_GROUP = #{group_no}
         WHERE STATUS = '0'
-          AND MESSAGE_TYPE = '${msg_type}'
-          AND SMS_KIND = '${sms_kind}'
-          AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'))
+          AND RESERVE_DT &lt;= SYSDATE
+          AND MESSAGE_TYPE = #{msg_type}
+          AND SMS_KIND = #{sms_kind}
           AND SEND_GROUP IS NULL
-            LIMIT 500
+          AND ROWNUM &lt;= 500
     </update>
 
-    <resultMap id="RequestTable" type="com.dhn.client.bean.SendData">
-        <result column="msg_id" property="msgid"/>
-        <result column="message_type" property="messagetype"/>
-        <result column="msg" property="msg"/>
-        <result column="msgsms" property="msgsms"/>
-        <result column="p_invoice" property="pinvoice"/>
-        <result column="phn" property="phn"/>
-        <result column="sms_sender" property="smssender"/>
-        <result column="reg_dt" property="regdt"/>
-        <result column="reserve_dt" property="reservedt"/>
-        <result column="sms_kind" property="smskind"/>
-        <result column="smslms_tit" property="smslmstit"/>
-        <result column="real_send_flag" property="realsendflag"/>
-        <result column="send_group" property="sendgroup"/>
-    </resultMap>
-
-    <select id="msgSendDataList" parameterType="com.dhn.client.bean.SQLParameter" resultMap="RequestTable">
-        SELECT MSG_ID AS msg_id,
-               MESSAGE_TYPE AS message_type,
-               MESSAGE AS msg,
-               P_INVOICE AS p_invoice,
-               PHN AS phn,
-               SMS_SENDER AS sms_sender,
-               REG_DT AS reg_dt,
-               RESERVE_DT AS reserve_dt,
-               MSG AS msgsms,
-               SMS_KIND AS sms_kind,
-               SMSLMS_TIT AS smslms_tit,
-               REAL_SEND_FLAG AS real_send_flag,
-               SEND_GROUP AS send_group
-        FROM ${msg_table}
-        WHERE MESSAGE_TYPE = '${msg_type}'
-          AND SEND_GROUP = '${send_group}'
+    <select id="msgSendDataList" parameterType="com.dhn.client.bean.SQLParameter" resultType="com.dhn.client.bean.SendData">
+        SELECT
+            MSG_ID AS msgid,
+            'PH' AS messagetype,
+            MSG AS msg,
+            MSG AS msgsms,
+            PHN AS phn,
+            P_INVOICE as pinvoice,
+            SMS_SENDER AS smssender,
+            SMSLMS_TIT AS smslmstit,
+            SMS_KIND AS smskind,
+            TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
+            '00000000000000' AS reservedt,
+            SEND_GROUP AS send_group
+        from ${msg_table}
+        where SEND_GROUP = #{group_no}
     </select>
 
     <update id="msgSendSuccess" parameterType="com.dhn.client.bean.SQLParameter">
         UPDATE ${msg_table}
         SET STATUS = '2',
-            RESPONSE_DT = now()
-        WHERE SEND_GROUP = '${send_group}'
+            RESPONSE_DT = SYSDATE
+        WHERE SEND_GROUP = #{group_no}
     </update>
 
     <update id="msgSendFailUpdate" parameterType="com.dhn.client.bean.SQLParameter">
         UPDATE ${msg_table}
         SET STATUS = '9',
-            RESPONSE_DT = now(),
+            RESPONSE_DT = SYSDATE,
             RESULT = '9999',
             RESULT_MSG = #{message}
-        WHERE SEND_GROUP = '${send_group}'
+        WHERE SEND_GROUP = #{group_no}
     </update>
 
     <insert id="msgSendFailInsert" parameterType="com.dhn.client.bean.SQLParameter">
-        INSERT INTO ${log_table} SELECT * FROM ${msg_table} WHERE SEND_GROUP = '${send_group}'
+        INSERT INTO ${log_table} SELECT * FROM ${msg_table} WHERE SEND_GROUP = #{group_no}
     </insert>
 
     <delete id="msgSendFailDelete" parameterType="com.dhn.client.bean.SQLParameter">
-        DELETE FROM ${msg_table} WHERE SEND_GROUP = '${send_group}'
+        DELETE FROM ${msg_table} WHERE SEND_GROUP = #{group_no}
     </delete>
 
     <update id="msgSendRetry" parameterType="com.dhn.client.bean.SQLParameter">
         UPDATE ${msg_table}
         SET STATUS = '0',
-            SEND_GROUP = NULL
-        WHERE SEND_GROUP = '${send_group}'
+            SEND_GROUP = NULL,
+            RESPONSE_DT = NULL
+        WHERE SEND_GROUP = #{group_no}
     </update>
 
 </mapper>

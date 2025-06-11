@@ -12,6 +12,11 @@ public class SendData {
     private String phn;
     private String smssender;
     private String regdt;
+    private String remark1;
+    private String remark2;
+    private String remark3;
+    private String remark4;
+    private String remark5;
     private String reservedt;
     private String button1;
     private String button2;
@@ -20,6 +25,9 @@ public class SendData {
     private String button5;
     private String tmplid;
     private String profile;
+    private String supplement;
+    private String price;
+    private String currencytype;
     private String title;
     private String header;
     private String adflag;
@@ -32,6 +40,13 @@ public class SendData {
     private String smskind;
     private String smslmstit;
     private String mmsimageid;
+    private String carousel;
+    private String att_items;
+    private String att_coupon;
+    private String crypto;
+    private String btn_name;
+    private String btn_url;
+    private String button;
     private String realsendflag;
     private String sendgroup;
 

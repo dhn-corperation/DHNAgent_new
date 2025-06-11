@@ -4,108 +4,90 @@
 <mapper namespace="com.dhn.client.kakao.mapper.SendRequest">
 
     <select id = "kaoSendDataCount" parameterType="com.dhn.client.bean.SQLParameter" resultType="int">
-        SELECT count(ID) AS cnt
+        SELECT count(1) AS cnt
         FROM ${msg_table}
         WHERE STATUS = '0'
-          AND MESSAGE_TYPE = '${msg_type}'
-          AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'))
+          AND RESERVE_DT &lt;= SYSDATE
+          AND MESSAGE_TYPE = #{msg_type}
           AND SEND_GROUP IS NULL
     </select>
 
     <update id="kaoGroupUpdate" parameterType="com.dhn.client.bean.SQLParameter">
         UPDATE ${msg_table}
-        SET SEND_GROUP = '${send_group}'
+        SET STATUS = '1',
+            SEND_GROUP = #{group_no}
         WHERE STATUS = '0'
-          AND MESSAGE_TYPE = '${msg_type}'
-          AND (RESERVE_DT = '00000000000000' OR RESERVE_DT &lt;= DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'))
+          AND RESERVE_DT &lt;= SYSDATE
+          AND MESSAGE_TYPE = #{msg_type}
           AND SEND_GROUP IS NULL
-        LIMIT 500
+          AND ROWNUM &lt;= 500
     </update>
 
-    <resultMap id="RequestTable" type="com.dhn.client.bean.SendData">
-        <result column="msg_id" property="msgid"/>
-        <result column="message_type" property="messagetype"/>
-        <result column="msg" property="msg"/>
-        <result column="p_invoice" property="pinvoice"/>
-        <result column="phn" property="phn"/>
-        <result column="sms_sender" property="smssender"/>
-        <result column="reg_dt" property="regdt"/>
-        <result column="reserve_dt" property="reservedt"/>
-        <result column="button1" property="button1"/>
-        <result column="button2" property="button2"/>
-        <result column="button3" property="button3"/>
-        <result column="button4" property="button4"/>
-        <result column="button5" property="button5"/>
-        <result column="tmpl_id" property="tmplid"/>
-        <result column="profile" property="profile"/>
-        <result column="title" property="title"/>
-        <result column="header" property="header"/>
-        <result column="ad_flag" property="adflag"/>
-        <result column="msgsms" property="msgsms"/>
-        <result column="sms_kind" property="smskind"/>
-        <result column="smslms_tit" property="smslmstit"/>
-        <result column="real_send_flag" property="realsendflag"/>
-        <result column="send_group" property="sendgroup"/>
-    </resultMap>
-
-    <select id="kaoSendDataList" parameterType="com.dhn.client.bean.SQLParameter" resultMap="RequestTable">
-        SELECT MSG_ID AS msg_id,
-           MESSAGE_TYPE AS message_type,
-           MESSAGE AS msg,
-           P_INVOICE AS p_invoice,
-           PHN AS phn,
-           SMS_SENDER AS sms_sender,
-           REG_DT AS reg_dt,
-           RESERVE_DT AS reserve_dt,
-           BUTTON1 AS button1,
-           BUTTON2 AS button2,
-           BUTTON3 AS button3,
-           BUTTON4 AS button4,
-           BUTTON5 AS button5,
-           TMPL_ID AS tmpl_id,
-           PROFILE AS profile,
-           TITLE AS title,
-           HEADER AS header,
-           AD_FLAG AS ad_flag,
-           MSG AS msgsms,
-           SMS_KIND AS sms_kind,
-           SMSLMS_TIT AS smslms_tit,
-           REAL_SEND_FLAG AS real_send_flag,
-           SEND_GROUP AS send_group
+    <select id="kaoSendDataList" parameterType="com.dhn.client.bean.SQLParameter" resultType="com.dhn.client.bean.SendData">
+        SELECT
+            MSG_ID AS msgid,
+            MESSAGE_TYPE AS messagetype,
+            MESSAGE AS msg,
+            MSG AS msgsms,
+            CASE
+                WHEN PHN LIKE '82%' THEN PHN
+                WHEN PHN LIKE '010%' THEN '82' || SUBSTR(PHN, 2, 15)
+                ELSE '82' || SUBSTR(PHN, 2, 15)
+                END AS phn,
+            P_INVOICE as pinvoice,
+            SMS_SENDER AS smssender,
+            SMSLMS_TIT AS smslmstit,
+            SMS_KIND as smskind,
+            TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
+            BUTTON1 AS button1,
+            BUTTON2 AS button2,
+            BUTTON3 AS button3,
+            BUTTON4 AS button4,
+            BUTTON5 AS button5,
+            TMPL_ID AS tmplid,
+            PROFILE AS profile,
+            '00000000000000' AS reservedt,
+            TITLE as title,
+            HEADER as header,
+            LINK AS link,
+            ATTACHMENTS as attachments,
+            REAL_SEND_FLAG as realsendflag,
+            SEND_GROUP as sendgroup
         FROM ${msg_table}
-        WHERE MESSAGE_TYPE = '${msg_type}'
-        AND SEND_GROUP = '${send_group}'
+        WHERE SEND_GROUP = #{group_no}
     </select>
 
     <update id="kaoSendSuccess" parameterType="com.dhn.client.bean.SQLParameter">
         UPDATE ${msg_table}
         SET STATUS = '2',
-            RESPONSE_DT = now()
-        WHERE SEND_GROUP = '${send_group}'
+            RESPONSE_DT = SYSDATE
+        WHERE SEND_GROUP = #{group_no}
     </update>
 
     <update id="kaoSendFailUpdate" parameterType="com.dhn.client.bean.SQLParameter">
         UPDATE ${msg_table}
         SET STATUS = '9',
-            RESPONSE_DT = now(),
+            RESPONSE_DT = SYSDATE,
             RESULT = '9999',
             RESULT_MSG = #{message}
-        WHERE SEND_GROUP = '${send_group}'
+        WHERE SEND_GROUP = #{group_no}
+
     </update>
 
     <insert id="kaoSendFailInsert" parameterType="com.dhn.client.bean.SQLParameter">
-        INSERT INTO ${log_table} SELECT * FROM ${msg_table} WHERE SEND_GROUP = '${send_group}'
+        INSERT INTO ${log_table} SELECT * FROM ${msg_table} WHERE SEND_GROUP = #{group_no}
     </insert>
 
     <delete id="kaoSendFailDelete" parameterType="com.dhn.client.bean.SQLParameter">
-        DELETE FROM ${msg_table} WHERE SEND_GROUP = '${send_group}'
+        DELETE FROM ${msg_table} WHERE SEND_GROUP = #{group_no}
     </delete>
 
     <update id="kaoSendRetry" parameterType="com.dhn.client.bean.SQLParameter">
         UPDATE ${msg_table}
         SET STATUS = '0',
-            SEND_GROUP = NULL
-        WHERE SEND_GROUP = '${send_group}'
+            SEND_GROUP = NULL,
+            RESPONSE_DT = NULL
+        WHERE SEND_GROUP = #{group_no}
     </update>
 
 </mapper>

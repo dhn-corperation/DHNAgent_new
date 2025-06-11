@@ -25,6 +25,17 @@ public class CreateDAOImpl implements CreateDAO{
 
     @Override
     public void tableCreate(SQLParameter param) throws Exception {
+        int seqcnt = sqlSession.selectOne("com.dhn.client.create.mapper.SendRequest.seqCheck_oracle",param);
+
+        if(seqcnt == 0){
+            sqlSession.update("com.dhn.client.create.mapper.SendRequest.createSequence_oracle", param);
+        }
+        sqlSession.update("com.dhn.client.create.mapper.SendRequest.createTable_oracle", param);
+        sqlSession.update("com.dhn.client.create.mapper.SendRequest.createPrimaryKey", param);
+        sqlSession.update("com.dhn.client.create.mapper.SendRequest.createIndex1_oracle", param);
+        sqlSession.update("com.dhn.client.create.mapper.SendRequest.createIndex2_oracle", param);
+        sqlSession.update("com.dhn.client.create.mapper.SendRequest.createIndex3_oracle", param);
+        sqlSession.update("com.dhn.client.create.mapper.SendRequest.createIndex4_oracle", param);
         sqlSession.update("com.dhn.client.create.mapper.SendRequest.tableCreate", param);
     }
 

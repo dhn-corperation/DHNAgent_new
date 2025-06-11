@@ -86,7 +86,7 @@ public class SMSSendController implements ApplicationListener<ContextRefreshedEv
 
                         if(cnt > 0){
                             preSendGroup = send_group;
-                            param.setSend_group(send_group);
+                            param.setGroup_no(send_group);
                             requestService.msgGroupUpdate(param);
 
                             List<SendData> dataList = requestService.msgSendDataList(param);

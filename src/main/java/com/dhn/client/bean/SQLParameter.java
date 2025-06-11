@@ -10,7 +10,7 @@ public class SQLParameter {
     private String tmp_table;
     private String kakao_use;
     private String msg_use;
-    private String send_group;
+    private String group_no;
     private String msg_type;
     private String sequence;
     private String database;
