@@ -98,15 +98,20 @@ public class WebSocketManager {
         CompletableFuture<String> future = new CompletableFuture<>();
         pendingRequests.put(groupNo, future);
 
-        webSocket.send(jsonMessage);
-        log.info("{} 데이터 전송 완료: {}", type, jsonMessage);
+        boolean success = webSocket.send(jsonMessage);
+        if (!success) {
+            log.error("WebSocket 메시지 전송 실패: {}", groupNo);
+            throw new Exception("WebSocket 데이터 전송 실패");
+        }
+//        log.info("{} 데이터 전송 완료: {}", type, jsonMessage);
 
         try {
             // ✅ 최대 10초 동안 응답을 기다림
             return future.get(10, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
-            pendingRequests.remove(groupNo);
             throw new Exception("WebSocket 응답 대기 중 타임아웃 발생");
+        } finally {
+            pendingRequests.remove(groupNo);  // ✅ 항상 정리
         }
     }
 
