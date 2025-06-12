@@ -1,5 +1,6 @@
 package com.dhn.client.service;
 
+import com.dhn.client.bean.Msg_Log;
 import com.dhn.client.bean.SQLParameter;
 import com.dhn.client.bean.SendData;
 import com.dhn.client.dao.RequestDAO;
@@ -46,6 +47,11 @@ public class RequestServiceImpl implements RequestService{
     }
 
     @Override
+    public void kaoResultInsert(Msg_Log msgLog) throws Exception {
+        requestDAO.kaoResultInsert(msgLog);
+    }
+
+    @Override
     public int msgSendDataCount(SQLParameter param) throws Exception {
         return requestDAO.msgSendDataCount(param);
     }
@@ -73,5 +79,10 @@ public class RequestServiceImpl implements RequestService{
     @Override
     public void msgSendRetry(SQLParameter param) throws Exception {
         requestDAO.msgSendRetry(param);
+    }
+
+    @Override
+    public void msgResultInsert(Msg_Log msgLog) throws Exception {
+        requestDAO.msgResultInsert(msgLog);
     }
 }

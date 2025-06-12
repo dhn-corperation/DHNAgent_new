@@ -75,4 +75,26 @@
         WHERE SEND_GROUP = #{group_no}
     </update>
 
+    <update id="msgResultUpdate" parameterType="com.dhn.client.bean.Msg_Log">
+        UPDATE ${msg_table}
+        SET STATUS = #{status},
+            RESULT_DT = #{result_dt},
+            RESULT_MSG = #{code},
+            RESULT_MESSAGE = #{result_message},
+            TELCOINFO = #{telecom},
+            REAL_MESSAGE_TYPE = #{real_send_type}
+        WHERE MSG_ID = #{msgid}
+    </update>
+
+    <insert id="msgLogInsert" parameterType="com.dhn.client.bean.Msg_Log">
+        INSERT INTO ${log_table}
+        SELECT * FROM ${msg_table}
+        WHERE MSG_ID = #{msgid}
+    </insert>
+
+    <delete id="msgResultDelete" parameterType="com.dhn.client.bean.Msg_Log">
+        DELETE FROM ${msg_table}
+        WHERE MSG_ID = #{msgid}
+    </delete>
+
 </mapper>

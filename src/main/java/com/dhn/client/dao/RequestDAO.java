@@ -1,5 +1,6 @@
 package com.dhn.client.dao;
 
+import com.dhn.client.bean.Msg_Log;
 import com.dhn.client.bean.SQLParameter;
 import com.dhn.client.bean.SendData;
 
@@ -19,6 +20,8 @@ public interface RequestDAO {
 
     void kaoSendRetry(SQLParameter param) throws Exception;
 
+    void kaoResultInsert(Msg_Log msgLog) throws Exception;
+
     int msgSendDataCount(SQLParameter param) throws Exception;
 
     void msgGroupUpdate(SQLParameter param) throws Exception;
@@ -31,4 +34,5 @@ public interface RequestDAO {
 
     void msgSendRetry(SQLParameter param) throws Exception;
 
+    void msgResultInsert(Msg_Log msgLog) throws Exception;
 }

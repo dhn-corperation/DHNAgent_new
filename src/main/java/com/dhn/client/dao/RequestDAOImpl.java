@@ -1,5 +1,6 @@
 package com.dhn.client.dao;
 
+import com.dhn.client.bean.Msg_Log;
 import com.dhn.client.bean.SQLParameter;
 import com.dhn.client.bean.SendData;
 import org.apache.ibatis.session.SqlSession;
@@ -46,6 +47,13 @@ public class RequestDAOImpl implements RequestDAO{
     }
 
     @Override
+    public void kaoResultInsert(Msg_Log msgLog) throws Exception {
+        sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.kaoResultUpdate", msgLog);
+        sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.kaoLogInsert", msgLog);
+        sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.kaoResultDelete", msgLog);
+    }
+
+    @Override
     public int msgSendDataCount(SQLParameter param) throws Exception {
         return sqlSession.selectOne("com.dhn.client.msg.mapper.SendRequest.msgSendDataCount", param);
     }
@@ -75,5 +83,12 @@ public class RequestDAOImpl implements RequestDAO{
     @Override
     public void msgSendRetry(SQLParameter param) throws Exception {
         sqlSession.update("com.dhn.client.msg.mapper.SendRequest.msgSendRetry",param);
+    }
+
+    @Override
+    public void msgResultInsert(Msg_Log msgLog) throws Exception {
+        sqlSession.update("com.dhn.client.msg.mapper.SendRequest.msgResultUpdate", msgLog);
+        sqlSession.update("com.dhn.client.msg.mapper.SendRequest.msgLogInsert", msgLog);
+        sqlSession.update("com.dhn.client.msg.mapper.SendRequest.msgResultDelete", msgLog);
     }
 }

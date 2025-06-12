@@ -1,5 +1,6 @@
 package com.dhn.client.service;
 
+import com.dhn.client.bean.Msg_Log;
 import com.dhn.client.bean.SQLParameter;
 import com.dhn.client.bean.SendData;
 
@@ -20,6 +21,8 @@ public interface RequestService {
 
     void kaoSendRetry(SQLParameter param) throws Exception;
 
+    void kaoResultInsert(Msg_Log msgLog) throws Exception;
+
     // 문자
     int msgSendDataCount(SQLParameter param) throws Exception;
 
@@ -33,4 +36,5 @@ public interface RequestService {
 
     void msgSendRetry(SQLParameter param) throws Exception;
 
+    void msgResultInsert(Msg_Log msgLog) throws Exception;
 }
