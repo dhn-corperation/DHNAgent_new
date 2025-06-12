@@ -79,7 +79,7 @@ public class SMSSendController implements ApplicationListener<ContextRefreshedEv
 
             if(!send_group.equals(preSendGroup)) {
                 if (!webSocketManager.isConnected()) {  // ✅ WebSocket 연결 확인
-                    log.warn("서버와 연결되지 않음. 메시지 전송 스킵.");
+                    log.error("서버와 연결되지 않음. 메시지 전송 스킵.");
                 } else {
                     try{
                         int cnt = requestService.msgSendDataCount(param);

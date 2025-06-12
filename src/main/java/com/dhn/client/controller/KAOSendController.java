@@ -80,7 +80,6 @@ public class KAOSendController implements ApplicationListener<ContextRefreshedEv
                 if (!webSocketManager.isConnected()) {  // ✅ WebSocket 연결 확인
                     log.error("서버와 연결되지 않음. 메시지 전송 스킵.");
                 } else {
-
                     try{
                         int cnt = requestService.kaoSendDataCount(param);
 
@@ -129,8 +128,5 @@ public class KAOSendController implements ApplicationListener<ContextRefreshedEv
             isProc = false;
         }
     }
-
-
-
 
 }
