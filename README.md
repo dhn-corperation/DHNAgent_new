@@ -1,4 +1,4 @@
-# 자바 DHN_CLIENT DHN테이블 생성
+# 자바 DHN_CLIENT DHN테이블 생성 Test
 ## Database
 - oracle
 - mysql
