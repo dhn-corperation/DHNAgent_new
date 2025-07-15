@@ -34,7 +34,7 @@
                     AND RESERVE_DT &lt;= SYSDATE
                     AND MESSAGE_TYPE = #{msg_type}
                     AND SEND_GROUP IS NULL
-                    AND ROWNUM &lt;= 500
+                    AND ROWNUM &lt;= 200
             </when>
             <when test="database == 'mysql'">
                 UPDATE ${msg_table}
@@ -44,7 +44,7 @@
                     AND RESERVE_DT &lt;= NOW()
                     AND MESSAGE_TYPE = #{msg_type}
                     AND SEND_GROUP IS NULL
-                LIMIT 500
+                LIMIT 200
             </when>
         </choose>
     </update>
@@ -230,13 +230,13 @@
                 UPDATE ${msg_table}
                 SET SEND_GROUP = #{group_no}
                 WHERE STATUS = '9'
-                    AND ROWNUM &lt; 500
+                    AND ROWNUM &lt; 200
             </when>
             <when test="database == 'mysql'">
                 UPDATE ${msg_table}
                 SET SEND_GROUP = #{group_no}
                 WHERE STATUS = '9'
-                LIMIT 500
+                LIMIT 200
             </when>
         </choose>
     </update>
@@ -305,7 +305,7 @@
                 AND MESSAGE_TYPE = #{msg_type}
                 AND SEND_GROUP IS NULL
                 AND (FI_IMAGE_PATH IS NULL OR (IMAGE_URL IS NOT NULL AND FI_IMAGE_PATH IS NOT NULL))
-                AND ROWNUM &lt;= 500
+                AND ROWNUM &lt;= 200
             </when>
             <when test="database == 'mysql'">
                 UPDATE ${msg_table}
@@ -316,7 +316,7 @@
                     AND MESSAGE_TYPE = #{msg_type}
                     AND SEND_GROUP IS NULL
                     AND (FI_IMAGE_PATH IS NULL OR (IMAGE_URL IS NOT NULL AND FI_IMAGE_PATH IS NOT NULL))
-                LIMIT 500
+                LIMIT 200
             </when>
         </choose>
     </update>
@@ -421,7 +421,7 @@
                     AND SEND_GROUP IS NULL
                     AND FI_IMAGE_PATH IS NOT NULL
                     AND IMAGE_URL IS NULL
-                    AND ROWNUM &lt; 500
+                    AND ROWNUM &lt; 200
             </when>
             <when test="database == 'mysql'">
                 SELECT FI_IMAGE_PATH as ftimagepath,
@@ -433,7 +433,7 @@
                     AND SEND_GROUP IS NULL
                     AND FI_IMAGE_PATH IS NOT NULL
                     AND IMAGE_URL IS NULL
-                LIMIT 500
+                LIMIT 200
             </when>
         </choose>
     </select>

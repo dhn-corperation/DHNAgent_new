@@ -36,7 +36,7 @@
                     AND MESSAGE_TYPE = #{msg_type}
                     AND SMS_KIND = #{sms_kind}
                     AND SEND_GROUP IS NULL
-                    AND ROWNUM &lt;= 500
+                    AND ROWNUM &lt;= 200
             </when>
             <when test="database == 'mysql'">
                 UPDATE ${msg_table}
@@ -47,7 +47,7 @@
                     AND MESSAGE_TYPE = #{msg_type}
                     AND SMS_KIND = #{sms_kind}
                     AND SEND_GROUP IS NULL
-                LIMIT 500
+                LIMIT 200
             </when>
         </choose>
     </update>
@@ -199,13 +199,13 @@
                 UPDATE ${msg_table}
                 SET SEND_GROUP = #{group_no}
                 WHERE STATUS = '9'
-                AND ROWNUM &lt; 500
+                AND ROWNUM &lt; 200
             </when>
             <when test="database == 'mysql'">
                 UPDATE ${msg_table}
                 SET SEND_GROUP = #{group_no}
                 WHERE STATUS = '9'
-                LIMIT 500
+                LIMIT 200
             </when>
         </choose>
     </update>
@@ -273,7 +273,7 @@
                     AND MESSAGE_TYPE = #{msg_type}
                     AND SMS_KIND = #{sms_kind}
                     AND SEND_GROUP IS NULL
-                    AND ROWNUM &lt;= 500
+                    AND ROWNUM &lt;= 200
             </when>
             <when test="database == 'mysql'">
                 UPDATE ${msg_table}
@@ -284,7 +284,7 @@
                     AND MESSAGE_TYPE = #{msg_type}
                     AND SMS_KIND = #{sms_kind}
                     AND SEND_GROUP IS NULL
-                    LIMIT 500
+                    LIMIT 200
             </when>
         </choose>
     </update>
@@ -363,7 +363,7 @@
                     AND SMS_KIND = #{sms_kind}
                     AND SEND_GROUP IS NULL
                     AND MMS_IMAGE_KEY IS NOT NULL
-                    AND ROWNUM &lt;= 500
+                    AND ROWNUM &lt;= 200
             </when>
             <when test="database == 'mysql'">
                 UPDATE ${msg_table}
@@ -375,7 +375,7 @@
                     AND SMS_KIND = #{sms_kind}
                     AND SEND_GROUP IS NULL
                     AND MMS_IMAGE_KEY IS NOT NULL
-                    LIMIT 500
+                    LIMIT 200
             </when>
         </choose>
     </update>
