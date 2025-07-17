@@ -131,6 +131,7 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 			try {
 				ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
 				Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
+				log.info(res.toString());
 				if(response.getStatusCode() ==  HttpStatus.OK)
 				{
 					msgRequestService.updateSMSSendComplete(sendParam);
