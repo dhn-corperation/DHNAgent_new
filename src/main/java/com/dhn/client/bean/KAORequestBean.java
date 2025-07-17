@@ -49,5 +49,6 @@ public class KAORequestBean {
 	private String realsendflag;
 	private String attachments;
 	private String link;
-	  
+	private String kisacode;
+
 }
