@@ -21,6 +21,9 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 @Component
 @Slf4j
@@ -36,7 +39,10 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 	private String msg_table = "";
 	private String log_table = "";
 	private String database = "";
-	
+	private String log_back = "";
+
+	private static final ExecutorService executorService = Executors.newFixedThreadPool(10);
+
 	@Autowired
 	private KAORequestService kaoRequestService;
 
@@ -51,6 +57,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		msg_table = appContext.getEnvironment().getProperty("dhnclient.msg_table");
 		log_table = appContext.getEnvironment().getProperty("dhnclient.log_table");
 		database = appContext.getEnvironment().getProperty("dhnclient.database");
+		log_back = appContext.getEnvironment().getProperty("dhnclient.log_back","Y");
 
 		dhnServer = appContext.getEnvironment().getProperty("dhnclient.server");
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
@@ -61,9 +68,11 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 
 	@Scheduled(fixedDelay = 100)
 	private void SendProcess() {
-		if(isStart && !isProc && procCnt < 10) {
+		ThreadPoolExecutor poolExecutor = (ThreadPoolExecutor) executorService;
+		int activeThreads = poolExecutor.getActiveCount();
+
+		if(isStart && !isProc && activeThreads < 10) {
 			isProc = true;
-			procCnt++;
 			try {
 				ObjectMapper om = new ObjectMapper();
 				HttpHeaders header = new HttpHeaders();
@@ -89,50 +98,32 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 								JSONArray jsonArray = dataObject.getJSONArray("detail");
 
 								if (jsonArray.length() > 0) {
-									Thread res = new Thread(() -> ResultProc(jsonArray, procCnt));
-									res.start();
-								} else {
-									Thread.sleep(5000);
-									procCnt--;
+
+									executorService.submit(() -> ResultProc(jsonArray));
 								}
 							} else {
 								log.error("결과 수신 오류 : 결과 배열(detail)이 없습니다.");
-								procCnt--;
 							}
 						} else {
 							log.error("결과 수신 오류 : (data) 필드가 없습니다.");
-							procCnt--;
 						}
-
-
-						// 웹 서버 테스트
-						/*
-						JSONArray json = new JSONArray(response.getBody().toString());
-						if(json.length()>0) {
-							Thread res = new Thread(() ->ResultProc(json, procCnt) );
-							res.start();
-						} else {
-							procCnt--;
-						}
-						 */
 					} else {
-						procCnt--;
+						log.info("결과 수신 오류 (Http Err) : " + response.getStatusCode());
 					}
 				} catch(Exception ex) {
-					log.error("결과 수신 오류 : " + ex.toString());
-					procCnt--;
+					log.info("결과 수신 오류 (response Err): " + ex.toString());
+					Thread.sleep(10000);
 				}
 				
 			}catch (Exception e) {
 				log.error("결과 수신 오류 : " + e.toString());
-				procCnt--;
 			}
 			isProc = false;
 		}
 	}
 
 
-	private void ResultProc(JSONArray json, int _pc) {
+	private void ResultProc(JSONArray json) {
 		for(int i=0; i<json.length(); i++) {
 			JSONObject ent = json.getJSONObject(i);
 			
@@ -149,7 +140,11 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 				// 알림톡
 				kao_ml.setMsgid(ent.getString("msgid"));
 				kao_ml.setMsg_table(msg_table);
-				kao_ml.setLog_table(log_table+"_"+currentMonth);
+				if(log_back.equalsIgnoreCase("Y")){
+					kao_ml.setLog_table(log_table+"_"+currentMonth);
+				}else{
+					kao_ml.setLog_table(log_table);
+				}
 				kao_ml.setDatabase(database);
 
 				kao_ml.setResult_dt(ent.getString("res_dt"));
@@ -166,12 +161,25 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 				// 알림톡 실패 문자
 				kao_ml.setMsgid(ent.getString("msgid"));
 				kao_ml.setMsg_table(msg_table);
-				kao_ml.setLog_table(log_table+"_"+currentMonth);
+				if(log_back.equalsIgnoreCase("Y")){
+					kao_ml.setLog_table(log_table+"_"+currentMonth);
+				}else{
+					kao_ml.setLog_table(log_table);
+				}
 				kao_ml.setDatabase(database);
 
 				kao_ml.setS_code(ent.getString("s_code"));
 				kao_ml.setCode(ent.getString("code"));
-				kao_ml.setTelecom(ent.getString("remark1"));
+
+				if(ent.getString("remark1").equalsIgnoreCase("LGT") || ent.getString("remark1").equals("019")){
+					kao_ml.setTelecom("LGT");
+				}else if(ent.getString("remark1").equalsIgnoreCase("SKT") || ent.getString("remark1").equals("011")){
+					kao_ml.setTelecom("SKT");
+				}else if(ent.getString("remark1").equalsIgnoreCase("KTF") || ent.getString("remark1").equalsIgnoreCase("KT") || ent.getString("remark1").equals("016")){
+					kao_ml.setTelecom("KTF");
+				}else{
+					kao_ml.setTelecom("ETC");
+				}
 				kao_ml.setResult_dt(ent.getString("remark2"));
 				kao_ml.setResult_message(result_message.equalsIgnoreCase("")?"":result_message);
 
@@ -186,14 +194,28 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 				// 문자
 				msg_ml.setMsgid(ent.getString("msgid"));
 				msg_ml.setMsg_table(msg_table);
-				msg_ml.setLog_table(log_table+"_"+currentMonth);
+				if(log_back.equalsIgnoreCase("Y")){
+					msg_ml.setLog_table(log_table+"_"+currentMonth);
+				}else{
+					msg_ml.setLog_table(log_table);
+				}
 				msg_ml.setDatabase(database);
 
 				msg_ml.setCode(ent.getString("code"));
 				msg_ml.setReal_send_type(ent.getString("sms_kind"));
-				msg_ml.setTelecom(ent.getString("remark1"));
+
+				if(ent.getString("remark1").equalsIgnoreCase("LGT") || ent.getString("remark1").equals("019")){
+					msg_ml.setTelecom("LGT");
+				}else if(ent.getString("remark1").equalsIgnoreCase("SKT") || ent.getString("remark1").equals("011")){
+					msg_ml.setTelecom("SKT");
+				}else if(ent.getString("remark1").equalsIgnoreCase("KTF") || ent.getString("remark1").equalsIgnoreCase("KT") || ent.getString("remark1").equals("016")){
+					msg_ml.setTelecom("KTF");
+				}else{
+					msg_ml.setTelecom("ETC");
+				}
+
 				msg_ml.setResult_dt(ent.getString("remark2"));
-				kao_ml.setResult_message(result_message.equalsIgnoreCase("")?"":result_message);
+				msg_ml.setResult_message(result_message.equalsIgnoreCase("")?"":result_message);
 
 				if(ent.getString("code").equals("0000")){
 					msg_ml.setStatus("3");

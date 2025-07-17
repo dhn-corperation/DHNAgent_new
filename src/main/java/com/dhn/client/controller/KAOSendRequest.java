@@ -20,6 +20,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 @Component
 @Slf4j
@@ -31,6 +34,8 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private String dhnServer;
 	private String userid;
 	private String preGroupNo = "";
+
+	private static final ExecutorService executorService = Executors.newFixedThreadPool(4);
 
     @Autowired
 	private KAORequestService kaoRequestService;
@@ -59,63 +64,85 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 			posts.postProcessBeforeDestruction(this, null);
 		}
 
-		
 	}
 
 	@Scheduled(fixedDelay = 100)
 	public void SendProcess() {
 		if(isStart && !isProc) {
 			isProc = true;
-			
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
-			LocalDateTime now = LocalDateTime.now();
-			String group_no = "1" + now.format(formatter);
-			
-			if(!group_no.equals(preGroupNo)) {
 
-				try {
-					int cnt = kaoRequestService.selectKAORequestCount(param);
+			ThreadPoolExecutor poolExecutor = (ThreadPoolExecutor) executorService;
+			int activeThreads = poolExecutor.getActiveCount();
 
-					if(cnt > 0) {
-						param.setGroup_no(group_no);
-						kaoRequestService.updateKAOGroupNo(param);
-						List<KAORequestBean> _list = kaoRequestService.selectKAORequests(param);
+			if(activeThreads < 4){
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
+				LocalDateTime now = LocalDateTime.now();
+				String group_no = "K" + now.format(formatter);
 
-						StringWriter sw = new StringWriter();
-						ObjectMapper om = new ObjectMapper();
-						om.writeValue(sw, _list); // List를 Json화 하여 문자열 저장
+				if(!group_no.equals(preGroupNo)) {
+					try{
+						int cnt = kaoRequestService.selectKAORequestCount(param);
 
-						HttpHeaders header = new HttpHeaders();
+						if(cnt > 0){
+							param.setGroup_no(group_no);
+							kaoRequestService.updateKAOGroupNo(param);
 
-						header.setContentType(MediaType.APPLICATION_JSON);
-						header.set("userid", userid);
-
-						RestTemplate rt = new RestTemplate();
-						HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
-
-						try {
-							ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
-							Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-							log.info(res.toString());
-							if (response.getStatusCode() == HttpStatus.OK) { // 데이터 정상적으로 전달
-								kaoRequestService.updateKAOSendComplete(param);
-								log.info("KAO 메세지 전송 완료 : " + response.getStatusCode() + " / " + group_no + " / " + _list.size() + " 건");
-							}else { // API 전송 실패시
-								log.info("({}) KAO 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
-								kaoRequestService.updateKAOSendInit(param);
-							}
-						} catch (Exception e) {
-							log.error("KAO 메세지 전송 오류 : " + e.toString());
-							kaoRequestService.updateKAOSendInit(param);
+							executorService.submit(() -> APIProcess(group_no));
 						}
+
+					}catch (Exception e){
+						log.error("KAO 메세지 전송 오류 : " + e.toString());
 					}
 
-				}catch (Exception e) {
-					log.error("KAO 메세지 전송 오류 : " + e.toString());
+					preGroupNo = group_no;
 				}
-				preGroupNo = group_no;
 			}
 			isProc = false;
+		}
+	}
+
+	private void APIProcess(String group_no) {
+		try{
+
+			SQLParameter sendParam = new SQLParameter();
+			sendParam.setGroup_no(group_no);
+			sendParam.setMsg_table(param.getMsg_table());
+			sendParam.setDatabase(param.getDatabase());
+			sendParam.setSequence(param.getSequence());
+			sendParam.setMsg_type(param.getMsg_type());
+
+
+			List<KAORequestBean> _list = kaoRequestService.selectKAORequests(sendParam);
+
+			StringWriter sw = new StringWriter();
+			ObjectMapper om = new ObjectMapper();
+			om.writeValue(sw, _list); // List를 Json화 하여 문자열 저장
+
+			HttpHeaders header = new HttpHeaders();
+
+			header.setContentType(MediaType.APPLICATION_JSON);
+			header.set("userid", userid);
+
+			RestTemplate rt = new RestTemplate();
+			HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
+
+			try {
+				ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
+				Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
+				log.info(res.toString());
+				if (response.getStatusCode() == HttpStatus.OK) { // 데이터 정상적으로 전달
+					kaoRequestService.updateKAOSendComplete(sendParam);
+					log.info("KAO 메세지 전송 완료 : " + response.getStatusCode() + " / " + group_no + " / " + _list.size() + " 건");
+				}else { // API 전송 실패시
+					log.info("({}) KAO 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
+					kaoRequestService.updateKAOSendInit(sendParam);
+				}
+			} catch (Exception e) {
+				log.error("KAO 메세지 전송 오류 : " + e.toString());
+				kaoRequestService.updateKAOSendInit(sendParam);
+			}
+		}catch (Exception e){
+			log.error("KAO 메세지 전송 오류 : " + e.toString());
 		}
 	}
 

@@ -34,5 +34,6 @@ public class SQLParameter {
 	private String msgid;
 	private String img_err_msg;
 	private String time;
+	private String log_back;
 
 }

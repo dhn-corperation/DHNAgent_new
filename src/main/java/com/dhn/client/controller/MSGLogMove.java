@@ -35,6 +35,7 @@ public class MSGLogMove implements ApplicationListener<ContextRefreshedEvent> {
     public void onApplicationEvent(ContextRefreshedEvent event) {
         param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
         param.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database"));
+        param.setLog_back(appContext.getEnvironment().getProperty("dhnclient.log_back","Y"));
         log_table = appContext.getEnvironment().getProperty("dhnclient.log_table");
         if(appContext.getEnvironment().getProperty("dhnclient.msg_use").equalsIgnoreCase("Y")){
             isStart = true;
@@ -48,18 +49,21 @@ public class MSGLogMove implements ApplicationListener<ContextRefreshedEvent> {
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
             LocalDateTime now = LocalDateTime.now();
-            String group_no = "M9" + now.format(formatter);
+            String group_no = "MV" + now.format(formatter);
 
             if(!group_no.equals(preGroupNo)){
                 try {
                     int cnt = msgRequestService.log_move_count(param);
                     if(cnt > 0){
 
-                        LocalDate logdate = LocalDate.now();
-                        DateTimeFormatter log_formatter = DateTimeFormatter.ofPattern("yyyyMM");
-                        String currentMonth = logdate.format(log_formatter);
-
-                        param.setLog_table(log_table+"_"+currentMonth);
+                        if(param.getLog_back().equalsIgnoreCase("Y")){
+                            LocalDate logdate = LocalDate.now();
+                            DateTimeFormatter log_formatter = DateTimeFormatter.ofPattern("yyyyMM");
+                            String currentMonth = logdate.format(log_formatter);
+                            param.setLog_table(log_table+"_"+currentMonth);
+                        }else{
+                            param.setLog_table(log_table);
+                        }
 
                         param.setGroup_no(group_no);
 

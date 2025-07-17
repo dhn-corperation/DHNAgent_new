@@ -26,6 +26,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 @Component
 @Slf4j
@@ -40,6 +43,8 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private String basepath;
 	private String preGroupNo = "";
 	private String log_table;
+
+	private static final ExecutorService executorService = Executors.newFixedThreadPool(3);
 
 	@Autowired
 	private MSGRequestService msgRequestService;
@@ -56,6 +61,7 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 		param.setMsg_use(appContext.getEnvironment().getProperty("dhnclient.msg_use"));
 		param.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database"));
 		param.setSequence(appContext.getEnvironment().getProperty("dhnclient.msg_seq"));
+		param.setLog_back(appContext.getEnvironment().getProperty("dhnclient.log_back","Y"));
 		log_table = appContext.getEnvironment().getProperty("dhnclient.log_table");
 		param.setMsg_type("PH");
 		param.setSms_kind("M");
@@ -79,58 +85,32 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private void SendProcess() {
 		if(isStart && !isProc) {
 			isProc = true;
-			
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
-			LocalDateTime now = LocalDateTime.now();
-			String group_no = "4" + now.format(formatter);
-			
-			if(!group_no.equals(preGroupNo)) {
-				
-				try {
-					
-					int cnt = msgRequestService.selectMMSReqeustCount(param);
-					
-					if(cnt > 0) {
-						
-						param.setGroup_no(group_no);
-						msgRequestService.updateMMSGroupNo(param);
-						List<RequestBean> _list = msgRequestService.selectMMSRequests(param);
 
-						StringWriter sw = new StringWriter();
-						ObjectMapper om = new ObjectMapper();
-						om.writeValue(sw, _list);
+			ThreadPoolExecutor poolExecutor = (ThreadPoolExecutor) executorService;
+			int activeThreads = poolExecutor.getActiveCount();
 
-//						log.info(sw.toString());
+			if(activeThreads < 3){
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
+				LocalDateTime now = LocalDateTime.now();
+				String group_no = "M" + now.format(formatter);
 
-						HttpHeaders header = new HttpHeaders();
+				if(!group_no.equals(preGroupNo)) {
+					try{
+						int cnt = msgRequestService.selectMMSReqeustCount(param);
 
-						header.setContentType(MediaType.APPLICATION_JSON);
-						header.set("userid", userid);
+						if(cnt > 0) {
+							param.setGroup_no(group_no);
+							msgRequestService.updateMMSGroupNo(param);
 
-						RestTemplate rt = new RestTemplate();
-						HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
+							executorService.submit(() -> APIProcess(group_no));
 
-						try {
-							ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
-							Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-							if(response.getStatusCode() ==  HttpStatus.OK)
-							{
-								msgRequestService.updateSMSSendComplete(param);
-								log.info("MMS 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
-							} else {
-								log.info("({}) MMS 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
-								msgRequestService.updateSMSSendInit(param);
-							}
-						}catch (Exception e) {
-							log.error("MMS 메세지 전송 오류 : " + e.toString());
-							msgRequestService.updateSMSSendInit(param);
 						}
-
+					}catch (Exception e){
+						log.error("MMS 메세지 전송 오류 : " + e.toString());
 					}
-				}catch (Exception e) {
-					log.error("MMS 메세지 전송 오류 : " + e.toString());
+
+					preGroupNo = group_no;
 				}
-				preGroupNo = group_no;
 			}
 			isProc = false;
 		}
@@ -197,19 +177,31 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 									msgRequestService.updateMMSImageGroup(param);
 								} else {
 									log.info("MMS 이미지 등록 실패 : " + res.toString());
-									param.setLog_table(log_table + "_" + currentMonth);
+									if(param.getLog_back() != null && param.getLog_back().equalsIgnoreCase("Y")){
+										param.setLog_table(log_table + "_" + currentMonth);
+									}else{
+										param.setLog_table(log_table);
+									}
 									param.setMsg_image_code("9999");
 									msgRequestService.updateMMSImageFail(param);
 								}
 							} else {
 								log.info("MMS 이미지 등록 실패 : " + response.getBody());
-								param.setLog_table(log_table + "_" + currentMonth);
+								if(param.getLog_back() != null && param.getLog_back().equalsIgnoreCase("Y")){
+									param.setLog_table(log_table + "_" + currentMonth);
+								}else{
+									param.setLog_table(log_table);
+								}
 								param.setMsg_image_code(String.valueOf(response.getStatusCodeValue()));
 								msgRequestService.updateMMSImageFail(param);
 							}
 						}catch (Exception e){
 							log.error("MMS Image Key 등록 오류 : ", e.getMessage());
-							param.setLog_table(log_table + "_" + currentMonth);
+							if(param.getLog_back() != null && param.getLog_back().equalsIgnoreCase("Y")){
+								param.setLog_table(log_table + "_" + currentMonth);
+							}else{
+								param.setLog_table(log_table);
+							}
 							param.setMsg_image_code("9999");
 							msgRequestService.updateMMSImageFail(param);
 						}
@@ -222,6 +214,53 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 			}
 		}
 		isProcMms = false;
+	}
+
+	private void APIProcess(String group_no) {
+		try{
+			SQLParameter sendParam = new SQLParameter();
+			sendParam.setGroup_no(group_no);
+			sendParam.setMsg_table(param.getMsg_table());
+			sendParam.setDatabase(param.getDatabase());
+			sendParam.setSequence(param.getSequence());
+			sendParam.setMsg_type(param.getMsg_type());
+			sendParam.setSms_kind(param.getSms_kind());
+
+			List<RequestBean> _list = msgRequestService.selectMMSRequests(sendParam);
+
+			StringWriter sw = new StringWriter();
+			ObjectMapper om = new ObjectMapper();
+			om.writeValue(sw, _list);
+
+//						log.info(sw.toString());
+
+			HttpHeaders header = new HttpHeaders();
+
+			header.setContentType(MediaType.APPLICATION_JSON);
+			header.set("userid", userid);
+
+			RestTemplate rt = new RestTemplate();
+			HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
+
+			try {
+				ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
+				Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
+				log.info(res.toString());
+				if(response.getStatusCode() ==  HttpStatus.OK)
+				{
+					msgRequestService.updateSMSSendComplete(sendParam);
+					log.info("MMS 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
+				} else {
+					log.info("({}) MMS 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
+					msgRequestService.updateSMSSendInit(sendParam);
+				}
+			}catch (Exception e) {
+				log.error("MMS 메세지 전송 오류 : " + e.toString());
+				msgRequestService.updateSMSSendInit(sendParam);
+			}
+		}catch (Exception e){
+			log.error("MMS 메세지 전송 오류 : " + e.toString());
+		}
 	}
 
 }

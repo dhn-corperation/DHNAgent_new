@@ -35,6 +35,7 @@ public class ResultOldData implements ApplicationListener<ContextRefreshedEvent>
     public void onApplicationEvent(ContextRefreshedEvent event) {
         param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
         param.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database"));
+        param.setLog_back(appContext.getEnvironment().getProperty("dhnclient.log_back","Y"));
         log_table = appContext.getEnvironment().getProperty("dhnclient.log_table");
 
         param.setTime("4");
@@ -49,16 +50,21 @@ public class ResultOldData implements ApplicationListener<ContextRefreshedEvent>
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
             LocalDateTime now = LocalDateTime.now();
-            String group_no = "8" + now.format(formatter);
+            String group_no = "OD" + now.format(formatter);
 
             if(!group_no.equals(preGroupNo)){
                 try {
                     int cnt = oldDataService.old_data_count(param);
                     if(cnt > 0){
-                        LocalDate logdate = LocalDate.now();
-                        DateTimeFormatter log_formatter = DateTimeFormatter.ofPattern("yyyyMM");
-                        String currentMonth = logdate.format(log_formatter);
-                        param.setLog_table(log_table+"_"+currentMonth);
+
+                        if(param.getLog_back().equalsIgnoreCase("Y")){
+                            LocalDate logdate = LocalDate.now();
+                            DateTimeFormatter log_formatter = DateTimeFormatter.ofPattern("yyyyMM");
+                            String currentMonth = logdate.format(log_formatter);
+                            param.setLog_table(log_table+"_"+currentMonth);
+                        }else{
+                            param.setLog_table(log_table);
+                        }
                         param.setGroup_no(group_no);
 
                         oldDataService.old_data_group_update(param);

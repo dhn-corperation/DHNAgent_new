@@ -21,6 +21,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 @Component
 @Slf4j
@@ -33,6 +36,8 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private String dhnServer;
 	private String userid;
 	private String preGroupNo = "";
+
+	private static final ExecutorService executorService = Executors.newFixedThreadPool(3);
 
 	@Autowired
 	private MSGRequestService msgRequestService;
@@ -68,55 +73,81 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private void SendProcess() {
 		if(isStart && !isProc) {
 			isProc = true;
-			
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
-			LocalDateTime now = LocalDateTime.now();
-			String group_no = "2" + now.format(formatter);
-			
-			if(!group_no.equals(preGroupNo)) {
-				try {
-					int cnt = msgRequestService.selectSMSReqeustCount(param);
-					
-					if(cnt > 0) {
-						param.setGroup_no(group_no);
-						msgRequestService.updateSMSGroupNo(param);
-						
-						List<RequestBean> _list = msgRequestService.selectSMSRequests(param);
 
-						StringWriter sw = new StringWriter();
-						ObjectMapper om = new ObjectMapper();
-						om.writeValue(sw, _list);
+			ThreadPoolExecutor poolExecutor = (ThreadPoolExecutor) executorService;
+			int activeThreads = poolExecutor.getActiveCount();
 
-						HttpHeaders header = new HttpHeaders();
+			if(activeThreads < 3){
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
+				LocalDateTime now = LocalDateTime.now();
+				String group_no = "S" + now.format(formatter);
 
-						header.setContentType(MediaType.APPLICATION_JSON);
-						header.set("userid", userid);
+				if(!group_no.equals(preGroupNo)) {
 
-						RestTemplate rt = new RestTemplate();
-						HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
+					try{
+						int cnt = msgRequestService.selectSMSReqeustCount(param);
 
-						try {
-							ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
-							Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-							if(response.getStatusCode() ==  HttpStatus.OK)
-							{
-								msgRequestService.updateSMSSendComplete(param);
-								log.info("SMS 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
-							} else {
-								log.info("({}) SMS 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
-								msgRequestService.updateSMSSendInit(param);
-							}
-						}catch (Exception e) {
-							log.error("SMS 메세지 전송 오류 : " + e.toString());
-							msgRequestService.updateSMSSendInit(param);
+						if(cnt > 0) {
+							param.setGroup_no(group_no);
+							msgRequestService.updateSMSGroupNo(param);
+
+							executorService.submit(() -> APIProcess(group_no));
+
 						}
+					}catch (Exception e){
+						log.error("SMS 메세지 전송 오류 : " + e.toString());
 					}
-				}catch (Exception e) {
-					log.error("SMS 메세지 전송 오류 : " + e.toString());
+
+					preGroupNo = group_no;
 				}
-				preGroupNo = group_no;
 			}
 			isProc = false;
+		}
+	}
+
+	private void APIProcess(String group_no) {
+		try{
+			SQLParameter sendParam = new SQLParameter();
+			sendParam.setGroup_no(group_no);
+			sendParam.setMsg_table(param.getMsg_table());
+			sendParam.setDatabase(param.getDatabase());
+			sendParam.setSequence(param.getSequence());
+			sendParam.setMsg_type(param.getMsg_type());
+			sendParam.setSms_kind(param.getSms_kind());
+
+
+			List<RequestBean> _list = msgRequestService.selectSMSRequests(sendParam);
+
+			StringWriter sw = new StringWriter();
+			ObjectMapper om = new ObjectMapper();
+			om.writeValue(sw, _list);
+
+			HttpHeaders header = new HttpHeaders();
+
+			header.setContentType(MediaType.APPLICATION_JSON);
+			header.set("userid", userid);
+
+			RestTemplate rt = new RestTemplate();
+			HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
+
+			try {
+				ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
+				Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
+				log.info(res.toString());
+				if(response.getStatusCode() ==  HttpStatus.OK)
+				{
+					msgRequestService.updateSMSSendComplete(sendParam);
+					log.info("SMS 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
+				} else {
+					log.info("({}) SMS 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
+					msgRequestService.updateSMSSendInit(sendParam);
+				}
+			}catch (Exception e) {
+				log.error("SMS 메세지 전송 오류 : " + e.toString());
+				msgRequestService.updateSMSSendInit(sendParam);
+			}
+		}catch (Exception e){
+			log.error("SMS 메세지 전송 오류 : " + e.toString());
 		}
 	}
 
