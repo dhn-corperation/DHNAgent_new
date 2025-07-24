@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +24,7 @@ public class MSGRequestDAOimpl implements MSGRequestDAO{
     private SqlSession sqlSession;
 
     @Override
-    public int selectSMSReqeustCount(SQLParameter param) throws Exception {
+    public int selectSMSRequestCount(SQLParameter param) throws Exception {
         return sqlSession.selectOne("com.dhn.client.msg.mapper.SendRequest.req_sms_count",param);
     }
 
@@ -71,7 +72,7 @@ public class MSGRequestDAOimpl implements MSGRequestDAO{
     }
 
     @Override
-    public int selectLMSReqeustCount(SQLParameter param) throws Exception {
+    public int selectLMSRequestCount(SQLParameter param) throws Exception {
         return sqlSession.selectOne("com.dhn.client.msg.mapper.SendRequest.req_lms_count",param);
     }
 
@@ -86,7 +87,7 @@ public class MSGRequestDAOimpl implements MSGRequestDAO{
     }
 
     @Override
-    public int selectMMSReqeustCount(SQLParameter param) throws Exception {
+    public int selectMMSRequestCount(SQLParameter param) throws Exception {
         return sqlSession.selectOne("com.dhn.client.msg.mapper.SendRequest.req_mms_count",param);
     }
 
@@ -120,5 +121,20 @@ public class MSGRequestDAOimpl implements MSGRequestDAO{
         sqlSession.update("com.dhn.client.msg.mapper.SendRequest.mms_image_fail_update",param);
         sqlSession.update("com.dhn.client.msg.mapper.SendRequest.mms_image_fail_log_Insert", param);
         sqlSession.update("com.dhn.client.msg.mapper.SendRequest.mms_image_fail_delete", param);
+    }
+
+    @Override
+    public int selectOTPRequestCount(SQLParameter param) throws Exception {
+        return sqlSession.selectOne("com.dhn.client.msg.mapper.SendRequest.req_otp_count",param);
+    }
+
+    @Override
+    public void updateOTPGroupNo(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.msg.mapper.SendRequest.req_otp_group_update",param);
+    }
+
+    @Override
+    public List<RequestBean> selectOTPRequests(SQLParameter param) throws Exception {
+        return sqlSession.selectList("com.dhn.client.msg.mapper.SendRequest.req_otp_select",param);
     }
 }

@@ -85,7 +85,7 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 				if(!group_no.equals(preGroupNo)) {
 
 					try{
-						int cnt = msgRequestService.selectSMSReqeustCount(param);
+						int cnt = msgRequestService.selectSMSRequestCount(param);
 
 						if(cnt > 0) {
 							param.setGroup_no(group_no);

@@ -96,7 +96,7 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 
 				if(!group_no.equals(preGroupNo)) {
 					try{
-						int cnt = msgRequestService.selectMMSReqeustCount(param);
+						int cnt = msgRequestService.selectMMSRequestCount(param);
 
 						if(cnt > 0) {
 							param.setGroup_no(group_no);

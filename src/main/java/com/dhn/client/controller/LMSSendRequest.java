@@ -76,14 +76,14 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 			ThreadPoolExecutor poolExecutor = (ThreadPoolExecutor) executorService;
 			int activeThreads = poolExecutor.getActiveCount();
 
-			if(activeThreads < 5){
+			if(activeThreads < 3){
 				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
 				LocalDateTime now = LocalDateTime.now();
 				String group_no = "L" + now.format(formatter);
 
 				if(!group_no.equals(preGroupNo)) {
 					try{
-						int cnt = msgRequestService.selectLMSReqeustCount(param);
+						int cnt = msgRequestService.selectLMSRequestCount(param);
 
 						if(cnt > 0) {
 							param.setGroup_no(group_no);

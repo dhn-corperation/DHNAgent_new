@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -19,8 +20,8 @@ public class MSGRequestServiceimpl implements MSGRequestService {
     private MSGRequestDAO  msgRequestDAO;
 
     @Override
-    public int selectSMSReqeustCount(SQLParameter param) throws Exception {
-        return msgRequestDAO.selectSMSReqeustCount(param);
+    public int selectSMSRequestCount(SQLParameter param) throws Exception {
+        return msgRequestDAO.selectSMSRequestCount(param);
     }
 
     @Override
@@ -64,8 +65,8 @@ public class MSGRequestServiceimpl implements MSGRequestService {
     }
 
     @Override
-    public int selectLMSReqeustCount(SQLParameter param) throws Exception {
-        return msgRequestDAO.selectLMSReqeustCount(param);
+    public int selectLMSRequestCount(SQLParameter param) throws Exception {
+        return msgRequestDAO.selectLMSRequestCount(param);
     }
 
     @Override
@@ -79,8 +80,8 @@ public class MSGRequestServiceimpl implements MSGRequestService {
     }
 
     @Override
-    public int selectMMSReqeustCount(SQLParameter param) throws Exception {
-        return msgRequestDAO.selectMMSReqeustCount(param);
+    public int selectMMSRequestCount(SQLParameter param) throws Exception {
+        return msgRequestDAO.selectMMSRequestCount(param);
     }
 
     @Override
@@ -111,5 +112,20 @@ public class MSGRequestServiceimpl implements MSGRequestService {
     @Override
     public void updateMMSImageFail(SQLParameter param) throws Exception {
         msgRequestDAO.updateMMSImageFail(param);
+    }
+
+    @Override
+    public int selectOTPRequestCount(SQLParameter param) throws Exception {
+        return msgRequestDAO.selectOTPRequestCount(param);
+    }
+
+    @Override
+    public void updateOTPGroupNo(SQLParameter param) throws Exception {
+        msgRequestDAO.updateOTPGroupNo(param);
+    }
+
+    @Override
+    public List<RequestBean> selectOTPRequests(SQLParameter param) throws Exception {
+        return msgRequestDAO.selectOTPRequests(param);
     }
 }

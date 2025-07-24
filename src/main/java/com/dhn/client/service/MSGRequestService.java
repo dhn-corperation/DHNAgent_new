@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface MSGRequestService {
 
-    public int selectSMSReqeustCount(SQLParameter param) throws Exception;
+    public int selectSMSRequestCount(SQLParameter param) throws Exception;
 
     public void updateSMSGroupNo(SQLParameter param) throws Exception;
 
@@ -27,13 +27,13 @@ public interface MSGRequestService {
 
     public void log_move(SQLParameter param) throws Exception;
 
-    public int selectLMSReqeustCount(SQLParameter param) throws Exception;
+    public int selectLMSRequestCount(SQLParameter param) throws Exception;
 
     public void updateLMSGroupNo(SQLParameter param) throws Exception;
 
     public List<RequestBean> selectLMSRequests(SQLParameter param) throws Exception;
 
-    public int selectMMSReqeustCount(SQLParameter param) throws Exception;
+    public int selectMMSRequestCount(SQLParameter param) throws Exception;
 
     public void updateMMSGroupNo(SQLParameter param) throws Exception;
 
@@ -46,4 +46,10 @@ public interface MSGRequestService {
     public void updateMMSImageGroup(SQLParameter param) throws Exception;
 
     public void updateMMSImageFail(SQLParameter param) throws Exception;
+
+    public int selectOTPRequestCount(SQLParameter param) throws Exception;
+
+    public void updateOTPGroupNo(SQLParameter param) throws Exception;
+
+    public List<RequestBean> selectOTPRequests(SQLParameter sendParam) throws Exception;
 }
