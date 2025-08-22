@@ -236,9 +236,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			}
 
 		}
-		log.info("결과 수신 완료 : " + json.length() + " 건");		
-		procCnt--;
-		
+		log.info("결과 수신 완료 : " + json.length() + " 건");
 	}
 
 }
