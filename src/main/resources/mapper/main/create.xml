@@ -163,7 +163,8 @@
            PRIMARY KEY (`id`),
            KEY `${msg_table}_IDX1` (`STATUS`,`RESERVE_DT`,`MESSAGE_TYPE`,`SMS_KIND`,`SEND_GROUP`) USING BTREE,
            KEY `${msg_table}_IDX2` (`STATUS`,`RESERVE_DT`,`MESSAGE_TYPE`,`SMS_KIND`,`SEND_GROUP`,`IMAGE_URL`,`FI_IMAGE_PATH`,`MMS_IMAGE_KEY`) USING BTREE,
-           KEY `${msg_table}_IDX3` (`SEND_GROUP`) USING BTREE
+           KEY `${msg_table}_IDX3` (`SEND_GROUP`) USING BTREE,
+           KEY `${msg_table}_IDX4` (`MSG_ID`) USING BTREE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
     </update>
 
