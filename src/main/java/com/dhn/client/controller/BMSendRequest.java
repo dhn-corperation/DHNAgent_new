@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.StringWriter;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -36,6 +37,8 @@ public class BMSendRequest implements ApplicationListener<ContextRefreshedEvent>
     private String dhnServer;
     private String userid;
     private String preGroupNo = "";
+    private String log_back = "";
+    private String log_table = "";
 
     private static final ExecutorService executorService = Executors.newFixedThreadPool(2);
 
@@ -58,6 +61,9 @@ public class BMSendRequest implements ApplicationListener<ContextRefreshedEvent>
 
         dhnServer = appContext.getEnvironment().getProperty("dhnclient.server");
         userid = appContext.getEnvironment().getProperty("dhnclient.userid");
+        log_back = appContext.getEnvironment().getProperty("dhnclient.log_back","Y");
+        log_table = appContext.getEnvironment().getProperty("dhnclient.log_table");
+
 
         if (param.getBrand_use() != null && param.getBrand_use().equalsIgnoreCase("Y")) {
             isStart = true;
@@ -117,6 +123,7 @@ public class BMSendRequest implements ApplicationListener<ContextRefreshedEvent>
             List<BMDataBean> _list = bmRequestService.selectBMRequests(sendParam);
 
             List<BMRequestBean> sendList = new ArrayList<>();
+            List<String> invalidList = new ArrayList<>();
 
             for (BMDataBean bmDataBean  : _list ) {
                 BMRequestBean sendBean = new BMRequestBean();
@@ -138,111 +145,187 @@ public class BMSendRequest implements ApplicationListener<ContextRefreshedEvent>
                 sendBean.setCurrencytype(bmDataBean.getCurrencytype());
                 sendBean.setHeader(bmDataBean.getHeader());
                 sendBean.setKisacode(bmDataBean.getKisacode());
+                sendBean.setKind(bmDataBean.getKind());
 
                 ObjectMapper mapper = new ObjectMapper();
 
                 ObjectNode attNode = mapper.createObjectNode();
 
-                if (isValidJson(bmDataBean.getAttimage())) {
+                JsonStatus stImg = isValidJson(bmDataBean.getAttimage());
+                if (stImg == JsonStatus.VALID) {
                     attNode.set("image", mapper.readTree(bmDataBean.getAttimage()));
+                } else if (stImg == JsonStatus.INVALID) {
+                    log.error("Invalid JSON (image) msgid={}", bmDataBean.getMsgid());
+                    invalidList.add(bmDataBean.getMsgid());
+                    continue;
                 }
-                if (isValidJson(bmDataBean.getAttbutton())) {
+
+                JsonStatus stBtn = isValidJson(bmDataBean.getAttbutton());
+                if (stBtn == JsonStatus.VALID) {
                     attNode.set("button", mapper.readTree(bmDataBean.getAttbutton()));
+                } else if (stBtn == JsonStatus.INVALID) {
+                    log.error("Invalid JSON (button) msgid={}", bmDataBean.getMsgid());
+                    invalidList.add(bmDataBean.getMsgid());
+                    continue;
                 }
-                if (isValidJson(bmDataBean.getAttitem())) {
+
+                JsonStatus stItem = isValidJson(bmDataBean.getAttitem());
+                if (stItem == JsonStatus.VALID) {
                     attNode.set("item", mapper.readTree(bmDataBean.getAttitem()));
+                } else if (stItem == JsonStatus.INVALID) {
+                    log.error("Invalid JSON (item) msgid={}", bmDataBean.getMsgid());
+                    invalidList.add(bmDataBean.getMsgid());
+                    continue;
                 }
-                if (isValidJson(bmDataBean.getAttcoupon())) {
+
+                JsonStatus stCoupon = isValidJson(bmDataBean.getAttcoupon());
+                if (stCoupon == JsonStatus.VALID) {
                     attNode.set("coupon", mapper.readTree(bmDataBean.getAttcoupon()));
+                } else if (stCoupon == JsonStatus.INVALID) {
+                    log.error("Invalid JSON (coupon) msgid={}", bmDataBean.getMsgid());
+                    invalidList.add(bmDataBean.getMsgid());
+                    continue;
                 }
-                if (isValidJson(bmDataBean.getAttcommerce())) {
+
+                JsonStatus stCommerce = isValidJson(bmDataBean.getAttcommerce());
+                if (stCommerce == JsonStatus.VALID) {
                     attNode.set("commerce", mapper.readTree(bmDataBean.getAttcommerce()));
+                } else if (stCommerce == JsonStatus.INVALID) {
+                    log.error("Invalid JSON (commerce) msgid={}", bmDataBean.getMsgid());
+                    invalidList.add(bmDataBean.getMsgid());
+                    continue;
                 }
-                if (isValidJson(bmDataBean.getAttvideo())) {
+
+                JsonStatus stVideo = isValidJson(bmDataBean.getAttvideo());
+                if (stVideo == JsonStatus.VALID) {
                     attNode.set("video", mapper.readTree(bmDataBean.getAttvideo()));
+                } else if (stVideo == JsonStatus.INVALID) {
+                    log.error("Invalid JSON (video) msgid={}", bmDataBean.getMsgid());
+                    invalidList.add(bmDataBean.getMsgid());
+                    continue;
                 }
 
                 if (attNode.size() > 0) {
-                    Attachments attObj = mapper.treeToValue(attNode, Attachments.class);
-                    sendBean.setAttachments(attObj);
+                    sendBean.setAttachments(mapper.writeValueAsString(attNode)); // String
                 }
 
                 // ===== carousel 조립 =====
                 ObjectNode carNode = mapper.createObjectNode();
 
-                if (isValidJson(bmDataBean.getCarhead())) {
+                JsonStatus stHead = isValidJson(bmDataBean.getCarhead());
+                if (stHead == JsonStatus.VALID) {
                     carNode.set("head", mapper.readTree(bmDataBean.getCarhead()));
+                } else if (stHead == JsonStatus.INVALID) {
+                    log.error("Invalid JSON (carhead) msgid={}", bmDataBean.getMsgid());
+                    invalidList.add(bmDataBean.getMsgid());
+                    continue;
                 }
-                if (isValidJson(bmDataBean.getCarlist())) {
-                    carNode.set("list", mapper.readTree(bmDataBean.getCarlist())); // 배열 []
+
+                JsonStatus stList = isValidJson(bmDataBean.getCarlist());
+                if (stList == JsonStatus.VALID) {
+                    carNode.set("list", mapper.readTree(bmDataBean.getCarlist()));
+                } else if (stList == JsonStatus.INVALID) {
+                    log.error("Invalid JSON (carlist) msgid={}", bmDataBean.getMsgid());
+                    invalidList.add(bmDataBean.getMsgid());
+                    continue;
                 }
-                if (isValidJson(bmDataBean.getCartail())) {
+
+                JsonStatus stTail = isValidJson(bmDataBean.getCartail());
+                if (stTail == JsonStatus.VALID) {
                     carNode.set("tail", mapper.readTree(bmDataBean.getCartail()));
+                } else if (stTail == JsonStatus.INVALID) {
+                    log.error("Invalid JSON (cartail) msgid={}", bmDataBean.getMsgid());
+                    invalidList.add(bmDataBean.getMsgid());
+                    continue;
                 }
 
                 if (carNode.size() > 0) {
-                    Carousel carObj = mapper.treeToValue(carNode, Carousel.class);
-                    sendBean.setCarousel(carObj);
+                    sendBean.setCarousel(mapper.writeValueAsString(carNode)); // String
                 }
 
                 sendList.add(sendBean);
             }
 
+            if (!invalidList.isEmpty()) {
+                try {
+                    Msg_Log ml = new Msg_Log();
+                    ml.setMsg_table(param.getMsg_table());
+                    ml.setDatabase(param.getDatabase());
 
+                    if(log_back.equalsIgnoreCase("Y")){
+                        LocalDate now = LocalDate.now();
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
+                        String currentMonth = now.format(formatter);
 
-            /*
-            StringWriter sw = new StringWriter();
-            ObjectMapper om = new ObjectMapper();
-            om.writeValue(sw, _list); // List를 Json화 하여 문자열 저장
+                        ml.setLog_table(log_table+"_"+currentMonth);
+                    }else{
+                        ml.setLog_table(log_table);
+                    }
 
-            HttpHeaders header = new HttpHeaders();
+                    ml.setStatus("4");
+                    ml.setResult_message("INVALID JSON 데이터");
+                    ml.setCode("9999");
 
-            header.setContentType(MediaType.APPLICATION_JSON);
-            header.set("userid", userid);
-
-            RestTemplate rt = new RestTemplate();
-            HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
-
-            try {
-                ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
-                Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-                log.info(res.toString());
-                if (response.getStatusCode() == HttpStatus.OK) { // 데이터 정상적으로 전달
-                    bmRequestService.updateKAOSendComplete(sendParam);
-                    log.info("BM 메세지 전송 완료 : " + response.getStatusCode() + " / " + group_no + " / " + _list.size() + " 건");
-                }else { // API 전송 실패시
-                    log.info("({}) BM 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
-                    bmRequestService.updateKAOSendInit(sendParam);
+                    bmRequestService.updateInvalidData(invalidList, ml);
+                    log.info("BM Invalid 데이터 {}건 처리 완료", invalidList.size());
+                } catch (Exception e) {
+                    log.error("BM Invalid 데이터 처리 오류: {}", e.getMessage());
                 }
-            } catch (Exception e) {
-                log.error("BM 메세지 전송 오류 : " + e.toString());
-                bmRequestService.updateKAOSendInit(sendParam);
             }
 
-             */
+            if (!sendList.isEmpty()) {
+
+                StringWriter sw = new StringWriter();
+                ObjectMapper om = new ObjectMapper();
+                om.writeValue(sw, sendList);
+
+                HttpHeaders header = new HttpHeaders();
+
+                header.setContentType(MediaType.APPLICATION_JSON);
+                header.set("userid", userid);
+
+                RestTemplate rt = new RestTemplate();
+                HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
+
+                try {
+                    ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
+                    Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
+                    log.info(res.toString());
+                    if (response.getStatusCode() == HttpStatus.OK) { // 데이터 정상적으로 전달
+                        bmRequestService.updateBMSendComplete(sendParam);
+                        log.info("BM 메세지 전송 완료 : " + response.getStatusCode() + " / " + group_no + " / " + sendList.size() + " 건");
+                    }else { // API 전송 실패시
+                        log.info("({}) BM 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
+                        bmRequestService.updateBMSendInit(sendParam);
+                    }
+                } catch (Exception e) {
+                    log.error("BM 메세지 전송 오류 : " + e.toString());
+                    bmRequestService.updateBMSendInit(sendParam);
+                }
+
+            }
         }catch (Exception e){
             log.error("BM 메세지 전송 오류 : " + e.toString());
         }
     }
 
-    private boolean isValidJson(String str) {
-        if (str == null || str.trim().isEmpty()) return false;
+    private JsonStatus isValidJson(String str) {
+        if (str == null || str.trim().isEmpty()) return JsonStatus.EMPTY;
 
         try {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode node = mapper.readTree(str);
 
             if (node.isArray()) {
-                return node.size() > 0;
+                return node.size() > 0 ? JsonStatus.VALID : JsonStatus.EMPTY;
             }
-
             if (node.isObject()) {
-                return node.fieldNames().hasNext();
+                return node.fieldNames().hasNext() ? JsonStatus.VALID : JsonStatus.EMPTY;
             }
-            return false;
+            return JsonStatus.INVALID;
 
         } catch (Exception e) {
-            return false;
+            return JsonStatus.INVALID;
         }
     }
 

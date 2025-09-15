@@ -46,8 +46,9 @@ public class BMRequestBean {
     private String btn_url;
     private String button;
     private String realsendflag;
-    private Attachments attachments;
-    private Carousel carousel;
+    private String attachments;
+    private String carousel;
     private String link;
     private String kisacode;
+    private String kind;
 }

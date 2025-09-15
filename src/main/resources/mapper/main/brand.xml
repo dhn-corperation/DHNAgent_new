@@ -55,6 +55,7 @@
                 SELECT
                     MSG_ID AS msgid,
                     MESSAGE_TYPE AS messagetype,
+                    KIND AS kind,
                     MESSAGE AS msg,
                     MSG AS msgsms,
                     CASE
@@ -97,6 +98,7 @@
                 SELECT
                     MSG_ID AS msgid,
                     MESSAGE_TYPE AS messagetype,
+                    KIND AS kind,
                     MESSAGE AS msg,
                     MSG AS msgsms,
                     CASE
@@ -137,5 +139,110 @@
             </when>
         </choose>
     </select>
+
+    <update id="req_bm_sent_complete" parameterType = "com.dhn.client.bean.SQLParameter" >
+        <choose>
+            <when test="database == 'oracle'">
+                UPDATE ${msg_table}
+                SET STATUS = '2',
+                RESPONSE_DT = SYSDATE
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+            <when test="database == 'mysql'">
+                UPDATE ${msg_table}
+                SET STATUS = '2',
+                RESPONSE_DT = NOW()
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+        </choose>
+    </update>
+
+    <update id="req_bm_sent_init" parameterType = "com.dhn.client.bean.SQLParameter" >
+        <choose>
+            <when test="database == 'oracle'">
+                UPDATE ${msg_table}
+                SET STATUS = '0',
+                SEND_GROUP = NULL,
+                RESPONSE_DT = NULL
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+            <when test="database == 'mysql'">
+                UPDATE ${msg_table}
+                SET STATUS = '0',
+                SEND_GROUP = NULL,
+                RESPONSE_DT = NULL
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+        </choose>
+    </update>
+
+    <update id="bmInvalidUpdate" parameterType="map">
+        <choose>
+            <when test="ml.database == 'oracle'">
+                UPDATE ${ml.msg_table}
+                SET STATUS = '${ml.status}',
+                RESULT_MESSAGE = '${ml.result_message}',
+                RESULT_DT = TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS'),
+                RESULT = '${ml.code}'
+                WHERE MSG_ID IN
+                <foreach collection="list" item="msgid" open="(" separator="," close=")">
+                    #{msgid}
+                </foreach>
+            </when>
+            <when test="ml.database == 'mysql'">
+                UPDATE ${ml.msg_table}
+                SET STATUS = '${ml.status}',
+                RESULT_MESSAGE = '${ml.result_message}',
+                RESULT_DT = DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s'),
+                RESULT = '${ml.code}'
+                WHERE MSG_ID IN
+                <foreach collection="list" item="msgid" open="(" separator="," close=")">
+                    #{msgid}
+                </foreach>
+            </when>
+        </choose>
+    </update>
+
+    <insert id="bmInvalidLogInsert" parameterType="map">
+        <choose>
+            <when test="ml.database == 'oracle'">
+                INSERT INTO ${ml.log_table}
+                SELECT *
+                FROM ${ml.msg_table}
+                WHERE MSG_ID IN
+                <foreach collection="list" item="msgid" open="(" separator="," close=")">
+                    #{msgid}
+                </foreach>
+            </when>
+            <when test="ml.database == 'mysql'">
+                INSERT INTO ${ml.log_table}
+                SELECT *
+                FROM ${ml.msg_table}
+                WHERE MSG_ID IN
+                <foreach collection="list" item="msgid" open="(" separator="," close=")">
+                    #{msgid}
+                </foreach>
+            </when>
+        </choose>
+    </insert>
+
+    <delete id="bmInvalidResultDelete" parameterType="map">
+        <choose>
+            <when test="ml.database == 'oracle'">
+                DELETE FROM ${ml.msg_table}
+                WHERE MSG_ID IN
+                <foreach collection="list" item="msgid" open="(" separator="," close=")">
+                    #{msgid}
+                </foreach>
+            </when>
+            <when test="ml.database == 'mysql'">
+                DELETE FROM ${ml.msg_table}
+                WHERE MSG_ID IN
+                <foreach collection="list" item="msgid" open="(" separator="," close=")">
+                    #{msgid}
+                </foreach>
+            </when>
+        </choose>
+    </delete>
 
 </mapper>

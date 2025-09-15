@@ -59,4 +59,5 @@ public class BMDataBean {
     private String carhead;
     private String carlist;
     private String cartail;
+    private String kind;
 }

@@ -2,13 +2,16 @@ package com.dhn.client.dao;
 
 import com.dhn.client.bean.BMDataBean;
 import com.dhn.client.bean.BMRequestBean;
+import com.dhn.client.bean.Msg_Log;
 import com.dhn.client.bean.SQLParameter;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public class BMRequestDAOimpl implements BMRequestDAO {
@@ -31,5 +34,26 @@ public class BMRequestDAOimpl implements BMRequestDAO {
     @Override
     public List<BMDataBean> selectBMRequests(SQLParameter param) throws Exception {
         return sqlSession.selectList("com.dhn.client.brand.mapper.SendRequest.req_bm_select", param);
+    }
+
+    @Override
+    public void updateBMSendComplete(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.brand.mapper.SendRequest.req_bm_sent_complete", param);
+    }
+
+    @Override
+    public void updateBMSendInit(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.brand.mapper.SendRequest.req_bm_sent_init", param);
+    }
+
+    @Override
+    public void updateInvalidData(List<String> invalidList, Msg_Log ml) throws Exception {
+        Map<String, Object> param = new HashMap<>();
+        param.put("list", invalidList);
+        param.put("ml", ml);
+
+        sqlSession.update("com.dhn.client.brand.mapper.SendRequest.bmInvalidUpdate", param);
+        sqlSession.delete("com.dhn.client.brand.mapper.SendRequest.bmInvalidLogInsert", param);
+        sqlSession.insert("com.dhn.client.brand.mapper.SendRequest.bmInvalidResultDelete", param);
     }
 }

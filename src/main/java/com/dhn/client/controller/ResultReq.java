@@ -137,8 +137,13 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 
 			String result_message = ent.getString("message").isEmpty()?"":ent.getString("message");
 
-			if(ent.getString("message_type").equalsIgnoreCase("AT") || ent.getString("message_type").equalsIgnoreCase("AI") || ent.getString("message_type").equalsIgnoreCase("FI") || ent.getString("message_type").equalsIgnoreCase("FT")){
-				// 알림톡
+			if(ent.getString("message_type").equalsIgnoreCase("AT")
+					|| ent.getString("message_type").equalsIgnoreCase("AI")
+					|| ent.getString("message_type").equalsIgnoreCase("FI")
+					|| ent.getString("message_type").equalsIgnoreCase("FT")
+					|| ent.getString("message_type").toUpperCase().startsWith("B")
+					|| ent.getString("message_type").toUpperCase().startsWith("C")){
+				// 비즈메세지
 				kao_ml.setMsgid(ent.getString("msgid"));
 				kao_ml.setMsg_table(msg_table);
 				if(log_back.equalsIgnoreCase("Y")){
@@ -150,7 +155,12 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 
 				kao_ml.setResult_dt(ent.getString("res_dt"));
 				kao_ml.setS_code(ent.getString("s_code"));
-				kao_ml.setResult_message(result_message.equalsIgnoreCase("")?"":result_message);
+				if (result_message == null || result_message.trim().isEmpty()) {
+					kao_ml.setResult_message("");
+				} else {
+					// 작은따옴표 → 두 개의 작은따옴표로 치환
+					kao_ml.setResult_message(result_message.replace("'", "''"));
+				}
 
 				if(ent.getString("s_code").equals("0000")){
 					kao_ml.setStatus("3");
@@ -182,7 +192,12 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 					kao_ml.setTelecom("ETC");
 				}
 				kao_ml.setResult_dt(ent.getString("remark2"));
-				kao_ml.setResult_message(result_message.equalsIgnoreCase("")?"":result_message);
+				if (result_message == null || result_message.trim().isEmpty()) {
+					kao_ml.setResult_message("");
+				} else {
+					// 작은따옴표 → 두 개의 작은따옴표로 치환
+					kao_ml.setResult_message(result_message.replace("'", "''"));
+				}
 
 				if(ent.getString("code").equals("0000")){
 					kao_ml.setStatus("3");
@@ -216,7 +231,12 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 				}
 
 				msg_ml.setResult_dt(ent.getString("remark2"));
-				msg_ml.setResult_message(result_message.equalsIgnoreCase("")?"":result_message);
+				if (result_message == null || result_message.trim().isEmpty()) {
+					msg_ml.setResult_message("");
+				} else {
+					// 작은따옴표 → 두 개의 작은따옴표로 치환
+					msg_ml.setResult_message(result_message.replace("'", "''"));
+				}
 
 				if(ent.getString("code").equals("0000")){
 					msg_ml.setStatus("3");
