@@ -74,7 +74,7 @@ public class BMSendRequest implements ApplicationListener<ContextRefreshedEvent>
 
     }
 
-    @Scheduled(fixedDelay = 2000)
+    @Scheduled(fixedDelay = 100)
     public void SendProcess() {
         if(isStart && !isProc) {
             isProc = true;
@@ -146,6 +146,7 @@ public class BMSendRequest implements ApplicationListener<ContextRefreshedEvent>
                 sendBean.setHeader(bmDataBean.getHeader());
                 sendBean.setKisacode(bmDataBean.getKisacode());
                 sendBean.setKind(bmDataBean.getKind());
+                sendBean.setSupplement(bmDataBean.getSupplement());
 
                 ObjectMapper mapper = new ObjectMapper();
 
@@ -155,7 +156,7 @@ public class BMSendRequest implements ApplicationListener<ContextRefreshedEvent>
                 if (stImg == JsonStatus.VALID) {
                     attNode.set("image", mapper.readTree(bmDataBean.getAttimage()));
                 } else if (stImg == JsonStatus.INVALID) {
-                    log.error("Invalid JSON (image) msgid={}", bmDataBean.getMsgid());
+                    log.error("Invalid JSON/ARRAY (image) msgid={}", bmDataBean.getMsgid());
                     invalidList.add(bmDataBean.getMsgid());
                     continue;
                 }
@@ -164,7 +165,7 @@ public class BMSendRequest implements ApplicationListener<ContextRefreshedEvent>
                 if (stBtn == JsonStatus.VALID) {
                     attNode.set("button", mapper.readTree(bmDataBean.getAttbutton()));
                 } else if (stBtn == JsonStatus.INVALID) {
-                    log.error("Invalid JSON (button) msgid={}", bmDataBean.getMsgid());
+                    log.error("Invalid JSON/ARRAY (button) msgid={}", bmDataBean.getMsgid());
                     invalidList.add(bmDataBean.getMsgid());
                     continue;
                 }
@@ -173,7 +174,7 @@ public class BMSendRequest implements ApplicationListener<ContextRefreshedEvent>
                 if (stItem == JsonStatus.VALID) {
                     attNode.set("item", mapper.readTree(bmDataBean.getAttitem()));
                 } else if (stItem == JsonStatus.INVALID) {
-                    log.error("Invalid JSON (item) msgid={}", bmDataBean.getMsgid());
+                    log.error("Invalid JSON/ARRAY (item) msgid={}", bmDataBean.getMsgid());
                     invalidList.add(bmDataBean.getMsgid());
                     continue;
                 }
@@ -182,7 +183,7 @@ public class BMSendRequest implements ApplicationListener<ContextRefreshedEvent>
                 if (stCoupon == JsonStatus.VALID) {
                     attNode.set("coupon", mapper.readTree(bmDataBean.getAttcoupon()));
                 } else if (stCoupon == JsonStatus.INVALID) {
-                    log.error("Invalid JSON (coupon) msgid={}", bmDataBean.getMsgid());
+                    log.error("Invalid JSON/ARRAY (coupon) msgid={}", bmDataBean.getMsgid());
                     invalidList.add(bmDataBean.getMsgid());
                     continue;
                 }
@@ -191,7 +192,7 @@ public class BMSendRequest implements ApplicationListener<ContextRefreshedEvent>
                 if (stCommerce == JsonStatus.VALID) {
                     attNode.set("commerce", mapper.readTree(bmDataBean.getAttcommerce()));
                 } else if (stCommerce == JsonStatus.INVALID) {
-                    log.error("Invalid JSON (commerce) msgid={}", bmDataBean.getMsgid());
+                    log.error("Invalid JSON/ARRAY (commerce) msgid={}", bmDataBean.getMsgid());
                     invalidList.add(bmDataBean.getMsgid());
                     continue;
                 }
@@ -200,7 +201,7 @@ public class BMSendRequest implements ApplicationListener<ContextRefreshedEvent>
                 if (stVideo == JsonStatus.VALID) {
                     attNode.set("video", mapper.readTree(bmDataBean.getAttvideo()));
                 } else if (stVideo == JsonStatus.INVALID) {
-                    log.error("Invalid JSON (video) msgid={}", bmDataBean.getMsgid());
+                    log.error("Invalid JSON/ARRAY (video) msgid={}", bmDataBean.getMsgid());
                     invalidList.add(bmDataBean.getMsgid());
                     continue;
                 }
@@ -216,7 +217,7 @@ public class BMSendRequest implements ApplicationListener<ContextRefreshedEvent>
                 if (stHead == JsonStatus.VALID) {
                     carNode.set("head", mapper.readTree(bmDataBean.getCarhead()));
                 } else if (stHead == JsonStatus.INVALID) {
-                    log.error("Invalid JSON (carhead) msgid={}", bmDataBean.getMsgid());
+                    log.error("Invalid JSON/ARRAY (carhead) msgid={}", bmDataBean.getMsgid());
                     invalidList.add(bmDataBean.getMsgid());
                     continue;
                 }
@@ -225,7 +226,7 @@ public class BMSendRequest implements ApplicationListener<ContextRefreshedEvent>
                 if (stList == JsonStatus.VALID) {
                     carNode.set("list", mapper.readTree(bmDataBean.getCarlist()));
                 } else if (stList == JsonStatus.INVALID) {
-                    log.error("Invalid JSON (carlist) msgid={}", bmDataBean.getMsgid());
+                    log.error("Invalid JSON/ARRAY (carlist) msgid={}", bmDataBean.getMsgid());
                     invalidList.add(bmDataBean.getMsgid());
                     continue;
                 }
@@ -234,7 +235,7 @@ public class BMSendRequest implements ApplicationListener<ContextRefreshedEvent>
                 if (stTail == JsonStatus.VALID) {
                     carNode.set("tail", mapper.readTree(bmDataBean.getCartail()));
                 } else if (stTail == JsonStatus.INVALID) {
-                    log.error("Invalid JSON (cartail) msgid={}", bmDataBean.getMsgid());
+                    log.error("Invalid JSON/ARRAY (cartail) msgid={}", bmDataBean.getMsgid());
                     invalidList.add(bmDataBean.getMsgid());
                     continue;
                 }
