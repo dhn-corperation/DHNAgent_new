@@ -91,7 +91,8 @@
                     ATT_VIDEO as attvideo,
                     CAR_HEAD as carhead,
                     CAR_LIST as carlist,
-                    CAR_TAIL as cartail
+                    CAR_TAIL as cartail,
+                    GROUP_TAG as grouptag
                 FROM ${msg_table}
                 WHERE SEND_GROUP = #{group_no}
             </when>
@@ -135,7 +136,8 @@
                     ATT_VIDEO as attvideo,
                     CAR_HEAD as carhead,
                     CAR_LIST as carlist,
-                    CAR_TAIL as cartail
+                    CAR_TAIL as cartail,
+                    GROUP_TAG as grouptag
                 FROM ${msg_table}
                 WHERE SEND_GROUP = #{group_no}
             </when>

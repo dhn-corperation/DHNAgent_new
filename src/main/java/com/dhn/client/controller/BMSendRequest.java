@@ -147,6 +147,7 @@ public class BMSendRequest implements ApplicationListener<ContextRefreshedEvent>
                 sendBean.setKisacode(bmDataBean.getKisacode());
                 sendBean.setKind(bmDataBean.getKind());
                 sendBean.setSupplement(bmDataBean.getSupplement());
+                sendBean.setAttitems(bmDataBean.getGrouptag());
 
                 ObjectMapper mapper = new ObjectMapper();
 
@@ -264,8 +265,8 @@ public class BMSendRequest implements ApplicationListener<ContextRefreshedEvent>
                     }
 
                     ml.setStatus("4");
-                    ml.setResult_message("INVALID JSON 데이터");
-                    ml.setCode("9999");
+                    ml.setResult_message("(AGENT) JSON/ARRAY 데이터 형식 오류");
+                    ml.setCode("7999");
 
                     bmRequestService.updateInvalidData(invalidList, ml);
                     log.info("BM Invalid 데이터 {}건 처리 완료", invalidList.size());

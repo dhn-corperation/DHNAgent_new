@@ -51,4 +51,5 @@ public class BMRequestBean {
     private String link;
     private String kisacode;
     private String kind;
+    private String attitems;
 }

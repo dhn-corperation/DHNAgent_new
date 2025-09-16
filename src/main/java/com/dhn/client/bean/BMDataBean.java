@@ -60,4 +60,5 @@ public class BMDataBean {
     private String carlist;
     private String cartail;
     private String kind;
+    private String grouptag;
 }
