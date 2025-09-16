@@ -56,4 +56,9 @@ public class BMRequestDAOimpl implements BMRequestDAO {
         sqlSession.delete("com.dhn.client.brand.mapper.SendRequest.bmInvalidLogInsert", param);
         sqlSession.insert("com.dhn.client.brand.mapper.SendRequest.bmInvalidResultDelete", param);
     }
+
+    @Override
+    public List<BMDataBean> selectBCRequests(SQLParameter param) throws Exception {
+        return sqlSession.selectList("com.dhn.client.brand.mapper.SendRequest.req_bc_select", param);
+    }
 }

@@ -20,4 +20,6 @@ public interface BMRequestService {
     public void updateBMSendInit(SQLParameter param) throws Exception;
 
     public void updateInvalidData(List<String> invalidList, Msg_Log ml) throws Exception;
+
+    public List<BMDataBean> selectBCRequests(SQLParameter param) throws Exception;
 }

@@ -3,7 +3,7 @@ package com.dhn.client.bean;
 import lombok.Data;
 
 @Data
-public class BMDataBean {
+public class BCRequestBean {
     private String msgid;
     private String adflag;
     private String button1;
@@ -39,7 +39,6 @@ public class BMDataBean {
     private String currencytype;
     private String title;
     private String header;
-    private String carousel;
     private String att_items;
     private String att_coupon;
     private String crypto;
@@ -48,18 +47,9 @@ public class BMDataBean {
     private String button;
     private String realsendflag;
     private String attachments;
+    private String carousel;
     private String link;
     private String kisacode;
-    private String attmessage;
-    private String attbutton;
-    private String attimage;
-    private String attitem;
-    private String attcoupon;
-    private String attcommerce;
-    private String attvideo;
-    private String carhead;
-    private String carlist;
-    private String cartail;
     private String kind;
-    private String grouptag;
+    private String attitems;
 }

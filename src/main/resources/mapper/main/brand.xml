@@ -69,14 +69,9 @@
                     SMS_KIND as smskind,
                     KISA_CODE as kisacode,
                     TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
-                    BUTTON1 AS button1,
-                    BUTTON2 AS button2,
-                    BUTTON3 AS button3,
-                    BUTTON4 AS button4,
-                    BUTTON5 AS button5,
-                    TMPL_ID AS tmplid,
                     PROFILE AS profile,
                     '00000000000000' AS reservedt,
+                    AD_FLAG as adflag,
                     TITLE as title,
                     HEADER as header,
                     LINK AS link,
@@ -114,14 +109,10 @@
                     SMS_KIND as smskind,
                     KISA_CODE as kisacode,
                     DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s') AS regdt,
-                    BUTTON1 AS button1,
-                    BUTTON2 AS button2,
-                    BUTTON3 AS button3,
-                    BUTTON4 AS button4,
-                    BUTTON5 AS button5,
                     TMPL_ID AS tmplid,
                     PROFILE AS profile,
                     '00000000000000' AS reservedt,
+                    AD_FLAG as adflag,
                     TITLE as title,
                     HEADER as header,
                     LINK AS link,
@@ -248,5 +239,86 @@
             </when>
         </choose>
     </delete>
+
+    <select id="req_bc_select" parameterType = "com.dhn.client.bean.SQLParameter" resultType="com.dhn.client.bean.BMDataBean">
+        <choose>
+            <when test="database == 'oracle'">
+                SELECT
+                    MSG_ID AS msgid,
+                    MESSAGE_TYPE AS messagetype,
+                    KIND AS kind,
+                    MESSAGE AS msg,
+                    MSG AS msgsms,
+                    CASE
+                        WHEN PHN LIKE '82%' THEN PHN
+                        WHEN PHN LIKE '010%' THEN '82' || SUBSTR(PHN, 2, 15)
+                        ELSE '82' || SUBSTR(PHN, 2, 15)
+                    END AS phn,
+                    P_INVOICE as pinvoice,
+                    SMS_SENDER AS smssender,
+                    SMSLMS_TIT AS smslmstit,
+                    SMS_KIND as smskind,
+                    KISA_CODE as kisacode,
+                    TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
+                    TMPL_ID AS tmplid,
+                    PROFILE AS profile,
+                    '00000000000000' AS reservedt,
+                    AD_FLAG as adflag,
+                    TITLE as title,
+                    HEADER as header,
+                    LINK AS link,
+                    SUPPLEMENT AS supplement,
+                    CURRENCY_TYPE as currencytype,
+                    REAL_SEND_FLAG as realsendflag,
+                    ATT_MESSAGE as attmessage,
+                    ATT_BUTTON as attbutton,
+                    ATT_IMAGE as attimage,
+                    ATT_COUPON as attcoupon,
+                    ATT_COMMERCE as attcommerce,
+                    ATT_VIDEO as attvideo,
+                    CAR_LIST as carlist
+                FROM ${msg_table}
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+            <when test="database == 'mysql'">
+                SELECT
+                    MSG_ID AS msgid,
+                    MESSAGE_TYPE AS messagetype,
+                    KIND AS kind,
+                    MESSAGE AS msg,
+                    MSG AS msgsms,
+                    CASE
+                        WHEN PHN LIKE '82%' THEN PHN
+                        WHEN PHN LIKE '010%' THEN CONCAT('82', SUBSTRING(PHN, 2, 15))
+                        ELSE CONCAT('82', SUBSTRING(PHN, 2, 15))
+                    END AS phn,
+                    P_INVOICE as pinvoice,
+                    SMS_SENDER AS smssender,
+                    SMSLMS_TIT AS smslmstit,
+                    SMS_KIND as smskind,
+                    KISA_CODE as kisacode,
+                    DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s') AS regdt,
+                    TMPL_ID AS tmplid,
+                    PROFILE AS profile,
+                    '00000000000000' AS reservedt,
+                    AD_FLAG as adflag,
+                    TITLE as title,
+                    HEADER as header,
+                    LINK AS link,
+                    SUPPLEMENT AS supplement,
+                    CURRENCY_TYPE as currencytype,
+                    REAL_SEND_FLAG as realsendflag,
+                    ATT_MESSAGE as attmessage,
+                    ATT_BUTTON as attbutton,
+                    ATT_IMAGE as attimage,
+                    ATT_COUPON as attcoupon,
+                    ATT_COMMERCE as attcommerce,
+                    ATT_VIDEO as attvideo,
+                    CAR_LIST as carlist
+                FROM ${msg_table}
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+        </choose>
+    </select>
 
 </mapper>

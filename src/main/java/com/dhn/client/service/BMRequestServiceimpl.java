@@ -47,4 +47,9 @@ public class BMRequestServiceimpl implements BMRequestService {
         bmRequestDAO.updateInvalidData(invalidList,ml);
     }
 
+    @Override
+    public List<BMDataBean> selectBCRequests(SQLParameter param) throws Exception {
+        return bmRequestDAO.selectBCRequests(param);
+    }
+
 }
