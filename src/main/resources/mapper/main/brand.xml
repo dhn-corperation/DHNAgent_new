@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhn.client.brand.mapper.SendRequest">
+
+    <select id="bm_kao_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
+        <choose>
+            <when test="database == 'oracle'">
+                SELECT count(1) AS cnt
+                FROM ${msg_table}
+                WHERE STATUS = '0'
+                AND RESERVE_DT &lt;= SYSDATE
+                AND MESSAGE_TYPE LIKE #{msg_type}
+                AND SEND_GROUP IS NULL
+            </when>
+            <when test="database == 'mysql'">
+                SELECT count(1) AS cnt
+                FROM ${msg_table}
+                WHERE STATUS = '0'
+                AND RESERVE_DT &lt;= NOW()
+                AND MESSAGE_TYPE LIKE #{msg_type}
+                AND SEND_GROUP IS NULL
+            </when>
+        </choose>
+    </select>
+
+    <update id="req_bm_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
+        <choose>
+            <when test="database == 'oracle'">
+                UPDATE ${msg_table}
+                SET STATUS = '1',
+                SEND_GROUP = #{group_no}
+                WHERE STATUS = '0'
+                AND RESERVE_DT &lt;= SYSDATE
+                AND MESSAGE_TYPE LIKE #{msg_type}
+                AND SEND_GROUP IS NULL
+                AND ROWNUM &lt;= 100
+            </when>
+            <when test="database == 'mysql'">
+                UPDATE ${msg_table}
+                SET STATUS = '1',
+                SEND_GROUP = #{group_no}
+                WHERE STATUS = '0'
+                AND RESERVE_DT &lt;= NOW()
+                AND MESSAGE_TYPE LIKE #{msg_type}
+                AND SEND_GROUP IS NULL
+                LIMIT 100
+            </when>
+        </choose>
+    </update>
+
+    <select id="req_bm_select" parameterType = "com.dhn.client.bean.SQLParameter" resultType="com.dhn.client.bean.BMDataBean">
+        <choose>
+            <when test="database == 'oracle'">
+                SELECT
+                    MSG_ID AS msgid,
+                    MESSAGE_TYPE AS messagetype,
+                    KIND AS kind,
+                    MESSAGE AS msg,
+                    MSG AS msgsms,
+                    CASE
+                        WHEN PHN LIKE '82%' THEN PHN
+                        WHEN PHN LIKE '010%' THEN '82' || SUBSTR(PHN, 2, 15)
+                        ELSE '82' || SUBSTR(PHN, 2, 15)
+                    END AS phn,
+                    P_INVOICE as pinvoice,
+                    SMS_SENDER AS smssender,
+                    SMSLMS_TIT AS smslmstit,
+                    SMS_KIND as smskind,
+                    KISA_CODE as kisacode,
+                    TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
+                    PROFILE AS profile,
+                    '00000000000000' AS reservedt,
+                    AD_FLAG as adflag,
+                    TITLE as title,
+                    HEADER as header,
+                    LINK AS link,
+                    SUPPLEMENT AS supplement,
+                    CURRENCY_TYPE as currencytype,
+                    REAL_SEND_FLAG as realsendflag,
+                    ATT_BUTTON as attbutton,
+                    ATT_IMAGE as attimage,
+                    ATT_ITEM as attitem,
+                    ATT_COUPON as attcoupon,
+                    ATT_COMMERCE as attcommerce,
+                    ATT_VIDEO as attvideo,
+                    CAR_HEAD as carhead,
+                    CAR_LIST as carlist,
+                    CAR_TAIL as cartail,
+                    GROUP_TAG as grouptag
+                FROM ${msg_table}
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+            <when test="database == 'mysql'">
+                SELECT
+                    MSG_ID AS msgid,
+                    MESSAGE_TYPE AS messagetype,
+                    KIND AS kind,
+                    MESSAGE AS msg,
+                    MSG AS msgsms,
+                    CASE
+                        WHEN PHN LIKE '82%' THEN PHN
+                        WHEN PHN LIKE '010%' THEN CONCAT('82', SUBSTRING(PHN, 2, 15))
+                        ELSE CONCAT('82', SUBSTRING(PHN, 2, 15))
+                    END AS phn,
+                    P_INVOICE as pinvoice,
+                    SMS_SENDER AS smssender,
+                    SMSLMS_TIT AS smslmstit,
+                    SMS_KIND as smskind,
+                    KISA_CODE as kisacode,
+                    DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s') AS regdt,
+                    TMPL_ID AS tmplid,
+                    PROFILE AS profile,
+                    '00000000000000' AS reservedt,
+                    AD_FLAG as adflag,
+                    TITLE as title,
+                    HEADER as header,
+                    LINK AS link,
+                    SUPPLEMENT AS supplement,
+                    CURRENCY_TYPE as currencytype,
+                    REAL_SEND_FLAG as realsendflag,
+                    ATT_BUTTON as attbutton,
+                    ATT_IMAGE as attimage,
+                    ATT_ITEM as attitem,
+                    ATT_COUPON as attcoupon,
+                    ATT_COMMERCE as attcommerce,
+                    ATT_VIDEO as attvideo,
+                    CAR_HEAD as carhead,
+                    CAR_LIST as carlist,
+                    CAR_TAIL as cartail,
+                    GROUP_TAG as grouptag
+                FROM ${msg_table}
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+        </choose>
+    </select>
+
+    <update id="req_bm_sent_complete" parameterType = "com.dhn.client.bean.SQLParameter" >
+        <choose>
+            <when test="database == 'oracle'">
+                UPDATE ${msg_table}
+                SET STATUS = '2',
+                RESPONSE_DT = SYSDATE
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+            <when test="database == 'mysql'">
+                UPDATE ${msg_table}
+                SET STATUS = '2',
+                RESPONSE_DT = NOW()
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+        </choose>
+    </update>
+
+    <update id="req_bm_sent_init" parameterType = "com.dhn.client.bean.SQLParameter" >
+        <choose>
+            <when test="database == 'oracle'">
+                UPDATE ${msg_table}
+                SET STATUS = '0',
+                SEND_GROUP = NULL,
+                RESPONSE_DT = NULL
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+            <when test="database == 'mysql'">
+                UPDATE ${msg_table}
+                SET STATUS = '0',
+                SEND_GROUP = NULL,
+                RESPONSE_DT = NULL
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+        </choose>
+    </update>
+
+    <update id="bmInvalidUpdate" parameterType="map">
+        <choose>
+            <when test="ml.database == 'oracle'">
+                UPDATE ${ml.msg_table}
+                SET STATUS = '${ml.status}',
+                RESULT_MESSAGE = '${ml.result_message}',
+                RESULT_DT = TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS'),
+                RESULT = '${ml.code}'
+                WHERE MSG_ID IN
+                <foreach collection="list" item="msgid" open="(" separator="," close=")">
+                    #{msgid}
+                </foreach>
+            </when>
+            <when test="ml.database == 'mysql'">
+                UPDATE ${ml.msg_table}
+                SET STATUS = '${ml.status}',
+                RESULT_MESSAGE = '${ml.result_message}',
+                RESULT_DT = DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s'),
+                RESULT = '${ml.code}'
+                WHERE MSG_ID IN
+                <foreach collection="list" item="msgid" open="(" separator="," close=")">
+                    #{msgid}
+                </foreach>
+            </when>
+        </choose>
+    </update>
+
+    <insert id="bmInvalidLogInsert" parameterType="map">
+        <choose>
+            <when test="ml.database == 'oracle'">
+                INSERT INTO ${ml.log_table}
+                SELECT *
+                FROM ${ml.msg_table}
+                WHERE MSG_ID IN
+                <foreach collection="list" item="msgid" open="(" separator="," close=")">
+                    #{msgid}
+                </foreach>
+            </when>
+            <when test="ml.database == 'mysql'">
+                INSERT INTO ${ml.log_table}
+                SELECT *
+                FROM ${ml.msg_table}
+                WHERE MSG_ID IN
+                <foreach collection="list" item="msgid" open="(" separator="," close=")">
+                    #{msgid}
+                </foreach>
+            </when>
+        </choose>
+    </insert>
+
+    <delete id="bmInvalidResultDelete" parameterType="map">
+        <choose>
+            <when test="ml.database == 'oracle'">
+                DELETE FROM ${ml.msg_table}
+                WHERE MSG_ID IN
+                <foreach collection="list" item="msgid" open="(" separator="," close=")">
+                    #{msgid}
+                </foreach>
+            </when>
+            <when test="ml.database == 'mysql'">
+                DELETE FROM ${ml.msg_table}
+                WHERE MSG_ID IN
+                <foreach collection="list" item="msgid" open="(" separator="," close=")">
+                    #{msgid}
+                </foreach>
+            </when>
+        </choose>
+    </delete>
+
+    <select id="req_bc_select" parameterType = "com.dhn.client.bean.SQLParameter" resultType="com.dhn.client.bean.BMDataBean">
+        <choose>
+            <when test="database == 'oracle'">
+                SELECT
+                    MSG_ID AS msgid,
+                    MESSAGE_TYPE AS messagetype,
+                    KIND AS kind,
+                    MESSAGE AS msg,
+                    MSG AS msgsms,
+                    CASE
+                        WHEN PHN LIKE '82%' THEN PHN
+                        WHEN PHN LIKE '010%' THEN '82' || SUBSTR(PHN, 2, 15)
+                        ELSE '82' || SUBSTR(PHN, 2, 15)
+                    END AS phn,
+                    P_INVOICE as pinvoice,
+                    SMS_SENDER AS smssender,
+                    SMSLMS_TIT AS smslmstit,
+                    SMS_KIND as smskind,
+                    KISA_CODE as kisacode,
+                    TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
+                    TMPL_ID AS tmplid,
+                    PROFILE AS profile,
+                    '00000000000000' AS reservedt,
+                    AD_FLAG as adflag,
+                    TITLE as title,
+                    HEADER as header,
+                    LINK AS link,
+                    SUPPLEMENT AS supplement,
+                    CURRENCY_TYPE as currencytype,
+                    REAL_SEND_FLAG as realsendflag,
+                    ATT_MESSAGE as attmessage,
+                    ATT_BUTTON as attbutton,
+                    ATT_IMAGE as attimage,
+                    ATT_COUPON as attcoupon,
+                    ATT_COMMERCE as attcommerce,
+                    ATT_VIDEO as attvideo,
+                    CAR_LIST as carlist
+                FROM ${msg_table}
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+            <when test="database == 'mysql'">
+                SELECT
+                    MSG_ID AS msgid,
+                    MESSAGE_TYPE AS messagetype,
+                    KIND AS kind,
+                    MESSAGE AS msg,
+                    MSG AS msgsms,
+                    CASE
+                        WHEN PHN LIKE '82%' THEN PHN
+                        WHEN PHN LIKE '010%' THEN CONCAT('82', SUBSTRING(PHN, 2, 15))
+                        ELSE CONCAT('82', SUBSTRING(PHN, 2, 15))
+                    END AS phn,
+                    P_INVOICE as pinvoice,
+                    SMS_SENDER AS smssender,
+                    SMSLMS_TIT AS smslmstit,
+                    SMS_KIND as smskind,
+                    KISA_CODE as kisacode,
+                    DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s') AS regdt,
+                    TMPL_ID AS tmplid,
+                    PROFILE AS profile,
+                    '00000000000000' AS reservedt,
+                    AD_FLAG as adflag,
+                    TITLE as title,
+                    HEADER as header,
+                    LINK AS link,
+                    SUPPLEMENT AS supplement,
+                    CURRENCY_TYPE as currencytype,
+                    REAL_SEND_FLAG as realsendflag,
+                    ATT_MESSAGE as attmessage,
+                    ATT_BUTTON as attbutton,
+                    ATT_IMAGE as attimage,
+                    ATT_COUPON as attcoupon,
+                    ATT_COMMERCE as attcommerce,
+                    ATT_VIDEO as attvideo,
+                    CAR_LIST as carlist
+                FROM ${msg_table}
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+        </choose>
+    </select>
+
+</mapper>
