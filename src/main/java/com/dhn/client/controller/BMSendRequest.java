@@ -293,11 +293,11 @@ public class BMSendRequest implements ApplicationListener<ContextRefreshedEvent>
                     ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
                     Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
                     log.info(res.toString());
-                    if (response.getStatusCode() == HttpStatus.OK) { // 데이터 정상적으로 전달
+                    if (response.getStatusCode() == HttpStatus.OK) {
                         bmRequestService.updateBMSendComplete(sendParam);
                         log.info("BM 메세지 전송 완료 : " + response.getStatusCode() + " / " + group_no + " / " + sendList.size() + " 건");
-                    }else { // API 전송 실패시
-                        log.info("({}) BM 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
+                    }else {
+                        log.error("({}) BM 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
                         bmRequestService.updateBMSendInit(sendParam);
                     }
                 } catch (Exception e) {

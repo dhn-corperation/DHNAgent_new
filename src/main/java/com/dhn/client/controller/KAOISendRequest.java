@@ -134,7 +134,7 @@ public class KAOISendRequest implements ApplicationListener<ContextRefreshedEven
                     kaoRequestService.updateKAOSendComplete(sendParam);
                     log.info("KAO Image 메세지 전송 완료 : " + response.getStatusCode() + " / " + group_no + " / " + _list.size() + " 건");
                 }else { // API 전송 실패시
-                    log.info("({}) KAO Image 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
+                    log.error("({}) KAO Image 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
                     kaoRequestService.updateKAOSendInit(sendParam);
                 }
             } catch (Exception e) {

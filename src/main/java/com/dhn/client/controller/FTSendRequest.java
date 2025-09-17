@@ -237,7 +237,7 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
                     kaoRequestService.updateKAOSendComplete(sendParam);
                     log.info("FT 메세지 전송 완료 : " + response.getStatusCode() + " / " + group_no + " / " + _list.size() + " 건");
                 } else { // API 전송 실패시
-                    log.info("({}) FT 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
+                    log.error("({}) FT 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
                     kaoRequestService.updateKAOSendInit(sendParam);
                 }
             } catch (Exception e) {
