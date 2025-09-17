@@ -30,6 +30,7 @@ public class ProgramStatus implements CommandLineRunner, ApplicationListener<Con
         LMSSendRequest.isStart = false;
         MMSSendRequest.isStart = false;
         BMSendRequest.isStart = false;
+        BMCSendRequest.isStart = false;
         KAOLogMove.isStart = false;
         MSGLogMove.isStart = false;
         ResultReq.isStart = false;
