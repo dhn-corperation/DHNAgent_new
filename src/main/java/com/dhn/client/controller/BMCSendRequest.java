@@ -67,7 +67,7 @@ public class BMCSendRequest implements ApplicationListener<ContextRefreshedEvent
 
         if (param.getBrand_use() != null && param.getBrand_use().equalsIgnoreCase("Y")) {
             isStart = true;
-            log.info("BM 기본형 초기화 완료");
+            log.info("브랜드메시지 기본형 초기화 완료");
         } else {
             posts.postProcessBeforeDestruction(this, null);
         }
@@ -99,7 +99,7 @@ public class BMCSendRequest implements ApplicationListener<ContextRefreshedEvent
                         }
 
                     }catch (Exception e){
-                        log.error("BC 메세지 전송 오류 : " + e.toString());
+                        log.error("BC (기본형) 메세지 전송 오류 : " + e.toString());
                     }
 
                     preGroupNo = group_no;
@@ -244,9 +244,9 @@ public class BMCSendRequest implements ApplicationListener<ContextRefreshedEvent
                     ml.setCode("7999");
 
                     bmRequestService.updateInvalidData(invalidList, ml);
-                    log.info("BC Invalid 데이터 {}건 처리 완료", invalidList.size());
+                    log.info("BC (기본형) Invalid 데이터 {}건 처리 완료", invalidList.size());
                 } catch (Exception e) {
-                    log.error("BC Invalid 데이터 처리 오류: {}", e.getMessage());
+                    log.error("BC (기본형) Invalid 데이터 처리 오류: {}", e.getMessage());
                 }
             }
 
@@ -270,19 +270,19 @@ public class BMCSendRequest implements ApplicationListener<ContextRefreshedEvent
                     log.info(res.toString());
                     if (response.getStatusCode() == HttpStatus.OK) {
                         bmRequestService.updateBMSendComplete(sendParam);
-                        log.info("BC 메세지 전송 완료 : " + response.getStatusCode() + " / " + group_no + " / " + sendList.size() + " 건");
+                        log.info("BC (기본형) 메세지 전송 완료 : " + response.getStatusCode() + " / " + group_no + " / " + sendList.size() + " 건");
                     }else {
-                        log.error("({}) BC 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
+                        log.error("({}) BC (기본형) 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
                         bmRequestService.updateBMSendInit(sendParam);
                     }
                 } catch (Exception e) {
-                    log.error("BC 메세지 전송 오류 : " + e.toString());
+                    log.error("BC (기본형) 메세지 전송 오류 : " + e.toString());
                     bmRequestService.updateBMSendInit(sendParam);
                 }
 
             }
         }catch (Exception e){
-            log.error("BC 메세지 전송 오류 : " + e.toString());
+            log.error("BC (기본형) 메세지 전송 오류 : " + e.toString());
         }
     }
 

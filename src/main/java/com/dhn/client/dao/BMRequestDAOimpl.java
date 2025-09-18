@@ -61,4 +61,21 @@ public class BMRequestDAOimpl implements BMRequestDAO {
     public List<BMDataBean> selectBCRequests(SQLParameter param) throws Exception {
         return sqlSession.selectList("com.dhn.client.brand.mapper.SendRequest.req_bc_select", param);
     }
+
+    @Override
+    public int selectBDRequestCount(SQLParameter param) throws Exception {
+        int cnt = 0;
+        cnt = sqlSession.selectOne("com.dhn.client.brand.mapper.SendRequest.bd_kao_count",param);
+        return cnt;
+    }
+
+    @Override
+    public void updateBDGroupNo(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.brand.mapper.SendRequest.req_bd_group_update",param);
+    }
+
+    @Override
+    public List<BMRequestBean> selectBDRequests(SQLParameter param) throws Exception {
+        return sqlSession.selectList("com.dhn.client.brand.mapper.SendRequest.req_bd_select", param);
+    }
 }

@@ -166,7 +166,8 @@
                     RESULT_MSG = '${code}',
                     RESULT_MESSAGE = '${result_message}',
                     TELCOINFO = '${telecom}',
-                    REAL_MESSAGE_TYPE = '${real_send_type}'
+                    REAL_MESSAGE_TYPE = '${real_send_type}',
+                    BCAST_CNT = '${bcast_cnt}'
                 WHERE MSG_ID = #{msgid}
             </when>
             <when test="database == 'mysql'">
@@ -177,7 +178,8 @@
                     RESULT_MSG = '${code}',
                     RESULT_MESSAGE = '${result_message}',
                     TELCOINFO = '${telecom}',
-                    REAL_MESSAGE_TYPE = '${real_send_type}'
+                    REAL_MESSAGE_TYPE = '${real_send_type}',
+                    BCAST_CNT = '${bcast_cnt}'
                 WHERE MSG_ID = #{msgid}
             </when>
         </choose>
