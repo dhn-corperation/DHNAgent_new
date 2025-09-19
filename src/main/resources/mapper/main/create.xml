@@ -100,7 +100,9 @@
            "CAR_LIST" CLOB DEFAULT NULL,
            "CAR_TAIL" CLOB DEFAULT NULL,
            "GROUP_TAG" VARCHAR2(50 CHAR) DEFAULT NULL,
-           "BCAST_CNT" VARCHAR2(10 CHAR) DEFAULT NULL
+           "BCAST_CNT" VARCHAR2(10 CHAR) DEFAULT NULL,
+           "USER_KEY" VARCHAR2(30 CHAR) DEFAULT NULL,
+           "PUSH_ALARM" VARCHAR2(1 CHAR) DEFAULT NULL
         )
     </update>
 
@@ -190,6 +192,8 @@
            `CAR_TAIL` text DEFAULT NULL,
            `GROUP_TAG` varchar(50) DEFAULT NULL,
            `BCAST_CNT` varchar(10) DEFAULT NULL,
+           `USER_KEY` varchar(30) DEFAULT NULL,
+           `PUSH_ALARM` varchar(1) DEFAULT NULL,
            PRIMARY KEY (`id`),
            KEY `${msg_table}_IDX1` (`STATUS`,`RESERVE_DT`,`MESSAGE_TYPE`,`SMS_KIND`,`SEND_GROUP`) USING BTREE,
            KEY `${msg_table}_IDX2` (`STATUS`,`RESERVE_DT`,`MESSAGE_TYPE`,`SMS_KIND`,`SEND_GROUP`,`IMAGE_URL`,`FI_IMAGE_PATH`,`MMS_IMAGE_KEY`) USING BTREE,

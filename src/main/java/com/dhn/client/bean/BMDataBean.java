@@ -62,4 +62,5 @@ public class BMDataBean {
     private String cartail;
     private String kind;
     private String grouptag;
+    private String pushalarm;
 }

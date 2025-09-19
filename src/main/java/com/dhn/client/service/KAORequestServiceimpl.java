@@ -64,39 +64,4 @@ public class KAORequestServiceimpl implements KAORequestService{
         kaoRequestDAO.log_move(param);
     }
 
-    @Override
-    public int selectFTRequestCount(SQLParameter param) throws Exception {
-        return kaoRequestDAO.selectFTRequestCount(param);
-    }
-
-    @Override
-    public void updateFTGroupNo(SQLParameter param) throws Exception {
-        kaoRequestDAO.updateFTGroupNo(param);
-    }
-
-    @Override
-    public List<KAORequestBean> selectFTRequests(SQLParameter param) throws Exception {
-        return kaoRequestDAO.selectFTRequests(param);
-    }
-
-    @Override
-    public int selectFtImageCount(SQLParameter param) throws Exception {
-        return kaoRequestDAO.selectFtImageCount(param);
-    }
-
-    @Override
-    public List<ImageBean> selectFtImage(SQLParameter param) throws Exception {
-        return kaoRequestDAO.selectFtImage(param);
-    }
-
-    @Override
-    public void updateFTImageUrl(SQLParameter param) throws Exception {
-        kaoRequestDAO.updateFTImageUrl(param);
-    }
-
-    @Override
-    public void updateFTImageFail(SQLParameter param) throws Exception {
-        kaoRequestDAO.updateFTImageFail(param);
-    }
-
 }

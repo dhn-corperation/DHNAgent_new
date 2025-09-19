@@ -3,7 +3,7 @@ package com.dhn.client.bean;
 import lombok.Data;
 
 @Data
-public class BMRequestBean {
+public class FTRequestBean {
     private String msgid;
     private String adflag;
     private String button1;
@@ -52,5 +52,6 @@ public class BMRequestBean {
     private String kisacode;
     private String kind;
     private String attitems;
+    private String userkey;
     private String pushalarm;
 }

@@ -139,8 +139,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 
 			if(ent.getString("message_type").equalsIgnoreCase("AT")
 					|| ent.getString("message_type").equalsIgnoreCase("AI")
-					|| ent.getString("message_type").equalsIgnoreCase("FI")
-					|| ent.getString("message_type").equalsIgnoreCase("FT")
+					|| ent.getString("message_type").toUpperCase().startsWith("F")
 					|| ent.getString("message_type").toUpperCase().startsWith("B")
 					|| ent.getString("message_type").toUpperCase().startsWith("C")
 					|| ent.getString("message_type").toUpperCase().startsWith("D")){

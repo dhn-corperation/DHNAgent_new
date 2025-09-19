@@ -128,7 +128,7 @@ public class BMCSendRequest implements ApplicationListener<ContextRefreshedEvent
             for (BMDataBean bmDataBean  : _list ) {
                 BCRequestBean sendBean = new BCRequestBean();
                 sendBean.setMsgid(bmDataBean.getMsgid());
-                sendBean.setAdflag(bmDataBean.getAdflag());
+                sendBean.setPushalarm(bmDataBean.getPushalarm());
                 sendBean.setMessagetype(bmDataBean.getMessagetype());
                 sendBean.setMsg(bmDataBean.getMsg());
                 sendBean.setMsgsms(bmDataBean.getMsgsms());
