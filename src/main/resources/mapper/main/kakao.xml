@@ -353,7 +353,8 @@
                     IMAGE_LINK as imagelink,
                     IMAGE_URL as imageurl,
                     PROFILE AS profile,
-                    '00000000000000' AS reservedt
+                    '00000000000000' AS reservedt,
+                    WIDE as wide
                 FROM ${msg_table}
                 WHERE SEND_GROUP = #{group_no}
             </when>
@@ -383,7 +384,8 @@
                     IMAGE_LINK as imagelink,
                     IMAGE_URL as imageurl,
                     PROFILE AS profile,
-                    '00000000000000' AS reservedt
+                    '00000000000000' AS reservedt,
+                    WIDE as wide
                 FROM ${msg_table}
                 WHERE SEND_GROUP = #{group_no}
             </when>
@@ -419,7 +421,8 @@
         <choose>
             <when test="database == 'oracle'">
                 SELECT FI_IMAGE_PATH as ftimagepath,
-                    MSG_ID as msgid
+                    MSG_ID as msgid,
+                    WIDE as wide
                 FROM ${msg_table}
                 WHERE STATUS = '0'
                     AND RESERVE_DT &lt;= SYSDATE
@@ -431,7 +434,8 @@
             </when>
             <when test="database == 'mysql'">
                 SELECT FI_IMAGE_PATH as ftimagepath,
-                    MSG_ID as msgid
+                    MSG_ID as msgid,
+                    WIDE as wide
                 FROM ${msg_table}
                 WHERE STATUS = '0'
                     AND RESERVE_DT &lt;= NOW()

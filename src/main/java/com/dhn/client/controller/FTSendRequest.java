@@ -122,9 +122,17 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
                 if(cnt > 0){
                     List<ImageBean> ftimages = kaoRequestService.selectFtImage(param);
 
+                    LocalDate now = LocalDate.now();
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
+                    String currentMonth = now.format(formatter);
+
                     for (ImageBean ftimage : ftimages) {
 
-                        param.setMsgid(ftimage.getMsgid());
+                        SQLParameter ftiparam = new SQLParameter();
+                        ftiparam.setMsg_table(param.getMsg_table());
+                        ftiparam.setDatabase(param.getDatabase());
+                        ftiparam.setSequence(param.getSequence());
+                        ftiparam.setMsgid(ftimage.getMsgid());
 
                         // 헤더 설정
                         HttpHeaders headers = new HttpHeaders();
@@ -136,7 +144,26 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
                         body.add("userid", userid);
 
                         if (ftimage.getFtimagepath() != null && !ftimage.getFtimagepath().isEmpty()) {
-                            File file = new File(basepath + ftimage.getFtimagepath());
+                            String rawPath = basepath + ftimage.getFtimagepath();
+                            File file = new File(rawPath);
+
+                            if (!file.exists() || !file.isFile()) {
+                                // 파일이 없으면 실패 처리
+                                log.error("FT Image 파일 없음 : " + rawPath);
+
+                                if(param.getLog_back() != null && param.getLog_back().equalsIgnoreCase("Y")){
+                                    ftiparam.setLog_table(log_table + "_" + currentMonth);
+                                }else{
+                                    ftiparam.setLog_table(log_table);
+                                }
+
+                                ftiparam.setImg_err_msg("FT Image 파일 없음");
+                                ftiparam.setFt_image_code("9999");
+                                kaoRequestService.updateFTImageFail(ftiparam);
+
+                                continue;
+                            }
+
                             body.add("image", new org.springframework.core.io.FileSystemResource(file));
                         }
 
@@ -145,51 +172,57 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
 
                         RestTemplate restTemplate = new RestTemplate();
                         try{
-                            ResponseEntity<String> response = restTemplate.exchange(dhnServer + "ft/image", HttpMethod.POST, requestEntity, String.class);
 
-                            LocalDate now = LocalDate.now();
-                            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
-                            String currentMonth = now.format(formatter);
+                            String url = "ft/image";
+
+                            if ("Y".equals(ftimage.getWide())) {
+                                url = "ft/wide/image";
+                            } else {
+                                url = "ft/image";
+                            }
+
+                            ResponseEntity<String> response = restTemplate.exchange(dhnServer + url, HttpMethod.POST, requestEntity, String.class);
+
 
                             if (response.getStatusCode() == HttpStatus.OK) {
                                 String responseBody = response.getBody();
                                 ObjectMapper mapper = new ObjectMapper();
                                 Map<String, String> res = mapper.readValue(responseBody, Map.class);
 
-                                param.setFt_image_code(res.get("code"));
-                                param.setImg_err_msg(res.get("message"));
+                                ftiparam.setFt_image_code(res.get("code"));
+                                ftiparam.setImg_err_msg(res.get("message"));
 
-                                if(param.getFt_image_code().equals("0000")){
+                                if(ftiparam.getFt_image_code().equals("0000")){
                                     log.info("친구톡 이미지 URL : "+res.get("image"));
 
-                                    param.setFt_image_url(res.get("image"));
-                                    kaoRequestService.updateFTImageUrl(param);
+                                    ftiparam.setFt_image_url(res.get("image"));
+                                    kaoRequestService.updateFTImageUrl(ftiparam);
                                 }else{
 
                                     log.error("친구톡 이미지 등록 실패 : "+res.toString());
 
                                     if(param.getLog_back() != null && param.getLog_back().equalsIgnoreCase("Y")){
-                                        param.setLog_table(log_table + "_" + currentMonth);
+                                        ftiparam.setLog_table(log_table + "_" + currentMonth);
                                     }else{
-                                        param.setLog_table(log_table);
+                                        ftiparam.setLog_table(log_table);
                                     }
-                                    if(param.getFt_image_code().equals("error")){
-                                        param.setFt_image_code("9999");
+                                    if(ftiparam.getFt_image_code().equals("error")){
+                                        ftiparam.setFt_image_code("9999");
                                     }
-                                    kaoRequestService.updateFTImageFail(param);
+                                    kaoRequestService.updateFTImageFail(ftiparam);
                                 }
                             } else {
                                 log.error("친구톡 이미지 등록 실패 통신오류 : "+response.getBody());
                                 if(param.getLog_back() != null && param.getLog_back().equalsIgnoreCase("Y")){
-                                    param.setLog_table(log_table + "_" + currentMonth);
+                                    ftiparam.setLog_table(log_table + "_" + currentMonth);
                                 }else{
-                                    param.setLog_table(log_table);
+                                    ftiparam.setLog_table(log_table);
                                 }
-                                if(param.getFt_image_code().equals("error")){
-                                    param.setFt_image_code("9999");
+                                if(ftiparam.getFt_image_code().equals("error")){
+                                    ftiparam.setFt_image_code("9999");
                                 }
-                                param.setImg_err_msg("KAKAO 통신 오류");
-                                kaoRequestService.updateFTImageFail(param);
+                                ftiparam.setImg_err_msg("KAKAO 통신 오류");
+                                kaoRequestService.updateFTImageFail(ftiparam);
                             }
 
                         }catch (Exception e){
