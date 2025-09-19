@@ -52,4 +52,19 @@ public class BMRequestServiceimpl implements BMRequestService {
         return bmRequestDAO.selectBCRequests(param);
     }
 
+    @Override
+    public int selectBDRequestCount(SQLParameter param) throws Exception {
+        return bmRequestDAO.selectBDRequestCount(param);
+    }
+
+    @Override
+    public void updateBDGroupNo(SQLParameter param) throws Exception {
+        bmRequestDAO.updateBDGroupNo(param);
+    }
+
+    @Override
+    public List<BMRequestBean> selectBDRequests(SQLParameter param) throws Exception {
+        return bmRequestDAO.selectBDRequests(param);
+    }
+
 }

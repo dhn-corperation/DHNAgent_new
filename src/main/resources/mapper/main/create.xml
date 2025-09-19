@@ -44,7 +44,7 @@
            "MESSAGE" VARCHAR2(4000 CHAR) DEFAULT NULL,
            "STATUS" VARCHAR2(1 CHAR) DEFAULT '0',
            "P_INVOICE" VARCHAR2(100 CHAR) DEFAULT NULL,
-           "PHN" VARCHAR2(15 CHAR) NOT NULL,
+           "PHN" VARCHAR2(15 CHAR) DEFAULT NULL,
            "SMS_SENDER" VARCHAR2(15 CHAR) DEFAULT NULL,
            "REG_DT" TIMESTAMP DEFAULT SYSDATE,
            "RESERVE_DT" TIMESTAMP DEFAULT SYSDATE,
@@ -99,7 +99,8 @@
            "CAR_HEAD" CLOB DEFAULT NULL,
            "CAR_LIST" CLOB DEFAULT NULL,
            "CAR_TAIL" CLOB DEFAULT NULL,
-           "GROUP_TAG" VARCHAR2(50 CHAR) DEFAULT NULL
+           "GROUP_TAG" VARCHAR2(50 CHAR) DEFAULT NULL,
+           "BCAST_CNT" VARCHAR2(10 CHAR) DEFAULT NULL
         )
     </update>
 
@@ -132,7 +133,7 @@
            `MESSAGE` varchar(4000) DEFAULT NULL,
            `STATUS` varchar(1) DEFAULT '0',
            `P_INVOICE` varchar(100) DEFAULT NULL,
-           `PHN` varchar(15) NOT NULL,
+           `PHN` varchar(15) DEFAULT NULL,
            `SMS_SENDER` varchar(15) DEFAULT NULL,
            `REG_DT` datetime DEFAULT NOW(),
            `RESERVE_DT` datetime DEFAULT NOW(),
@@ -188,6 +189,7 @@
            `CAR_LIST` text DEFAULT NULL,
            `CAR_TAIL` text DEFAULT NULL,
            `GROUP_TAG` varchar(50) DEFAULT NULL,
+           `BCAST_CNT` varchar(10) DEFAULT NULL,
            PRIMARY KEY (`id`),
            KEY `${msg_table}_IDX1` (`STATUS`,`RESERVE_DT`,`MESSAGE_TYPE`,`SMS_KIND`,`SEND_GROUP`) USING BTREE,
            KEY `${msg_table}_IDX2` (`STATUS`,`RESERVE_DT`,`MESSAGE_TYPE`,`SMS_KIND`,`SEND_GROUP`,`IMAGE_URL`,`FI_IMAGE_PATH`,`MMS_IMAGE_KEY`) USING BTREE,

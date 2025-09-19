@@ -1,4 +1,4 @@
-# 자바 DHN_CLIENT DHN테이블 생성 - 브랜드메세지 기본형 작업시작
+# 자바 DHN_CLIENT DHN테이블 생성 - 브랜드메세지 동보발송 시작
 ## Database
 - oracle
 - mysql

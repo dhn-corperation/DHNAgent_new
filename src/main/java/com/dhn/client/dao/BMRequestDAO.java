@@ -22,4 +22,10 @@ public interface BMRequestDAO {
     public void updateInvalidData(List<String> invalidList, Msg_Log ml) throws Exception;
 
     public List<BMDataBean> selectBCRequests(SQLParameter param) throws Exception;
+
+    public int selectBDRequestCount(SQLParameter param) throws Exception;
+
+    public void updateBDGroupNo(SQLParameter param) throws Exception;
+
+    public List<BMRequestBean> selectBDRequests(SQLParameter param) throws Exception;
 }
