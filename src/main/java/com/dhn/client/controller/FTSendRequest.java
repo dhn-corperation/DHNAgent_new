@@ -1,29 +1,27 @@
 package com.dhn.client.controller;
 
-import com.dhn.client.bean.ImageBean;
-import com.dhn.client.bean.KAORequestBean;
-import com.dhn.client.bean.SQLParameter;
-import com.dhn.client.service.KAORequestService;
+import com.dhn.client.bean.*;
+import com.dhn.client.service.BMRequestService;
+import com.dhn.client.service.FTRequestService;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.http.*;
-import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor;
 import org.springframework.stereotype.Component;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.File;
 import java.io.StringWriter;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -33,20 +31,20 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Component
 @Slf4j
 public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent> {
+
     public static boolean isStart = false;
     private boolean isProc = false;
-    private boolean isProcImg = false;
     private SQLParameter param = new SQLParameter();
     private String dhnServer;
     private String userid;
     private String preGroupNo = "";
-    private String basepath = "";
-    private String log_table;
+    private String log_back = "";
+    private String log_table = "";
 
-    private static final ExecutorService executorService = Executors.newFixedThreadPool(3);
+    private static final ExecutorService executorService = Executors.newFixedThreadPool(2);
 
     @Autowired
-    private KAORequestService kaoRequestService;
+    private FTRequestService ftRequestService;
 
     @Autowired
     private ApplicationContext appContext;
@@ -57,23 +55,24 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
-        log_table = appContext.getEnvironment().getProperty("dhnclient.log_table");
         param.setKakao_use(appContext.getEnvironment().getProperty("dhnclient.kakao_use"));
         param.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database"));
         param.setSequence(appContext.getEnvironment().getProperty("dhnclient.msg_seq"));
-        param.setLog_back(appContext.getEnvironment().getProperty("dhnclient.log_back","Y"));
-        basepath = appContext.getEnvironment().getProperty("dhnclient.file_base_path")==null?"":appContext.getEnvironment().getProperty("dhnclient.file_base_path");
-        param.setMsg_type("FT");
+        param.setMsg_type("F%");
 
         dhnServer = appContext.getEnvironment().getProperty("dhnclient.server");
         userid = appContext.getEnvironment().getProperty("dhnclient.userid");
+        log_back = appContext.getEnvironment().getProperty("dhnclient.log_back","Y");
+        log_table = appContext.getEnvironment().getProperty("dhnclient.log_table");
+
 
         if (param.getKakao_use() != null && param.getKakao_use().equalsIgnoreCase("Y")) {
             isStart = true;
-            log.info("FT 초기화 완료");
+            log.info("FT (친구톡) 초기화 완료");
         } else {
             posts.postProcessBeforeDestruction(this, null);
         }
+
     }
 
     @Scheduled(fixedDelay = 100)
@@ -84,18 +83,18 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
             ThreadPoolExecutor poolExecutor = (ThreadPoolExecutor) executorService;
             int activeThreads = poolExecutor.getActiveCount();
 
-            if(activeThreads < 3){
+            if(activeThreads < 2){
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
                 LocalDateTime now = LocalDateTime.now();
-                String group_no = "F" + now.format(formatter);
+                String group_no = "FT" + now.format(formatter);
 
                 if(!group_no.equals(preGroupNo)) {
-                    try {
-                        int cnt = kaoRequestService.selectFTRequestCount(param);
+                    try{
+                        int cnt = ftRequestService.selectFTRequestCount(param);
 
                         if(cnt > 0){
                             param.setGroup_no(group_no);
-                            kaoRequestService.updateFTGroupNo(param);
+                            ftRequestService.updateFTGroupNo(param);
 
                             executorService.submit(() -> APIProcess(group_no));
                         }
@@ -103,6 +102,7 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
                     }catch (Exception e){
                         log.error("FT 메세지 전송 오류 : " + e.toString());
                     }
+
                     preGroupNo = group_no;
                 }
             }
@@ -110,136 +110,9 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
         }
     }
 
-
-    @Scheduled(fixedDelay = 100)
-    public void GetFTImage(){
-        if(isStart && !isProcImg) {
-            isProcImg = true;
-
-            try{
-                int cnt = kaoRequestService.selectFtImageCount(param);
-
-                if(cnt > 0){
-                    List<ImageBean> ftimages = kaoRequestService.selectFtImage(param);
-
-                    LocalDate now = LocalDate.now();
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
-                    String currentMonth = now.format(formatter);
-
-                    for (ImageBean ftimage : ftimages) {
-
-                        SQLParameter ftiparam = new SQLParameter();
-                        ftiparam.setMsg_table(param.getMsg_table());
-                        ftiparam.setDatabase(param.getDatabase());
-                        ftiparam.setSequence(param.getSequence());
-                        ftiparam.setMsgid(ftimage.getMsgid());
-
-                        // 헤더 설정
-                        HttpHeaders headers = new HttpHeaders();
-                        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-                        headers.set("userid", userid);
-
-                        // MultiValueMap을 사용해 파일 데이터 전송 준비
-                        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-                        body.add("userid", userid);
-
-                        if (ftimage.getFtimagepath() != null && !ftimage.getFtimagepath().isEmpty()) {
-                            String rawPath = basepath + ftimage.getFtimagepath();
-                            File file = new File(rawPath);
-
-                            if (!file.exists() || !file.isFile()) {
-                                // 파일이 없으면 실패 처리
-                                log.error("FT Image 파일 없음 : " + rawPath);
-
-                                if(param.getLog_back() != null && param.getLog_back().equalsIgnoreCase("Y")){
-                                    ftiparam.setLog_table(log_table + "_" + currentMonth);
-                                }else{
-                                    ftiparam.setLog_table(log_table);
-                                }
-
-                                ftiparam.setImg_err_msg("FT Image 파일 없음");
-                                ftiparam.setFt_image_code("9999");
-                                kaoRequestService.updateFTImageFail(ftiparam);
-
-                                continue;
-                            }
-
-                            body.add("image", new org.springframework.core.io.FileSystemResource(file));
-                        }
-
-                        // HttpEntity 생성
-                        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-
-                        RestTemplate restTemplate = new RestTemplate();
-                        try{
-
-                            String url = "ft/image";
-
-                            if ("Y".equals(ftimage.getWide())) {
-                                url = "ft/wide/image";
-                            } else {
-                                url = "ft/image";
-                            }
-
-                            ResponseEntity<String> response = restTemplate.exchange(dhnServer + url, HttpMethod.POST, requestEntity, String.class);
-
-
-                            if (response.getStatusCode() == HttpStatus.OK) {
-                                String responseBody = response.getBody();
-                                ObjectMapper mapper = new ObjectMapper();
-                                Map<String, String> res = mapper.readValue(responseBody, Map.class);
-
-                                ftiparam.setFt_image_code(res.get("code"));
-                                ftiparam.setImg_err_msg(res.get("message"));
-
-                                if(ftiparam.getFt_image_code().equals("0000")){
-                                    log.info("친구톡 이미지 URL : "+res.get("image"));
-
-                                    ftiparam.setFt_image_url(res.get("image"));
-                                    kaoRequestService.updateFTImageUrl(ftiparam);
-                                }else{
-
-                                    log.error("친구톡 이미지 등록 실패 : "+res.toString());
-
-                                    if(param.getLog_back() != null && param.getLog_back().equalsIgnoreCase("Y")){
-                                        ftiparam.setLog_table(log_table + "_" + currentMonth);
-                                    }else{
-                                        ftiparam.setLog_table(log_table);
-                                    }
-                                    if(ftiparam.getFt_image_code().equals("error")){
-                                        ftiparam.setFt_image_code("9999");
-                                    }
-                                    kaoRequestService.updateFTImageFail(ftiparam);
-                                }
-                            } else {
-                                log.error("친구톡 이미지 등록 실패 통신오류 : "+response.getBody());
-                                if(param.getLog_back() != null && param.getLog_back().equalsIgnoreCase("Y")){
-                                    ftiparam.setLog_table(log_table + "_" + currentMonth);
-                                }else{
-                                    ftiparam.setLog_table(log_table);
-                                }
-                                if(ftiparam.getFt_image_code().equals("error")){
-                                    ftiparam.setFt_image_code("9999");
-                                }
-                                ftiparam.setImg_err_msg("KAKAO 통신 오류");
-                                kaoRequestService.updateFTImageFail(ftiparam);
-                            }
-
-                        }catch (Exception e){
-                            log.error("FT Image URL 등록 오류: ", e.getMessage());
-                        }
-                    }
-                }
-
-            }catch (Exception e) {
-                log.error("FT Image 등록 오류 : " + e.toString());
-            }
-        }
-        isProcImg = false;
-    }
-
     private void APIProcess(String group_no) {
         try{
+
             SQLParameter sendParam = new SQLParameter();
             sendParam.setGroup_no(group_no);
             sendParam.setMsg_table(param.getMsg_table());
@@ -248,37 +121,216 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
             sendParam.setMsg_type(param.getMsg_type());
 
 
-            List<KAORequestBean> _list = kaoRequestService.selectFTRequests(sendParam);
+            List<FTDataBean> _list = ftRequestService.selectFTRequests(sendParam);
 
-            StringWriter sw = new StringWriter();
-            ObjectMapper om = new ObjectMapper();
-            om.writeValue(sw, _list); // List를 Json화 하여 문자열 저장
+            List<FTRequestBean> sendList = new ArrayList<>();
+            List<String> invalidList = new ArrayList<>();
 
-            HttpHeaders header = new HttpHeaders();
+            for (FTDataBean ftDataBean  : _list ) {
+                FTRequestBean sendBean = new FTRequestBean();
+                sendBean.setMsgid(ftDataBean.getMsgid());
+                sendBean.setAdflag(ftDataBean.getAdflag());
+                sendBean.setMessagetype(ftDataBean.getMessagetype());
+                sendBean.setMsg(ftDataBean.getMsg());
+                sendBean.setMsgsms(ftDataBean.getMsgsms());
+                sendBean.setPcom("P");
+                sendBean.setPinvoice(ftDataBean.getPinvoice());
+                sendBean.setPhn(ftDataBean.getPhn());
+                sendBean.setProfile(ftDataBean.getProfile());
+                sendBean.setRegdt(ftDataBean.getRegdt());
+                sendBean.setReservedt(ftDataBean.getReservedt());
+                sendBean.setSmskind(ftDataBean.getSmskind());
+                sendBean.setSmslmstit(ftDataBean.getSmslmstit());
+                sendBean.setSmssender(ftDataBean.getSmssender());
+                sendBean.setTmplid(ftDataBean.getTmplid());
+                sendBean.setCurrencytype(ftDataBean.getCurrencytype());
+                sendBean.setHeader(ftDataBean.getHeader());
+                sendBean.setKisacode(ftDataBean.getKisacode());
+                sendBean.setKind(ftDataBean.getKind());
+                sendBean.setSupplement(ftDataBean.getSupplement());
+                sendBean.setAttitems(ftDataBean.getGrouptag());
+                sendBean.setUserkey(ftDataBean.getUserkey());
+                sendBean.setPushalarm(ftDataBean.getPushalarm());
 
-            header.setContentType(MediaType.APPLICATION_JSON);
-            header.set("userid", userid);
+                ObjectMapper mapper = new ObjectMapper();
 
-            RestTemplate rt = new RestTemplate();
-            HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
+                ObjectNode attNode = mapper.createObjectNode();
 
-            try {
-                ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
-                Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-                log.info(res.toString());
-                if (response.getStatusCode() == HttpStatus.OK) { // 데이터 정상적으로 전달
-                    kaoRequestService.updateKAOSendComplete(sendParam);
-                    log.info("FT 메세지 전송 완료 : " + response.getStatusCode() + " / " + group_no + " / " + _list.size() + " 건");
-                } else { // API 전송 실패시
-                    log.error("({}) FT 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
-                    kaoRequestService.updateKAOSendInit(sendParam);
+                JsonStatus stImg = isValidJson(ftDataBean.getAttimage());
+                if (stImg == JsonStatus.VALID) {
+                    attNode.set("image", mapper.readTree(ftDataBean.getAttimage()));
+                } else if (stImg == JsonStatus.INVALID) {
+                    log.error("Invalid JSON/ARRAY (image) msgid={}", ftDataBean.getMsgid());
+                    invalidList.add(ftDataBean.getMsgid());
+                    continue;
                 }
-            } catch (Exception e) {
-                log.error("FT 메세지 전송 오류 : " + e.toString());
-                kaoRequestService.updateKAOSendInit(sendParam);
+
+                JsonStatus stBtn = isValidJson(ftDataBean.getAttbutton());
+                if (stBtn == JsonStatus.VALID) {
+                    attNode.set("button", mapper.readTree(ftDataBean.getAttbutton()));
+                } else if (stBtn == JsonStatus.INVALID) {
+                    log.error("Invalid JSON/ARRAY (button) msgid={}", ftDataBean.getMsgid());
+                    invalidList.add(ftDataBean.getMsgid());
+                    continue;
+                }
+
+                JsonStatus stItem = isValidJson(ftDataBean.getAttitem());
+                if (stItem == JsonStatus.VALID) {
+                    attNode.set("item", mapper.readTree(ftDataBean.getAttitem()));
+                } else if (stItem == JsonStatus.INVALID) {
+                    log.error("Invalid JSON/ARRAY (item) msgid={}", ftDataBean.getMsgid());
+                    invalidList.add(ftDataBean.getMsgid());
+                    continue;
+                }
+
+                JsonStatus stCoupon = isValidJson(ftDataBean.getAttcoupon());
+                if (stCoupon == JsonStatus.VALID) {
+                    attNode.set("coupon", mapper.readTree(ftDataBean.getAttcoupon()));
+                } else if (stCoupon == JsonStatus.INVALID) {
+                    log.error("Invalid JSON/ARRAY (coupon) msgid={}", ftDataBean.getMsgid());
+                    invalidList.add(ftDataBean.getMsgid());
+                    continue;
+                }
+
+                JsonStatus stCommerce = isValidJson(ftDataBean.getAttcommerce());
+                if (stCommerce == JsonStatus.VALID) {
+                    attNode.set("commerce", mapper.readTree(ftDataBean.getAttcommerce()));
+                } else if (stCommerce == JsonStatus.INVALID) {
+                    log.error("Invalid JSON/ARRAY (commerce) msgid={}", ftDataBean.getMsgid());
+                    invalidList.add(ftDataBean.getMsgid());
+                    continue;
+                }
+
+                JsonStatus stVideo = isValidJson(ftDataBean.getAttvideo());
+                if (stVideo == JsonStatus.VALID) {
+                    attNode.set("video", mapper.readTree(ftDataBean.getAttvideo()));
+                } else if (stVideo == JsonStatus.INVALID) {
+                    log.error("Invalid JSON/ARRAY (video) msgid={}", ftDataBean.getMsgid());
+                    invalidList.add(ftDataBean.getMsgid());
+                    continue;
+                }
+
+                if (attNode.size() > 0) {
+                    sendBean.setAttachments(mapper.writeValueAsString(attNode)); // String
+                }
+
+                // ===== carousel 조립 =====
+                ObjectNode carNode = mapper.createObjectNode();
+
+                JsonStatus stHead = isValidJson(ftDataBean.getCarhead());
+                if (stHead == JsonStatus.VALID) {
+                    carNode.set("head", mapper.readTree(ftDataBean.getCarhead()));
+                } else if (stHead == JsonStatus.INVALID) {
+                    log.error("Invalid JSON/ARRAY (carhead) msgid={}", ftDataBean.getMsgid());
+                    invalidList.add(ftDataBean.getMsgid());
+                    continue;
+                }
+
+                JsonStatus stList = isValidJson(ftDataBean.getCarlist());
+                if (stList == JsonStatus.VALID) {
+                    carNode.set("list", mapper.readTree(ftDataBean.getCarlist()));
+                } else if (stList == JsonStatus.INVALID) {
+                    log.error("Invalid JSON/ARRAY (carlist) msgid={}", ftDataBean.getMsgid());
+                    invalidList.add(ftDataBean.getMsgid());
+                    continue;
+                }
+
+                JsonStatus stTail = isValidJson(ftDataBean.getCartail());
+                if (stTail == JsonStatus.VALID) {
+                    carNode.set("tail", mapper.readTree(ftDataBean.getCartail()));
+                } else if (stTail == JsonStatus.INVALID) {
+                    log.error("Invalid JSON/ARRAY (cartail) msgid={}", ftDataBean.getMsgid());
+                    invalidList.add(ftDataBean.getMsgid());
+                    continue;
+                }
+
+                if (carNode.size() > 0) {
+                    sendBean.setCarousel(mapper.writeValueAsString(carNode)); // String
+                }
+
+                sendList.add(sendBean);
+            }
+
+            if (!invalidList.isEmpty()) {
+                try {
+                    Msg_Log ml = new Msg_Log();
+                    ml.setMsg_table(param.getMsg_table());
+                    ml.setDatabase(param.getDatabase());
+
+                    if(log_back.equalsIgnoreCase("Y")){
+                        LocalDate now = LocalDate.now();
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
+                        String currentMonth = now.format(formatter);
+
+                        ml.setLog_table(log_table+"_"+currentMonth);
+                    }else{
+                        ml.setLog_table(log_table);
+                    }
+
+                    ml.setStatus("4");
+                    ml.setResult_message("(AGENT) JSON/ARRAY 데이터 형식 오류");
+                    ml.setCode("7999");
+
+                    ftRequestService.updateFTInvalidData(invalidList, ml);
+                    log.info("FT Invalid 데이터 {}건 처리 완료", invalidList.size());
+                } catch (Exception e) {
+                    log.error("FT Invalid 데이터 처리 오류: {}", e.getMessage());
+                }
+            }
+
+            if (!sendList.isEmpty()) {
+
+                StringWriter sw = new StringWriter();
+                ObjectMapper om = new ObjectMapper();
+                om.writeValue(sw, sendList);
+
+                HttpHeaders header = new HttpHeaders();
+
+                header.setContentType(MediaType.APPLICATION_JSON);
+                header.set("userid", userid);
+
+                RestTemplate rt = new RestTemplate();
+                HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
+
+                try {
+                    ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
+                    Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
+                    log.info(res.toString());
+                    if (response.getStatusCode() == HttpStatus.OK) {
+                        ftRequestService.updateFTSendComplete(sendParam);
+                        log.info("FT 메세지 전송 완료 : " + response.getStatusCode() + " / " + group_no + " / " + sendList.size() + " 건");
+                    }else {
+                        log.error("({}) FT 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
+                        ftRequestService.updateFTSendInit(sendParam);
+                    }
+                } catch (Exception e) {
+                    log.error("FT 메세지 전송 오류 : " + e.toString());
+                    ftRequestService.updateFTSendInit(sendParam);
+                }
+
             }
         }catch (Exception e){
             log.error("FT 메세지 전송 오류 : " + e.toString());
+        }
+    }
+
+    private JsonStatus isValidJson(String str) {
+        if (str == null || str.trim().isEmpty()) return JsonStatus.EMPTY;
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode node = mapper.readTree(str);
+
+            if (node.isArray()) {
+                return node.size() > 0 ? JsonStatus.VALID : JsonStatus.EMPTY;
+            }
+            if (node.isObject()) {
+                return node.fieldNames().hasNext() ? JsonStatus.VALID : JsonStatus.EMPTY;
+            }
+            return JsonStatus.INVALID;
+
+        } catch (Exception e) {
+            return JsonStatus.INVALID;
         }
     }
 }

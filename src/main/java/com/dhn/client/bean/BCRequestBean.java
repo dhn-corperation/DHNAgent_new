@@ -52,4 +52,5 @@ public class BCRequestBean {
     private String kisacode;
     private String kind;
     private String attitems;
+    private String pushalarm;
 }
