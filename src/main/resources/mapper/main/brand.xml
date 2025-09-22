@@ -55,6 +55,7 @@
                 SELECT
                     MSG_ID AS msgid,
                     MESSAGE_TYPE AS messagetype,
+                    KIND AS kind,
                     MESSAGE AS msg,
                     MSG AS msgsms,
                     CASE
@@ -94,6 +95,7 @@
                 SELECT
                     MSG_ID AS msgid,
                     MESSAGE_TYPE AS messagetype,
+                    KIND AS kind,
                     MESSAGE AS msg,
                     MSG AS msgsms,
                     CASE
