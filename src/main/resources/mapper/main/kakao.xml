@@ -80,6 +80,7 @@
                     HEADER as header,
                     LINK AS link,
                     ATTACHMENTS as attachments,
+                    SUPPLEMENT as supplement,
                     REAL_SEND_FLAG as realsendflag
                 FROM ${msg_table}
                 WHERE SEND_GROUP = #{group_no}
@@ -113,6 +114,7 @@
                     HEADER as header,
                     LINK AS link,
                     ATTACHMENTS as attachments,
+                    SUPPLEMENT as supplement,
                     REAL_SEND_FLAG as realsendflag
                 FROM ${msg_table}
                 WHERE SEND_GROUP = #{group_no}
