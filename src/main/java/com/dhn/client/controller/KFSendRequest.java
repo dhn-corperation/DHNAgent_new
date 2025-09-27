@@ -79,7 +79,7 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
 
     }
 
-    @Scheduled(fixedDelay = 1000)
+    @Scheduled(fixedDelay = 100)
     public void GetFTImage(){
         if(isStart && !isProcImg) {
             isProcImg = true;
@@ -221,7 +221,7 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
 
     }
 
-    @Scheduled(fixedDelay = 1000)
+    @Scheduled(fixedDelay = 100)
     public void SendProcess() {
         if(isStart && !isProc) {
             isProc = true;
