@@ -127,7 +127,7 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                                 File file = new File(rawPath);
 
                                 if (!file.exists() || !file.isFile()) {
-                                    log.error("FT Image 파일 없음 : " + rawPath);
+                                    log.warn("FT Image 파일 없음 : " + rawPath);
 
                                     if(param.getLog_back() != null && param.getLog_back().equalsIgnoreCase("Y")){
                                         ftiparam.setLog_table(log_table + "_" + currentMonth_log);
@@ -176,7 +176,7 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                                         ftRequestService.updateFTImageUrl(ftiparam);
                                     }else{
 
-                                        log.error("친구톡 이미지 등록 실패 : "+res.toString());
+                                        log.warn("친구톡 이미지 등록 실패 : "+res.toString());
 
                                         if(param.getLog_back() != null && param.getLog_back().equalsIgnoreCase("Y")){
                                             ftiparam.setLog_table(log_table + "_" + currentMonth_log);
