@@ -18,6 +18,7 @@ public class SQLParameter {
 	private String brand_use;
 	private String msg_use;
 	private String group_no;
+	private String img_group_no;
 	private String msg_type;
 	private String sms_kind;
 	private String log_mv_flag;
