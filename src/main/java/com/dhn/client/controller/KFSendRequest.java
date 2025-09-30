@@ -118,9 +118,14 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
                             headers.set("userid", userid);
 
+                            if ("Y".equals(ftimage.getWide())) {
+                                headers.set("messagetype","F3");
+                            } else {
+                                headers.set("messagetype","F2");
+                            }
+
                             // MultiValueMap을 사용해 파일 데이터 전송 준비
                             MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-                            body.add("userid", userid);
 
                             if (ftimage.getFtimagepath() != null && !ftimage.getFtimagepath().isEmpty()) {
                                 String rawPath = ftimage.getFtimagepath();
@@ -142,7 +147,8 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                                     continue;
                                 }
 
-                                body.add("image", new org.springframework.core.io.FileSystemResource(file));
+                                body.add("image1", new org.springframework.core.io.FileSystemResource(file));
+                                body.add("image_path1", rawPath);
                             }
 
                             HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
@@ -150,13 +156,7 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                             RestTemplate restTemplate = new RestTemplate();
                             try{
 
-                                String url = "ft/image";
-
-                                if ("Y".equals(ftimage.getWide())) {
-                                    url = "ft/wide/image";
-                                } else {
-                                    url = "ft/image";
-                                }
+                                String url = "dhn/ft/image";
 
                                 ResponseEntity<String> response = restTemplate.exchange(dhnServer + url, HttpMethod.POST, requestEntity, String.class);
 
