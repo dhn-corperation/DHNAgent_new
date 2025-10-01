@@ -127,6 +127,14 @@
         CREATE INDEX "${msg_table}_IDX4" ON "${msg_table}" ("MSG_ID")
     </update>
 
+    <update id="createIndex5_oracle" parameterType="com.dhn.client.bean.SQLParameter">
+        CREATE INDEX "${msg_table}_IDX5" ON "${msg_table}" ("STATUS", "RESERVE_DT", "MESSAGE_TYPE", "SEND_GROUP", "FI_IMAGE_PATH", "IMAGE_URL")
+    </update>
+
+    <update id="createIndex6_oracle" parameterType="com.dhn.client.bean.SQLParameter">
+        CREATE INDEX "${msg_table}_IDX6" ON "${msg_table}" ("SEND_GROUP", "FI_IMAGE_PATH", "WIDE")
+    </update>
+
     <update id="createTable_mysql" parameterType="com.dhn.client.bean.SQLParameter">
         CREATE TABLE `${msg_table}` (
            `ID` bigint(20) NOT NULL AUTO_INCREMENT,
@@ -198,7 +206,9 @@
            KEY `${msg_table}_IDX1` (`STATUS`,`RESERVE_DT`,`MESSAGE_TYPE`,`SMS_KIND`,`SEND_GROUP`) USING BTREE,
            KEY `${msg_table}_IDX2` (`STATUS`,`RESERVE_DT`,`MESSAGE_TYPE`,`SMS_KIND`,`SEND_GROUP`,`IMAGE_URL`,`FI_IMAGE_PATH`,`MMS_IMAGE_KEY`) USING BTREE,
            KEY `${msg_table}_IDX3` (`SEND_GROUP`) USING BTREE,
-           KEY `${msg_table}_IDX4` (`MSG_ID`) USING BTREE
+           KEY `${msg_table}_IDX4` (`MSG_ID`) USING BTREE,
+           KEY `${msg_table}_IDX5` (`STATUS`,`RESERVE_DT`,`MESSAGE_TYPE`,`SEND_GROUP`,`FI_IMAGE_PATH`,`IMAGE_URL`) USING BTREE,
+           KEY `${msg_table}_IDX6` (`SEND_GROUP`,`FI_IMAGE_PATH`,`WIDE`) USING BTREE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
     </update>
 
