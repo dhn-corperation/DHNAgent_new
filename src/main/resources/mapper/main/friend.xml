@@ -785,4 +785,23 @@
         </choose>
     </select>
 
+    <update id="ft_image_upload_fail" parameterType = "com.dhn.client.bean.SQLParameter" >
+        <choose>
+            <when test="database == 'oracle'">
+                UPDATE ${msg_table}
+                SET SEND_GROUP = NULL
+                WHERE SEND_GROUP = #{img_group_no}
+                    AND FI_IMAGE_PATH = #{mms_key}
+                    AND NVL(WIDE, 'N') = #{dist_value}
+            </when>
+            <when test="database == 'mysql'">
+                UPDATE ${msg_table}
+                SET SEND_GROUP = NULL
+                WHERE SEND_GROUP = #{img_group_no}
+                    AND FI_IMAGE_PATH = #{mms_key}
+                    AND IFNULL(WIDE, 'N') = #{dist_value}
+            </when>
+        </choose>
+    </update>
+
 </mapper>

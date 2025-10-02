@@ -100,4 +100,9 @@ public class FTRequestDAOimpl implements FTRequestDAO {
     public List<FTDataBean> selectOldFTRequests(SQLParameter param) throws Exception {
         return sqlSession.selectList("com.dhn.client.friend.mapper.SendRequest.req_old_ft_select", param);
     }
+
+    @Override
+    public void updateFTImageUploadFail(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.friend.mapper.SendRequest.ft_image_upload_fail",param);
+    }
 }

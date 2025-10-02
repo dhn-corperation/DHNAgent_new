@@ -37,4 +37,6 @@ public interface FTRequestService {
     public void updateOldFTGroupNo(SQLParameter param) throws Exception;
 
     public List<FTDataBean> selectOldFTRequests(SQLParameter param) throws Exception;
+
+    public void updateFTImageUploadFail(SQLParameter param) throws Exception;
 }

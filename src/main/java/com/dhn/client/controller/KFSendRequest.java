@@ -155,24 +155,32 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
 
                             RestTemplate restTemplate = new RestTemplate();
                             try{
-
                                 String url = "dhn/ft/image";
 
-                                ResponseEntity<String> response = restTemplate.exchange(dhnServer + url, HttpMethod.POST, requestEntity, String.class);
+                                ResponseEntity<String> response = null;
 
+                                try{
+                                    response = restTemplate.exchange(dhnServer + url, HttpMethod.POST, requestEntity, String.class);
+                                }catch (Exception e){
+                                    log.error("친구톡 이미지 등록 실패 통신오류 : "+e.getMessage());
+                                    ftRequestService.updateFTImageUploadFail(ftiparam);
+                                    continue;
+                                }
 
                                 if (response.getStatusCode() == HttpStatus.OK) {
                                     String responseBody = response.getBody();
                                     ObjectMapper mapper = new ObjectMapper();
+
                                     Map<String, String> res = mapper.readValue(responseBody, Map.class);
+
+                                    log.info("친구톡 이미지 등록 결과 : {}",res.toString());
 
                                     ftiparam.setFt_image_code(res.get("code"));
                                     ftiparam.setImg_err_msg(res.get("message"));
 
                                     if(ftiparam.getFt_image_code().equals("0000")){
-                                        log.info("친구톡 이미지 URL : "+res.get("image"));
 
-                                        ftiparam.setFt_image_url(res.get("image"));
+                                        ftiparam.setFt_image_url(res.get("image1"));
                                         ftRequestService.updateFTImageUrl(ftiparam);
                                     }else{
 
@@ -183,24 +191,14 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                                         }else{
                                             ftiparam.setLog_table(log_table);
                                         }
-                                        if(ftiparam.getFt_image_code().equals("error")){
-                                            ftiparam.setFt_image_code("9999");
-                                        }
+
+                                        ftiparam.setFt_image_code(res.get("code"));
                                         ftiparam.setImg_err_msg(res.get("message"));
                                         ftRequestService.updateFTImageFail(ftiparam);
                                     }
                                 } else {
                                     log.error("친구톡 이미지 등록 실패 통신오류 : "+response.getBody());
-                                    if(param.getLog_back() != null && param.getLog_back().equalsIgnoreCase("Y")){
-                                        ftiparam.setLog_table(log_table + "_" + currentMonth_log);
-                                    }else{
-                                        ftiparam.setLog_table(log_table);
-                                    }
-                                    if(ftiparam.getFt_image_code().equals("error")){
-                                        ftiparam.setFt_image_code("9999");
-                                    }
-                                    ftiparam.setImg_err_msg("KAKAO 통신 오류");
-                                    ftRequestService.updateFTImageFail(ftiparam);
+                                    ftRequestService.updateFTImageUploadFail(ftiparam);
                                 }
 
                             }catch (Exception e){

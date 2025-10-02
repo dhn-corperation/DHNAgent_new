@@ -88,4 +88,9 @@ public class FTRequestServiceimpl implements FTRequestService {
     public List<FTDataBean> selectOldFTRequests(SQLParameter param) throws Exception {
         return ftRequestDAO.selectOldFTRequests(param);
     }
+
+    @Override
+    public void updateFTImageUploadFail(SQLParameter param) throws Exception {
+        ftRequestDAO.updateFTImageUploadFail(param);
+    }
 }
