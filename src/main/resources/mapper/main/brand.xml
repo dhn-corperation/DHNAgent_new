@@ -77,7 +77,6 @@
                     LINK AS link,
                     SUPPLEMENT AS supplement,
                     CURRENCY_TYPE as currencytype,
-                    REAL_SEND_FLAG as realsendflag,
                     ATT_BUTTON as attbutton,
                     ATT_IMAGE as attimage,
                     ATT_ITEM as attitem,
@@ -118,7 +117,6 @@
                     LINK AS link,
                     SUPPLEMENT AS supplement,
                     CURRENCY_TYPE as currencytype,
-                    REAL_SEND_FLAG as realsendflag,
                     ATT_BUTTON as attbutton,
                     ATT_IMAGE as attimage,
                     ATT_ITEM as attitem,
@@ -533,7 +531,6 @@
                     LINK AS link,
                     SUPPLEMENT AS supplement,
                     CURRENCY_TYPE as currencytype,
-                    REAL_SEND_FLAG as realsendflag,
                     ATT_MESSAGE as attmessage,
                     ATT_BUTTON as attbutton,
                     ATT_IMAGE as attimage,
@@ -571,7 +568,6 @@
                     LINK AS link,
                     SUPPLEMENT AS supplement,
                     CURRENCY_TYPE as currencytype,
-                    REAL_SEND_FLAG as realsendflag,
                     ATT_MESSAGE as attmessage,
                     ATT_BUTTON as attbutton,
                     ATT_IMAGE as attimage,
@@ -640,7 +636,6 @@
                     PROFILE AS profile,
                     TO_CHAR(RESERVE_DT, 'YYYYMMDDHH24MISS') AS reservedt,
                     PUSH_ALARM as pushalarm,
-                    REAL_SEND_FLAG as realsendflag,
                     GROUP_TAG as attitems
                 FROM ${msg_table}
                 WHERE SEND_GROUP = #{group_no}
@@ -656,7 +651,6 @@
                     PROFILE AS profile,
                     DATE_FORMAT(RESERVE_DT, '%Y%m%d%H%i%s') AS reservedt,
                     PUSH_ALARM as pushalarm,
-                    REAL_SEND_FLAG as realsendflag,
                     GROUP_TAG as attitems
                 FROM ${msg_table}
                 WHERE SEND_GROUP = #{group_no}

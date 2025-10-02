@@ -72,7 +72,7 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
 
         if (param.getKakao_use() != null && param.getKakao_use().equalsIgnoreCase("Y")) {
             isStart = true;
-            log.info("FT (친구톡-구) 초기화 완료");
+            log.info("KF (친구톡-구) 초기화 완료");
         } else {
             posts.postProcessBeforeDestruction(this, null);
         }
@@ -118,16 +118,21 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
                             headers.set("userid", userid);
 
+                            if ("Y".equals(ftimage.getWide())) {
+                                headers.set("messagetype","F3");
+                            } else {
+                                headers.set("messagetype","F2");
+                            }
+
                             // MultiValueMap을 사용해 파일 데이터 전송 준비
                             MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-                            body.add("userid", userid);
 
                             if (ftimage.getFtimagepath() != null && !ftimage.getFtimagepath().isEmpty()) {
                                 String rawPath = ftimage.getFtimagepath();
                                 File file = new File(rawPath);
 
                                 if (!file.exists() || !file.isFile()) {
-                                    log.warn("FT Image 파일 없음 : " + rawPath);
+                                    log.warn("KF Image 파일 없음 : " + rawPath);
 
                                     if(param.getLog_back() != null && param.getLog_back().equalsIgnoreCase("Y")){
                                         ftiparam.setLog_table(log_table + "_" + currentMonth_log);
@@ -135,44 +140,47 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                                         ftiparam.setLog_table(log_table);
                                     }
 
-                                    ftiparam.setImg_err_msg("FT Image 파일 없음");
-                                    ftiparam.setFt_image_code("9999");
+                                    ftiparam.setImg_err_msg("KF Image 파일 없음");
+                                    ftiparam.setFt_image_code("0019");
                                     ftRequestService.updateFTImageFail(ftiparam);
 
                                     continue;
                                 }
 
-                                body.add("image", new org.springframework.core.io.FileSystemResource(file));
+                                body.add("image1", new org.springframework.core.io.FileSystemResource(file));
+                                body.add("image_path1", rawPath);
                             }
 
                             HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 
                             RestTemplate restTemplate = new RestTemplate();
                             try{
+                                String url = "dhn/ft/image";
 
-                                String url = "ft/image";
+                                ResponseEntity<String> response = null;
 
-                                if ("Y".equals(ftimage.getWide())) {
-                                    url = "ft/wide/image";
-                                } else {
-                                    url = "ft/image";
+                                try{
+                                    response = restTemplate.exchange(dhnServer + url, HttpMethod.POST, requestEntity, String.class);
+                                }catch (Exception e){
+                                    log.error("친구톡 이미지 등록 실패 통신오류 : "+e.getMessage());
+                                    ftRequestService.updateFTImageUploadFail(ftiparam);
+                                    continue;
                                 }
-
-                                ResponseEntity<String> response = restTemplate.exchange(dhnServer + url, HttpMethod.POST, requestEntity, String.class);
-
 
                                 if (response.getStatusCode() == HttpStatus.OK) {
                                     String responseBody = response.getBody();
                                     ObjectMapper mapper = new ObjectMapper();
+
                                     Map<String, String> res = mapper.readValue(responseBody, Map.class);
+
+                                    log.info("친구톡 이미지 등록 결과 : {}",res.toString());
 
                                     ftiparam.setFt_image_code(res.get("code"));
                                     ftiparam.setImg_err_msg(res.get("message"));
 
                                     if(ftiparam.getFt_image_code().equals("0000")){
-                                        log.info("친구톡 이미지 URL : "+res.get("image"));
 
-                                        ftiparam.setFt_image_url(res.get("image"));
+                                        ftiparam.setFt_image_url(res.get("image1"));
                                         ftRequestService.updateFTImageUrl(ftiparam);
                                     }else{
 
@@ -183,28 +191,18 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                                         }else{
                                             ftiparam.setLog_table(log_table);
                                         }
-                                        if(ftiparam.getFt_image_code().equals("error")){
-                                            ftiparam.setFt_image_code("9999");
-                                        }
+
+                                        ftiparam.setFt_image_code(res.get("code"));
                                         ftiparam.setImg_err_msg(res.get("message"));
                                         ftRequestService.updateFTImageFail(ftiparam);
                                     }
                                 } else {
                                     log.error("친구톡 이미지 등록 실패 통신오류 : "+response.getBody());
-                                    if(param.getLog_back() != null && param.getLog_back().equalsIgnoreCase("Y")){
-                                        ftiparam.setLog_table(log_table + "_" + currentMonth_log);
-                                    }else{
-                                        ftiparam.setLog_table(log_table);
-                                    }
-                                    if(ftiparam.getFt_image_code().equals("error")){
-                                        ftiparam.setFt_image_code("9999");
-                                    }
-                                    ftiparam.setImg_err_msg("KAKAO 통신 오류");
-                                    ftRequestService.updateFTImageFail(ftiparam);
+                                    ftRequestService.updateFTImageUploadFail(ftiparam);
                                 }
 
                             }catch (Exception e){
-                                log.error("FT Image URL 등록 오류: ", e.getMessage());
+                                log.error("KF Image URL 등록 오류: ", e.getMessage());
                             }
                         }
 
@@ -212,7 +210,7 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                     }
 
                 }catch (Exception e) {
-                    log.error("FT Image 등록 오류 : " + e.toString());
+                    log.error("KF Image 등록 오류 : " + e.toString());
                 }
                 imgPreGroupNo = img_group_no;
             }
@@ -246,7 +244,7 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                         }
 
                     }catch (Exception e){
-                        log.error("FT 메세지 전송 오류 : " + e.toString());
+                        log.error("KF 메세지 전송 오류 : " + e.toString());
                     }
                     preGroupNo = group_no;
                 }
@@ -357,18 +355,18 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                     log.info(res.toString());
                     if (response.getStatusCode() == HttpStatus.OK) { // 데이터 정상적으로 전달
                         ftRequestService.updateFTSendComplete(sendParam);
-                        log.info("FT 메세지 전송 완료 : " + response.getStatusCode() + " / " + group_no + " / " + _list.size() + " 건");
+                        log.info("KF 메세지 전송 완료 : " + response.getStatusCode() + " / " + group_no + " / " + _list.size() + " 건");
                     } else { // API 전송 실패시
-                        log.error("({}) FT 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
+                        log.error("({}) KF 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
                         ftRequestService.updateFTSendInit(sendParam);
                     }
                 } catch (Exception e) {
-                    log.error("FT 메세지 전송 오류 : " + e.toString());
+                    log.error("KF 메세지 전송 오류 : " + e.toString());
                     ftRequestService.updateFTSendInit(sendParam);
                 }
             }
         }catch (Exception e){
-            log.error("FT 메세지 전송 오류 : " + e.toString());
+            log.error("KF 메세지 전송 오류 : " + e.toString());
         }
     }
 

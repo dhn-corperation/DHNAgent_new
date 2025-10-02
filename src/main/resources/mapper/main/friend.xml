@@ -76,7 +76,6 @@
                     LINK AS link,
                     SUPPLEMENT AS supplement,
                     CURRENCY_TYPE as currencytype,
-                    REAL_SEND_FLAG as realsendflag,
                     ATT_BUTTON as attbutton,
                     ATT_IMAGE as attimage,
                     ATT_ITEM as attitem,
@@ -118,7 +117,6 @@
                     LINK AS link,
                     SUPPLEMENT AS supplement,
                     CURRENCY_TYPE as currencytype,
-                    REAL_SEND_FLAG as realsendflag,
                     ATT_BUTTON as attbutton,
                     ATT_IMAGE as attimage,
                     ATT_ITEM as attitem,
@@ -784,5 +782,24 @@
             </when>
         </choose>
     </select>
+
+    <update id="ft_image_upload_fail" parameterType = "com.dhn.client.bean.SQLParameter" >
+        <choose>
+            <when test="database == 'oracle'">
+                UPDATE ${msg_table}
+                SET SEND_GROUP = NULL
+                WHERE SEND_GROUP = #{img_group_no}
+                    AND FI_IMAGE_PATH = #{mms_key}
+                    AND NVL(WIDE, 'N') = #{dist_value}
+            </when>
+            <when test="database == 'mysql'">
+                UPDATE ${msg_table}
+                SET SEND_GROUP = NULL
+                WHERE SEND_GROUP = #{img_group_no}
+                    AND FI_IMAGE_PATH = #{mms_key}
+                    AND IFNULL(WIDE, 'N') = #{dist_value}
+            </when>
+        </choose>
+    </update>
 
 </mapper>
