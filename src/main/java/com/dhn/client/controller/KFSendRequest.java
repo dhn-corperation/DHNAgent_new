@@ -72,7 +72,7 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
 
         if (param.getKakao_use() != null && param.getKakao_use().equalsIgnoreCase("Y")) {
             isStart = true;
-            log.info("FT (친구톡-구) 초기화 완료");
+            log.info("KF (친구톡-구) 초기화 완료");
         } else {
             posts.postProcessBeforeDestruction(this, null);
         }
@@ -132,7 +132,7 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                                 File file = new File(rawPath);
 
                                 if (!file.exists() || !file.isFile()) {
-                                    log.warn("FT Image 파일 없음 : " + rawPath);
+                                    log.warn("KF Image 파일 없음 : " + rawPath);
 
                                     if(param.getLog_back() != null && param.getLog_back().equalsIgnoreCase("Y")){
                                         ftiparam.setLog_table(log_table + "_" + currentMonth_log);
@@ -140,8 +140,8 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                                         ftiparam.setLog_table(log_table);
                                     }
 
-                                    ftiparam.setImg_err_msg("FT Image 파일 없음");
-                                    ftiparam.setFt_image_code("9999");
+                                    ftiparam.setImg_err_msg("KF Image 파일 없음");
+                                    ftiparam.setFt_image_code("0019");
                                     ftRequestService.updateFTImageFail(ftiparam);
 
                                     continue;
@@ -202,7 +202,7 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                                 }
 
                             }catch (Exception e){
-                                log.error("FT Image URL 등록 오류: ", e.getMessage());
+                                log.error("KF Image URL 등록 오류: ", e.getMessage());
                             }
                         }
 
@@ -210,7 +210,7 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                     }
 
                 }catch (Exception e) {
-                    log.error("FT Image 등록 오류 : " + e.toString());
+                    log.error("KF Image 등록 오류 : " + e.toString());
                 }
                 imgPreGroupNo = img_group_no;
             }
@@ -244,7 +244,7 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                         }
 
                     }catch (Exception e){
-                        log.error("FT 메세지 전송 오류 : " + e.toString());
+                        log.error("KF 메세지 전송 오류 : " + e.toString());
                     }
                     preGroupNo = group_no;
                 }
@@ -355,18 +355,18 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                     log.info(res.toString());
                     if (response.getStatusCode() == HttpStatus.OK) { // 데이터 정상적으로 전달
                         ftRequestService.updateFTSendComplete(sendParam);
-                        log.info("FT 메세지 전송 완료 : " + response.getStatusCode() + " / " + group_no + " / " + _list.size() + " 건");
+                        log.info("KF 메세지 전송 완료 : " + response.getStatusCode() + " / " + group_no + " / " + _list.size() + " 건");
                     } else { // API 전송 실패시
-                        log.error("({}) FT 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
+                        log.error("({}) KF 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
                         ftRequestService.updateFTSendInit(sendParam);
                     }
                 } catch (Exception e) {
-                    log.error("FT 메세지 전송 오류 : " + e.toString());
+                    log.error("KF 메세지 전송 오류 : " + e.toString());
                     ftRequestService.updateFTSendInit(sendParam);
                 }
             }
         }catch (Exception e){
-            log.error("FT 메세지 전송 오류 : " + e.toString());
+            log.error("KF 메세지 전송 오류 : " + e.toString());
         }
     }
 
