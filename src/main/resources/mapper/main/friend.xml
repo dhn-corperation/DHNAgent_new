@@ -732,17 +732,15 @@
                     SMS_KIND as smskind,
                     KISA_CODE as kisacode,
                     TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
-                    BUTTON1 AS button1,
-                    BUTTON2 AS button2,
-                    BUTTON3 AS button3,
-                    BUTTON4 AS button4,
-                    BUTTON5 AS button5,
+                    ATT_BUTTON as attbutton,
+                    ATT_COUPON as attcoupon,
                     IMAGE_LINK as imagelink,
                     IMAGE_URL as imageurl,
                     PROFILE AS profile,
                     '00000000000000' AS reservedt,
                     WIDE as wide,
                     Header as header,
+                    CURRENCY_TYPE as currencytype,
                     PUSH_ALARM as pushalarm
                 FROM ${msg_table}
                 WHERE SEND_GROUP = #{group_no}
@@ -765,17 +763,15 @@
                     SMS_KIND as smskind,
                     KISA_CODE as kisacode,
                     DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s') AS regdt,
-                    BUTTON1 AS button1,
-                    BUTTON2 AS button2,
-                    BUTTON3 AS button3,
-                    BUTTON4 AS button4,
-                    BUTTON5 AS button5,
+                    ATT_BUTTON as attbutton,
+                    ATT_COUPON as attcoupon,
                     IMAGE_LINK as imagelink,
                     IMAGE_URL as imageurl,
                     PROFILE AS profile,
                     '00000000000000' AS reservedt,
                     WIDE as wide,
                     Header as header,
+                    CURRENCY_TYPE as currencytype,
                     PUSH_ALARM as pushalarm
                 FROM ${msg_table}
                 WHERE SEND_GROUP = #{group_no}
