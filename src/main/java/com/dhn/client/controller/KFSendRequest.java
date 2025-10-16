@@ -163,7 +163,7 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                                 try{
                                     response = restTemplate.exchange(dhnServer + url, HttpMethod.POST, requestEntity, String.class);
                                 }catch (Exception e){
-                                    log.error("친구톡 이미지 등록 실패 통신오류 : "+e.getMessage());
+                                    log.error("친구톡 이미지 등록 실패 통신오류 : {}", e.getMessage());
                                     ftRequestService.updateFTImageUploadFail(ftiparam);
                                     continue;
                                 }
@@ -185,8 +185,6 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                                         ftRequestService.updateFTImageUrl(ftiparam);
                                     }else{
 
-                                        log.warn("친구톡 이미지 등록 실패 : "+res.toString());
-
                                         if(param.getLog_back() != null && param.getLog_back().equalsIgnoreCase("Y")){
                                             ftiparam.setLog_table(log_table + "_" + currentMonth_log);
                                         }else{
@@ -198,12 +196,12 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                                         ftRequestService.updateFTImageFail(ftiparam);
                                     }
                                 } else {
-                                    log.error("친구톡 이미지 등록 실패 통신오류 : "+response.getBody());
+                                    log.error("친구톡 이미지 등록 실패 통신오류 : {}",response.getBody());
                                     ftRequestService.updateFTImageUploadFail(ftiparam);
                                 }
 
                             }catch (Exception e){
-                                log.error("KF Image URL 등록 오류: ", e.getMessage());
+                                log.error("KF Image URL 등록 오류: {}", e.getMessage());
                             }
                         }
 
@@ -211,7 +209,7 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                     }
 
                 }catch (Exception e) {
-                    log.error("KF Image 등록 오류 : " + e.toString());
+                    log.error("KF Image 등록 오류 : {}",e.toString());
                 }
                 imgPreGroupNo = img_group_no;
             }
@@ -245,7 +243,7 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                         }
 
                     }catch (Exception e){
-                        log.error("KF 메세지 전송 오류 : " + e.toString());
+                        log.error("KF 메세지 전송 오류 : {}",e.toString());
                     }
                     preGroupNo = group_no;
                 }
@@ -390,12 +388,12 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                         ftRequestService.updateFTSendInit(sendParam);
                     }
                 } catch (Exception e) {
-                    log.error("KF 메세지 전송 오류 : " + e.toString());
+                    log.error("KF 메세지 전송 오류 : {}",e.toString());
                     ftRequestService.updateFTSendInit(sendParam);
                 }
             }
         }catch (Exception e){
-            log.error("KF 메세지 전송 오류 : " + e.toString());
+            log.error("KF 메세지 전송 오류 : {}",e.toString());
         }
     }
 
