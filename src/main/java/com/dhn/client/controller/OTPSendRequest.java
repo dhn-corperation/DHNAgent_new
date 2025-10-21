@@ -1,8 +1,8 @@
 package com.dhn.client.controller;
 
-import com.dhn.client.bean.KAORequestBean;
+import com.dhn.client.bean.RequestBean;
 import com.dhn.client.bean.SQLParameter;
-import com.dhn.client.service.KAORequestService;
+import com.dhn.client.service.MSGRequestService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +26,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 @Component
 @Slf4j
-public class KAOISendRequest implements ApplicationListener<ContextRefreshedEvent> {
+public class OTPSendRequest implements ApplicationListener<ContextRefreshedEvent> {
 
     public static boolean isStart = false;
     private boolean isProc = false;
@@ -35,10 +35,10 @@ public class KAOISendRequest implements ApplicationListener<ContextRefreshedEven
     private String userid;
     private String preGroupNo = "";
 
-    private static final ExecutorService executorService = Executors.newFixedThreadPool(4);
+    private static final ExecutorService executorService = Executors.newFixedThreadPool(2);
 
     @Autowired
-    private KAORequestService kaoRequestService;
+    private MSGRequestService msgRequestService;
 
     @Autowired
     private ApplicationContext appContext;
@@ -46,20 +46,21 @@ public class KAOISendRequest implements ApplicationListener<ContextRefreshedEven
     @Autowired
     private ScheduledAnnotationBeanPostProcessor posts;
 
+
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
-        param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
-        param.setKakao_use(appContext.getEnvironment().getProperty("dhnclient.kakao_use"));
+        param.setMsg_table( appContext.getEnvironment().getProperty("dhnclient.msg_table"));
+        param.setMsg_use(appContext.getEnvironment().getProperty("dhnclient.msg_use"));
         param.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database"));
         param.setSequence(appContext.getEnvironment().getProperty("dhnclient.msg_seq"));
-        param.setMsg_type("AI");
+        param.setMsg_type("OT");
 
         dhnServer = appContext.getEnvironment().getProperty("dhnclient.server");
         userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 
-        if (param.getKakao_use() != null && param.getKakao_use().equalsIgnoreCase("Y")) {
+        if (param.getMsg_use() != null && param.getMsg_use().equalsIgnoreCase("Y")) {
             isStart = true;
-            log.info("KAO Image 초기화 완료");
+            log.info("MSG OTP 초기화 완료");
         } else {
             posts.postProcessBeforeDestruction(this, null);
         }
@@ -67,31 +68,31 @@ public class KAOISendRequest implements ApplicationListener<ContextRefreshedEven
     }
 
     @Scheduled(fixedDelay = 100)
-    public void SendProcess() {
+    private void SendProcess() {
         if(isStart && !isProc) {
             isProc = true;
 
             ThreadPoolExecutor poolExecutor = (ThreadPoolExecutor) executorService;
             int activeThreads = poolExecutor.getActiveCount();
 
-            if(activeThreads < 4){
+            if(activeThreads < 2){
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
                 LocalDateTime now = LocalDateTime.now();
-                String group_no = "KI" + now.format(formatter);
+                String group_no = "OT" + now.format(formatter);
 
                 if(!group_no.equals(preGroupNo)) {
                     try{
-                        int cnt = kaoRequestService.selectKAORequestCount(param);
+                        int cnt = msgRequestService.selectOTPRequestCount(param);
 
-                        if(cnt > 0){
+                        if(cnt > 0) {
                             param.setGroup_no(group_no);
-                            kaoRequestService.updateKAOGroupNo(param);
+                            msgRequestService.updateOTPGroupNo(param);
 
                             executorService.submit(() -> APIProcess(group_no));
                         }
 
                     }catch (Exception e){
-                        log.error("KAO Image 메세지 전송 오류 : " + e.toString());
+                        log.error("OTP 메세지 전송 오류 : " + e.toString());
                     }
 
                     preGroupNo = group_no;
@@ -102,7 +103,7 @@ public class KAOISendRequest implements ApplicationListener<ContextRefreshedEven
     }
 
     private void APIProcess(String group_no) {
-        try{
+        try {
 
             SQLParameter sendParam = new SQLParameter();
             sendParam.setGroup_no(group_no);
@@ -111,12 +112,11 @@ public class KAOISendRequest implements ApplicationListener<ContextRefreshedEven
             sendParam.setSequence(param.getSequence());
             sendParam.setMsg_type(param.getMsg_type());
 
-
-            List<KAORequestBean> _list = kaoRequestService.selectKAORequests(sendParam);
+            List<RequestBean> _list = msgRequestService.selectOTPRequests(sendParam);
 
             StringWriter sw = new StringWriter();
             ObjectMapper om = new ObjectMapper();
-            om.writeValue(sw, _list); // List를 Json화 하여 문자열 저장
+            om.writeValue(sw, _list);
 
             HttpHeaders header = new HttpHeaders();
 
@@ -130,19 +130,20 @@ public class KAOISendRequest implements ApplicationListener<ContextRefreshedEven
                 ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
                 Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
                 log.info(res.toString());
-                if (response.getStatusCode() == HttpStatus.OK) { // 데이터 정상적으로 전달
-                    kaoRequestService.updateKAOSendComplete(sendParam);
-                    log.info("KAO Image 메세지 전송 완료 : " + response.getStatusCode() + " / " + group_no + " / " + _list.size() + " 건");
-                }else { // API 전송 실패시
-                    log.error("({}) KAO Image 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
-                    kaoRequestService.updateKAOSendInit(sendParam);
+                if(response.getStatusCode() ==  HttpStatus.OK)
+                {
+                    msgRequestService.updateSMSSendComplete(sendParam);
+                    log.info("OTP 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
+                } else {
+                    log.error("({}) OTP 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
+                    msgRequestService.updateSMSSendInit(sendParam);
                 }
-            } catch (Exception e) {
-                log.error("KAO Image 메세지 전송 오류 : " + e.toString());
-                kaoRequestService.updateKAOSendInit(sendParam);
+            }catch (Exception e) {
+                log.error("OTP 메세지 전송 오류 : " + e.toString());
+                msgRequestService.updateSMSSendInit(sendParam);
             }
         }catch (Exception e){
-            log.error("KAO Image 메세지 전송 오류 : " + e.toString());
+            log.error("OTP 메세지 전송 오류 : " + e.toString());
         }
     }
 }

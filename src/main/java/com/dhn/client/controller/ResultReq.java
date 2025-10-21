@@ -124,6 +124,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 
 
 	private void ResultProc(JSONArray json) {
+		log.info("결과 수신 시작 : " + json.length() + " 건");
 		for(int i=0; i<json.length(); i++) {
 			JSONObject ent = json.getJSONObject(i);
 			
@@ -136,8 +137,13 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 
 			String result_message = ent.getString("message").isEmpty()?"":ent.getString("message");
 
-			if(ent.getString("message_type").equalsIgnoreCase("AT") || ent.getString("message_type").equalsIgnoreCase("AI") || ent.getString("message_type").equalsIgnoreCase("FI") || ent.getString("message_type").equalsIgnoreCase("FT")){
-				// 알림톡
+			if(ent.getString("message_type").equalsIgnoreCase("AT")
+					|| ent.getString("message_type").equalsIgnoreCase("AI")
+					|| ent.getString("message_type").toUpperCase().startsWith("F")
+					|| ent.getString("message_type").toUpperCase().startsWith("B")
+					|| ent.getString("message_type").toUpperCase().startsWith("C")
+					|| ent.getString("message_type").toUpperCase().startsWith("D")){
+				// 비즈메세지
 				kao_ml.setMsgid(ent.getString("msgid"));
 				kao_ml.setMsg_table(msg_table);
 				if(log_back.equalsIgnoreCase("Y")){
@@ -149,13 +155,20 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 
 				kao_ml.setResult_dt(ent.getString("res_dt"));
 				kao_ml.setS_code(ent.getString("s_code"));
-				kao_ml.setResult_message(result_message.equalsIgnoreCase("")?"":result_message);
+				if (result_message == null || result_message.trim().isEmpty()) {
+					kao_ml.setResult_message("");
+				} else {
+					// 작은따옴표 → 두 개의 작은따옴표로 치환
+					kao_ml.setResult_message(result_message.replace("'", "''"));
+				}
 
 				if(ent.getString("s_code").equals("0000")){
 					kao_ml.setStatus("3");
 				}else{
 					kao_ml.setStatus("4");
 				}
+
+				kao_ml.setBcast_cnt(ent.getString("price").isEmpty()?"":ent.getString("price"));
 
 			}else if(ent.getString("message_type").equalsIgnoreCase("PH") && ent.has("s_code") && !ent.isNull("s_code") && ent.getString("s_code").length() > 1){
 				// 알림톡 실패 문자
@@ -181,7 +194,12 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 					kao_ml.setTelecom("ETC");
 				}
 				kao_ml.setResult_dt(ent.getString("remark2"));
-				kao_ml.setResult_message(result_message.equalsIgnoreCase("")?"":result_message);
+				if (result_message == null || result_message.trim().isEmpty()) {
+					kao_ml.setResult_message("");
+				} else {
+					// 작은따옴표 → 두 개의 작은따옴표로 치환
+					kao_ml.setResult_message(result_message.replace("'", "''"));
+				}
 
 				if(ent.getString("code").equals("0000")){
 					kao_ml.setStatus("3");
@@ -189,6 +207,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 					kao_ml.setStatus("4");
 				}
 				kao_ml.setReal_send_type(ent.getString("sms_kind"));
+				kao_ml.setBcast_cnt(ent.getString("price").isEmpty()?"":ent.getString("price"));
 
 			}else{
 				// 문자
@@ -215,7 +234,12 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 				}
 
 				msg_ml.setResult_dt(ent.getString("remark2"));
-				msg_ml.setResult_message(result_message.equalsIgnoreCase("")?"":result_message);
+				if (result_message == null || result_message.trim().isEmpty()) {
+					msg_ml.setResult_message("");
+				} else {
+					// 작은따옴표 → 두 개의 작은따옴표로 치환
+					msg_ml.setResult_message(result_message.replace("'", "''"));
+				}
 
 				if(ent.getString("code").equals("0000")){
 					msg_ml.setStatus("3");
@@ -235,9 +259,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			}
 
 		}
-		log.info("결과 수신 완료 : " + json.length() + " 건");		
-		procCnt--;
-		
+		log.info("결과 수신 완료 : " + json.length() + " 건");
 	}
 
 }

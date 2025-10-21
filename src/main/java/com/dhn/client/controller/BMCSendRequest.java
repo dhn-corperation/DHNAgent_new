@@ -2,7 +2,6 @@ package com.dhn.client.controller;
 
 import com.dhn.client.bean.*;
 import com.dhn.client.service.BMRequestService;
-import com.dhn.client.service.FTRequestService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -30,7 +29,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 @Component
 @Slf4j
-public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent> {
+public class BMCSendRequest implements ApplicationListener<ContextRefreshedEvent> {
 
     public static boolean isStart = false;
     private boolean isProc = false;
@@ -44,7 +43,7 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
     private static final ExecutorService executorService = Executors.newFixedThreadPool(2);
 
     @Autowired
-    private FTRequestService ftRequestService;
+    private BMRequestService bmRequestService;
 
     @Autowired
     private ApplicationContext appContext;
@@ -55,10 +54,10 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
-        param.setKakao_use(appContext.getEnvironment().getProperty("dhnclient.kakao_use"));
+        param.setBrand_use(appContext.getEnvironment().getProperty("dhnclient.brand_use"));
         param.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database"));
         param.setSequence(appContext.getEnvironment().getProperty("dhnclient.msg_seq"));
-        param.setMsg_type("F%");
+        param.setMsg_type("C%");
 
         dhnServer = appContext.getEnvironment().getProperty("dhnclient.server");
         userid = appContext.getEnvironment().getProperty("dhnclient.userid");
@@ -66,9 +65,9 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
         log_table = appContext.getEnvironment().getProperty("dhnclient.log_table");
 
 
-        if (param.getKakao_use() != null && param.getKakao_use().equalsIgnoreCase("Y")) {
+        if (param.getBrand_use() != null && param.getBrand_use().equalsIgnoreCase("Y")) {
             isStart = true;
-            log.info("FT (친구톡) 초기화 완료");
+            log.info("브랜드메시지 기본형 초기화 완료");
         } else {
             posts.postProcessBeforeDestruction(this, null);
         }
@@ -86,21 +85,21 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
             if(activeThreads < 2){
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
                 LocalDateTime now = LocalDateTime.now();
-                String group_no = "FT" + now.format(formatter);
+                String group_no = "BC" + now.format(formatter);
 
                 if(!group_no.equals(preGroupNo)) {
                     try{
-                        int cnt = ftRequestService.selectFTRequestCount(param);
+                        int cnt = bmRequestService.selectBMRequestCount(param);
 
                         if(cnt > 0){
                             param.setGroup_no(group_no);
-                            ftRequestService.updateFTGroupNo(param);
+                            bmRequestService.updateBMGroupNo(param);
 
                             executorService.submit(() -> APIProcess(group_no));
                         }
 
                     }catch (Exception e){
-                        log.error("FT 메세지 전송 오류 : " + e.toString());
+                        log.error("BC (기본형) 메세지 전송 오류 : " + e.toString());
                     }
 
                     preGroupNo = group_no;
@@ -121,131 +120,104 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
             sendParam.setMsg_type(param.getMsg_type());
 
 
-            List<FTDataBean> _list = ftRequestService.selectFTRequests(sendParam);
+            List<BMDataBean> _list = bmRequestService.selectBCRequests(sendParam);
 
-            List<FTRequestBean> sendList = new ArrayList<>();
+            List<BCRequestBean> sendList = new ArrayList<>();
             List<String> invalidList = new ArrayList<>();
 
-            for (FTDataBean ftDataBean  : _list ) {
-                FTRequestBean sendBean = new FTRequestBean();
-                sendBean.setMsgid(ftDataBean.getMsgid());
-                sendBean.setAdflag(ftDataBean.getAdflag());
-                sendBean.setMessagetype(ftDataBean.getMessagetype());
-                sendBean.setMsg(ftDataBean.getMsg());
-                sendBean.setMsgsms(ftDataBean.getMsgsms());
+            for (BMDataBean bmDataBean  : _list ) {
+                BCRequestBean sendBean = new BCRequestBean();
+                sendBean.setMsgid(bmDataBean.getMsgid());
+                sendBean.setPushalarm(bmDataBean.getPushalarm());
+                sendBean.setMessagetype(bmDataBean.getMessagetype());
+                sendBean.setMsg(bmDataBean.getMsg());
+                sendBean.setMsgsms(bmDataBean.getMsgsms());
                 sendBean.setPcom("P");
-                sendBean.setPinvoice(ftDataBean.getPinvoice());
-                sendBean.setPhn(ftDataBean.getPhn());
-                sendBean.setProfile(ftDataBean.getProfile());
-                sendBean.setRegdt(ftDataBean.getRegdt());
-                sendBean.setReservedt(ftDataBean.getReservedt());
-                sendBean.setSmskind(ftDataBean.getSmskind());
-                sendBean.setSmslmstit(ftDataBean.getSmslmstit());
-                sendBean.setSmssender(ftDataBean.getSmssender());
-                sendBean.setTmplid(ftDataBean.getTmplid());
-                sendBean.setCurrencytype(ftDataBean.getCurrencytype());
-                sendBean.setHeader(ftDataBean.getHeader());
-                sendBean.setKisacode(ftDataBean.getKisacode());
-                sendBean.setKind(ftDataBean.getKind());
-                sendBean.setSupplement(ftDataBean.getSupplement());
-                sendBean.setAttitems(ftDataBean.getGrouptag());
-                sendBean.setUserkey(ftDataBean.getUserkey());
-                sendBean.setPushalarm(ftDataBean.getPushalarm());
+                sendBean.setPinvoice(bmDataBean.getPinvoice());
+                sendBean.setPhn(bmDataBean.getPhn());
+                sendBean.setProfile(bmDataBean.getProfile());
+                sendBean.setRegdt(bmDataBean.getRegdt());
+                sendBean.setReservedt(bmDataBean.getReservedt());
+                sendBean.setSmskind(bmDataBean.getSmskind());
+                sendBean.setSmslmstit(bmDataBean.getSmslmstit());
+                sendBean.setSmssender(bmDataBean.getSmssender());
+                sendBean.setTmplid(bmDataBean.getTmplid());
+                sendBean.setCurrencytype(bmDataBean.getCurrencytype());
+                sendBean.setHeader(bmDataBean.getHeader());
+                sendBean.setKisacode(bmDataBean.getKisacode());
+                sendBean.setKind(bmDataBean.getKind());
+                sendBean.setSupplement(bmDataBean.getSupplement());
+                sendBean.setAttitems(bmDataBean.getGrouptag());
 
                 ObjectMapper mapper = new ObjectMapper();
 
                 ObjectNode attNode = mapper.createObjectNode();
 
-                JsonStatus stImg = isValidJson(ftDataBean.getAttimage());
-                if (stImg == JsonStatus.VALID) {
-                    attNode.set("image", mapper.readTree(ftDataBean.getAttimage()));
-                } else if (stImg == JsonStatus.INVALID) {
-                    log.error("Invalid JSON/ARRAY (image) msgid={}", ftDataBean.getMsgid());
-                    invalidList.add(ftDataBean.getMsgid());
+                JsonStatus stMsg = isValidJson(bmDataBean.getAttmessage());
+                if (stMsg == JsonStatus.VALID) {
+                    attNode.set("message_variable", mapper.readTree(bmDataBean.getAttmessage()));
+                } else if (stMsg == JsonStatus.INVALID) {
+                    log.error("Invalid JSON/ARRAY (message) msgid={}", bmDataBean.getMsgid());
+                    invalidList.add(bmDataBean.getMsgid());
                     continue;
                 }
 
-                JsonStatus stBtn = isValidJson(ftDataBean.getAttbutton());
+                JsonStatus stBtn = isValidJson(bmDataBean.getAttbutton());
                 if (stBtn == JsonStatus.VALID) {
-                    attNode.set("button", mapper.readTree(ftDataBean.getAttbutton()));
+                    attNode.set("button_variable", mapper.readTree(bmDataBean.getAttbutton()));
                 } else if (stBtn == JsonStatus.INVALID) {
-                    log.error("Invalid JSON/ARRAY (button) msgid={}", ftDataBean.getMsgid());
-                    invalidList.add(ftDataBean.getMsgid());
+                    log.error("Invalid JSON/ARRAY (button) msgid={}", bmDataBean.getMsgid());
+                    invalidList.add(bmDataBean.getMsgid());
                     continue;
                 }
 
-                JsonStatus stItem = isValidJson(ftDataBean.getAttitem());
-                if (stItem == JsonStatus.VALID) {
-                    attNode.set("item", mapper.readTree(ftDataBean.getAttitem()));
-                } else if (stItem == JsonStatus.INVALID) {
-                    log.error("Invalid JSON/ARRAY (item) msgid={}", ftDataBean.getMsgid());
-                    invalidList.add(ftDataBean.getMsgid());
+                JsonStatus stImg = isValidJson(bmDataBean.getAttimage());
+                if (stImg == JsonStatus.VALID) {
+                    attNode.set("image_variable", mapper.readTree(bmDataBean.getAttimage()));
+                } else if (stImg == JsonStatus.INVALID) {
+                    log.error("Invalid JSON/ARRAY (image) msgid={}", bmDataBean.getMsgid());
+                    invalidList.add(bmDataBean.getMsgid());
                     continue;
                 }
 
-                JsonStatus stCoupon = isValidJson(ftDataBean.getAttcoupon());
+                JsonStatus stCoupon = isValidJson(bmDataBean.getAttcoupon());
                 if (stCoupon == JsonStatus.VALID) {
-                    attNode.set("coupon", mapper.readTree(ftDataBean.getAttcoupon()));
+                    attNode.set("coupon_variable", mapper.readTree(bmDataBean.getAttcoupon()));
                 } else if (stCoupon == JsonStatus.INVALID) {
-                    log.error("Invalid JSON/ARRAY (coupon) msgid={}", ftDataBean.getMsgid());
-                    invalidList.add(ftDataBean.getMsgid());
+                    log.error("Invalid JSON/ARRAY (coupon) msgid={}", bmDataBean.getMsgid());
+                    invalidList.add(bmDataBean.getMsgid());
                     continue;
                 }
 
-                JsonStatus stCommerce = isValidJson(ftDataBean.getAttcommerce());
+                JsonStatus stCommerce = isValidJson(bmDataBean.getAttcommerce());
                 if (stCommerce == JsonStatus.VALID) {
-                    attNode.set("commerce", mapper.readTree(ftDataBean.getAttcommerce()));
+                    attNode.set("commerce_variable", mapper.readTree(bmDataBean.getAttcommerce()));
                 } else if (stCommerce == JsonStatus.INVALID) {
-                    log.error("Invalid JSON/ARRAY (commerce) msgid={}", ftDataBean.getMsgid());
-                    invalidList.add(ftDataBean.getMsgid());
+                    log.error("Invalid JSON/ARRAY (commerce) msgid={}", bmDataBean.getMsgid());
+                    invalidList.add(bmDataBean.getMsgid());
                     continue;
                 }
 
-                JsonStatus stVideo = isValidJson(ftDataBean.getAttvideo());
+                JsonStatus stVideo = isValidJson(bmDataBean.getAttvideo());
                 if (stVideo == JsonStatus.VALID) {
-                    attNode.set("video", mapper.readTree(ftDataBean.getAttvideo()));
+                    attNode.set("video_variable", mapper.readTree(bmDataBean.getAttvideo()));
                 } else if (stVideo == JsonStatus.INVALID) {
-                    log.error("Invalid JSON/ARRAY (video) msgid={}", ftDataBean.getMsgid());
-                    invalidList.add(ftDataBean.getMsgid());
+                    log.error("Invalid JSON/ARRAY (video) msgid={}", bmDataBean.getMsgid());
+                    invalidList.add(bmDataBean.getMsgid());
+                    continue;
+                }
+
+                JsonStatus stCar = isValidJson(bmDataBean.getCarlist());
+                if (stCar == JsonStatus.VALID) {
+                    attNode.set("carousel_variable", mapper.readTree(bmDataBean.getCarlist()));
+                } else if (stCar == JsonStatus.INVALID) {
+                    log.error("Invalid JSON/ARRAY (carousel) msgid={}", bmDataBean.getMsgid());
+                    invalidList.add(bmDataBean.getMsgid());
                     continue;
                 }
 
                 if (attNode.size() > 0) {
-                    sendBean.setAttachments(mapper.writeValueAsString(attNode)); // String
-                }
-
-                // ===== carousel 조립 =====
-                ObjectNode carNode = mapper.createObjectNode();
-
-                JsonStatus stHead = isValidJson(ftDataBean.getCarhead());
-                if (stHead == JsonStatus.VALID) {
-                    carNode.set("head", mapper.readTree(ftDataBean.getCarhead()));
-                } else if (stHead == JsonStatus.INVALID) {
-                    log.error("Invalid JSON/ARRAY (carhead) msgid={}", ftDataBean.getMsgid());
-                    invalidList.add(ftDataBean.getMsgid());
-                    continue;
-                }
-
-                JsonStatus stList = isValidJson(ftDataBean.getCarlist());
-                if (stList == JsonStatus.VALID) {
-                    carNode.set("list", mapper.readTree(ftDataBean.getCarlist()));
-                } else if (stList == JsonStatus.INVALID) {
-                    log.error("Invalid JSON/ARRAY (carlist) msgid={}", ftDataBean.getMsgid());
-                    invalidList.add(ftDataBean.getMsgid());
-                    continue;
-                }
-
-                JsonStatus stTail = isValidJson(ftDataBean.getCartail());
-                if (stTail == JsonStatus.VALID) {
-                    carNode.set("tail", mapper.readTree(ftDataBean.getCartail()));
-                } else if (stTail == JsonStatus.INVALID) {
-                    log.error("Invalid JSON/ARRAY (cartail) msgid={}", ftDataBean.getMsgid());
-                    invalidList.add(ftDataBean.getMsgid());
-                    continue;
-                }
-
-                if (carNode.size() > 0) {
-                    sendBean.setCarousel(mapper.writeValueAsString(carNode)); // String
+                    sendBean.setAttachments(mapper.writeValueAsString(attNode));
                 }
 
                 sendList.add(sendBean);
@@ -271,10 +243,10 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
                     ml.setResult_message("(AGENT) JSON/ARRAY 데이터 형식 오류");
                     ml.setCode("7999");
 
-                    ftRequestService.updateFTInvalidData(invalidList, ml);
-                    log.info("FT Invalid 데이터 {}건 처리 완료", invalidList.size());
+                    bmRequestService.updateInvalidData(invalidList, ml);
+                    log.info("BC (기본형) Invalid 데이터 {}건 처리 완료", invalidList.size());
                 } catch (Exception e) {
-                    log.error("FT Invalid 데이터 처리 오류: {}", e.getMessage());
+                    log.error("BC (기본형) Invalid 데이터 처리 오류: {}", e.getMessage());
                 }
             }
 
@@ -297,20 +269,20 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
                     Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
                     log.info(res.toString());
                     if (response.getStatusCode() == HttpStatus.OK) {
-                        ftRequestService.updateFTSendComplete(sendParam);
-                        log.info("FT 메세지 전송 완료 : " + response.getStatusCode() + " / " + group_no + " / " + sendList.size() + " 건");
+                        bmRequestService.updateBMSendComplete(sendParam);
+                        log.info("BC (기본형) 메세지 전송 완료 : " + response.getStatusCode() + " / " + group_no + " / " + sendList.size() + " 건");
                     }else {
-                        log.error("({}) FT 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
-                        ftRequestService.updateFTSendInit(sendParam);
+                        log.error("({}) BC (기본형) 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
+                        bmRequestService.updateBMSendInit(sendParam);
                     }
                 } catch (Exception e) {
-                    log.error("FT 메세지 전송 오류 : " + e.toString());
-                    ftRequestService.updateFTSendInit(sendParam);
+                    log.error("BC (기본형) 메세지 전송 오류 : " + e.toString());
+                    bmRequestService.updateBMSendInit(sendParam);
                 }
 
             }
         }catch (Exception e){
-            log.error("FT 메세지 전송 오류 : " + e.toString());
+            log.error("BC (기본형) 메세지 전송 오류 : " + e.toString());
         }
     }
 
@@ -333,4 +305,6 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
             return JsonStatus.INVALID;
         }
     }
+
+
 }

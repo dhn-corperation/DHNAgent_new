@@ -28,17 +28,4 @@ public interface KAORequestService {
 
     public void log_move(SQLParameter param) throws Exception;
 
-    public int selectFTRequestCount(SQLParameter param) throws Exception;
-
-    public void updateFTGroupNo(SQLParameter param) throws Exception;
-
-    public List<KAORequestBean> selectFTRequests(SQLParameter param) throws Exception;
-
-    public int selectFtImageCount(SQLParameter param) throws Exception;
-
-    public List<ImageBean> selectFtImage(SQLParameter param) throws Exception;
-
-    public void updateFTImageUrl(SQLParameter param) throws Exception;
-
-    public void updateFTImageFail(SQLParameter param) throws Exception;
 }

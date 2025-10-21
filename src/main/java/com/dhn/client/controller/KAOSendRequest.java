@@ -51,7 +51,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 		param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
 		param.setKakao_use(appContext.getEnvironment().getProperty("dhnclient.kakao_use"));
 		param.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database"));
-		param.setSequence(appContext.getEnvironment().getProperty("dhnclient.at_seq"));
+		param.setSequence(appContext.getEnvironment().getProperty("dhnclient.msg_seq"));
 		param.setMsg_type("AT");
 
 		dhnServer = appContext.getEnvironment().getProperty("dhnclient.server");
@@ -134,7 +134,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 					kaoRequestService.updateKAOSendComplete(sendParam);
 					log.info("KAO 메세지 전송 완료 : " + response.getStatusCode() + " / " + group_no + " / " + _list.size() + " 건");
 				}else { // API 전송 실패시
-					log.info("({}) KAO 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
+					log.error("({}) KAO 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
 					kaoRequestService.updateKAOSendInit(sendParam);
 				}
 			} catch (Exception e) {

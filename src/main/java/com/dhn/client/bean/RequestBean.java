@@ -19,4 +19,5 @@ public class RequestBean {
 	private String crypto;
 	private String reservedt;
 	private String mmsimageid;
+	private String kisacode;
 }

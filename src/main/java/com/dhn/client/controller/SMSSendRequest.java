@@ -85,7 +85,7 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 				if(!group_no.equals(preGroupNo)) {
 
 					try{
-						int cnt = msgRequestService.selectSMSReqeustCount(param);
+						int cnt = msgRequestService.selectSMSRequestCount(param);
 
 						if(cnt > 0) {
 							param.setGroup_no(group_no);
@@ -139,7 +139,7 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 					msgRequestService.updateSMSSendComplete(sendParam);
 					log.info("SMS 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
 				} else {
-					log.info("({}) SMS 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
+					log.error("({}) SMS 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
 					msgRequestService.updateSMSSendInit(sendParam);
 				}
 			}catch (Exception e) {

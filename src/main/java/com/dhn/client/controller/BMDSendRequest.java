@@ -1,9 +1,9 @@
 package com.dhn.client.controller;
 
-import com.dhn.client.bean.KAORequestBean;
-import com.dhn.client.bean.SQLParameter;
-import com.dhn.client.service.KAORequestService;
+import com.dhn.client.bean.*;
+import com.dhn.client.service.BMRequestService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -16,8 +16,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.StringWriter;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -26,7 +28,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 @Component
 @Slf4j
-public class KAOISendRequest implements ApplicationListener<ContextRefreshedEvent> {
+public class BMDSendRequest implements ApplicationListener<ContextRefreshedEvent> {
 
     public static boolean isStart = false;
     private boolean isProc = false;
@@ -34,11 +36,13 @@ public class KAOISendRequest implements ApplicationListener<ContextRefreshedEven
     private String dhnServer;
     private String userid;
     private String preGroupNo = "";
+    private String log_back = "";
+    private String log_table = "";
 
-    private static final ExecutorService executorService = Executors.newFixedThreadPool(4);
+    private static final ExecutorService executorService = Executors.newFixedThreadPool(2);
 
     @Autowired
-    private KAORequestService kaoRequestService;
+    private BMRequestService bmRequestService;
 
     @Autowired
     private ApplicationContext appContext;
@@ -49,17 +53,20 @@ public class KAOISendRequest implements ApplicationListener<ContextRefreshedEven
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
-        param.setKakao_use(appContext.getEnvironment().getProperty("dhnclient.kakao_use"));
+        param.setBrand_use(appContext.getEnvironment().getProperty("dhnclient.brand_use"));
         param.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database"));
         param.setSequence(appContext.getEnvironment().getProperty("dhnclient.msg_seq"));
-        param.setMsg_type("AI");
+        param.setMsg_type("D%");
 
         dhnServer = appContext.getEnvironment().getProperty("dhnclient.server");
         userid = appContext.getEnvironment().getProperty("dhnclient.userid");
+        log_back = appContext.getEnvironment().getProperty("dhnclient.log_back","Y");
+        log_table = appContext.getEnvironment().getProperty("dhnclient.log_table");
 
-        if (param.getKakao_use() != null && param.getKakao_use().equalsIgnoreCase("Y")) {
+
+        if (param.getBrand_use() != null && param.getBrand_use().equalsIgnoreCase("Y")) {
             isStart = true;
-            log.info("KAO Image 초기화 완료");
+            log.info("브랜드메시지 동보형 초기화 완료");
         } else {
             posts.postProcessBeforeDestruction(this, null);
         }
@@ -74,24 +81,24 @@ public class KAOISendRequest implements ApplicationListener<ContextRefreshedEven
             ThreadPoolExecutor poolExecutor = (ThreadPoolExecutor) executorService;
             int activeThreads = poolExecutor.getActiveCount();
 
-            if(activeThreads < 4){
+            if(activeThreads < 2){
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
                 LocalDateTime now = LocalDateTime.now();
-                String group_no = "KI" + now.format(formatter);
+                String group_no = "BD" + now.format(formatter);
 
                 if(!group_no.equals(preGroupNo)) {
                     try{
-                        int cnt = kaoRequestService.selectKAORequestCount(param);
+                        int cnt = bmRequestService.selectBDRequestCount(param);
 
                         if(cnt > 0){
                             param.setGroup_no(group_no);
-                            kaoRequestService.updateKAOGroupNo(param);
+                            bmRequestService.updateBDGroupNo(param);
 
                             executorService.submit(() -> APIProcess(group_no));
                         }
 
                     }catch (Exception e){
-                        log.error("KAO Image 메세지 전송 오류 : " + e.toString());
+                        log.error("BD (동보형) 메세지 전송 오류 : " + e.toString());
                     }
 
                     preGroupNo = group_no;
@@ -112,11 +119,11 @@ public class KAOISendRequest implements ApplicationListener<ContextRefreshedEven
             sendParam.setMsg_type(param.getMsg_type());
 
 
-            List<KAORequestBean> _list = kaoRequestService.selectKAORequests(sendParam);
+            List<BMRequestBean> _list = bmRequestService.selectBDRequests(sendParam);
 
             StringWriter sw = new StringWriter();
             ObjectMapper om = new ObjectMapper();
-            om.writeValue(sw, _list); // List를 Json화 하여 문자열 저장
+            om.writeValue(sw, _list);
 
             HttpHeaders header = new HttpHeaders();
 
@@ -130,19 +137,21 @@ public class KAOISendRequest implements ApplicationListener<ContextRefreshedEven
                 ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
                 Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
                 log.info(res.toString());
-                if (response.getStatusCode() == HttpStatus.OK) { // 데이터 정상적으로 전달
-                    kaoRequestService.updateKAOSendComplete(sendParam);
-                    log.info("KAO Image 메세지 전송 완료 : " + response.getStatusCode() + " / " + group_no + " / " + _list.size() + " 건");
-                }else { // API 전송 실패시
-                    log.error("({}) KAO Image 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
-                    kaoRequestService.updateKAOSendInit(sendParam);
+                if (response.getStatusCode() == HttpStatus.OK) {
+                    bmRequestService.updateBMSendComplete(sendParam);
+                    log.info("BD (동보형) 메세지 전송 완료 : " + response.getStatusCode() + " / " + group_no + " / " + _list.size() + " 건");
+                }else {
+                    log.error("({}) BD (동보형) 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
+                    bmRequestService.updateBMSendInit(sendParam);
                 }
             } catch (Exception e) {
-                log.error("KAO Image 메세지 전송 오류 : " + e.toString());
-                kaoRequestService.updateKAOSendInit(sendParam);
+                log.error("BD (동보형) 메세지 전송 오류 : " + e.toString());
+                bmRequestService.updateBMSendInit(sendParam);
             }
+
         }catch (Exception e){
-            log.error("KAO Image 메세지 전송 오류 : " + e.toString());
+            log.error("BD (동보형) 메세지 전송 오류 : " + e.toString());
         }
     }
+
 }

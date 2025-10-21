@@ -1,0 +1,67 @@
+package com.dhn.client.bean;
+
+import lombok.Data;
+
+@Data
+public class FTDataBean {
+    private String msgid;
+    private String adflag;
+    private String button1;
+    private String button2;
+    private String button3;
+    private String button4;
+    private String button5;
+    private String imagelink;
+    private String imageurl;
+    private String messagetype;
+    private String msg;
+    private String msgsms;
+    private String onlysms;
+    private String pcom;
+    private String pinvoice;
+    private String phn;
+    private String profile;
+    private String regdt;
+    private String remark1;
+    private String remark2;
+    private String remark3;
+    private String remark4;
+    private String remark5;
+    private String reservedt;
+    private String scode;
+    private String smskind;
+    private String smslmstit;
+    private String smssender;
+    private String tmplid;
+    private String wide;
+    private String supplement;
+    private String price;
+    private String currencytype;
+    private String title;
+    private String header;
+    private String carousel;
+    private String att_items;
+    private String att_coupon;
+    private String crypto;
+    private String btn_name;
+    private String btn_url;
+    private String button;
+    private String realsendflag;
+    private String attachments;
+    private String link;
+    private String kisacode;
+    private String attmessage;
+    private String attbutton;
+    private String attimage;
+    private String attitem;
+    private String attcoupon;
+    private String attcommerce;
+    private String attvideo;
+    private String carhead;
+    private String carlist;
+    private String cartail;
+    private String kind;
+    private String grouptag;
+    private String userkey;
+    private String pushalarm;
+}
