@@ -137,8 +137,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 
 			String result_message = ent.getString("message").isEmpty()?"":ent.getString("message");
 
-			if(ent.getString("message_type").equalsIgnoreCase("AT")
-					|| ent.getString("message_type").equalsIgnoreCase("AI")
+			if(ent.getString("message_type").toUpperCase().startsWith("A")
 					|| ent.getString("message_type").toUpperCase().startsWith("F")
 					|| ent.getString("message_type").toUpperCase().startsWith("B")
 					|| ent.getString("message_type").toUpperCase().startsWith("C")
