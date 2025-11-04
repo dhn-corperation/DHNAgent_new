@@ -2,6 +2,7 @@ package com.dhn.client.controller;
 
 import com.dhn.client.bean.*;
 import com.dhn.client.service.FTRequestService;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -162,7 +163,7 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                                 try{
                                     response = restTemplate.exchange(dhnServer + url, HttpMethod.POST, requestEntity, String.class);
                                 }catch (Exception e){
-                                    log.error("친구톡 이미지 등록 실패 통신오류 : "+e.getMessage());
+                                    log.error("친구톡 이미지 등록 실패 통신오류 : {}", e.getMessage());
                                     ftRequestService.updateFTImageUploadFail(ftiparam);
                                     continue;
                                 }
@@ -184,8 +185,6 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                                         ftRequestService.updateFTImageUrl(ftiparam);
                                     }else{
 
-                                        log.warn("친구톡 이미지 등록 실패 : "+res.toString());
-
                                         if(param.getLog_back() != null && param.getLog_back().equalsIgnoreCase("Y")){
                                             ftiparam.setLog_table(log_table + "_" + currentMonth_log);
                                         }else{
@@ -197,12 +196,12 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                                         ftRequestService.updateFTImageFail(ftiparam);
                                     }
                                 } else {
-                                    log.error("친구톡 이미지 등록 실패 통신오류 : "+response.getBody());
+                                    log.error("친구톡 이미지 등록 실패 통신오류 : {}",response.getBody());
                                     ftRequestService.updateFTImageUploadFail(ftiparam);
                                 }
 
                             }catch (Exception e){
-                                log.error("KF Image URL 등록 오류: ", e.getMessage());
+                                log.error("KF Image URL 등록 오류: {}", e.getMessage());
                             }
                         }
 
@@ -210,7 +209,7 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                     }
 
                 }catch (Exception e) {
-                    log.error("KF Image 등록 오류 : " + e.toString());
+                    log.error("KF Image 등록 오류 : {}",e.toString());
                 }
                 imgPreGroupNo = img_group_no;
             }
@@ -244,7 +243,7 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                         }
 
                     }catch (Exception e){
-                        log.error("KF 메세지 전송 오류 : " + e.toString());
+                        log.error("KF 메세지 전송 오류 : {}",e.toString());
                     }
                     preGroupNo = group_no;
                 }
@@ -286,6 +285,7 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                 sendBean.setHeader(ftDataBean.getHeader());
                 sendBean.setKisacode(ftDataBean.getKisacode());
                 sendBean.setPushalarm(ftDataBean.getPushalarm());
+                sendBean.setCurrencytype(ftDataBean.getCurrencytype());
 
                 String wide = ftDataBean.getWide();
                 sendBean.setWide( (wide != null && wide.equalsIgnoreCase("Y")) ? "Y" : "N");
@@ -310,30 +310,57 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                     }
                 }
 
-                ArrayNode buttonArray = mapper.createArrayNode();
-                String[] btnStrs = new String[] {
-                        ftDataBean.getButton1(),
-                        ftDataBean.getButton2(),
-                        ftDataBean.getButton3(),
-                        ftDataBean.getButton4(),
-                        ftDataBean.getButton5()
-                };
-
-                for (String btnStr : btnStrs) {
-                    if (btnStr == null || btnStr.trim().isEmpty()) break; // 중간에서 끊기면 거기까지
-                    // 그대로 JSON 문자열 → JsonNode 로 변환해서 추가
-                    buttonArray.add(mapper.readTree(btnStr));
+                JsonStatus ftBtn = isValidJson(ftDataBean.getAttbutton());
+                if (ftBtn == JsonStatus.VALID) {
+                    attNode.set("button", mapper.readTree(ftDataBean.getAttbutton()));
+                } else if (ftBtn == JsonStatus.INVALID) {
+                    log.error("Invalid JSON/ARRAY (button) msgid={}", ftDataBean.getMsgid());
+                    invalidList.add(ftDataBean.getMsgid());
+                    continue;
                 }
 
-                if (buttonArray.size() > 0) {
-                    attNode.set("button", buttonArray);
+                JsonStatus stCoupon = isValidJson(ftDataBean.getAttcoupon());
+                if (stCoupon == JsonStatus.VALID) {
+                    attNode.set("coupon", mapper.readTree(ftDataBean.getAttcoupon()));
+                } else if (stCoupon == JsonStatus.INVALID) {
+                    log.error("Invalid JSON/ARRAY (coupon) msgid={}", ftDataBean.getMsgid());
+                    invalidList.add(ftDataBean.getMsgid());
+                    continue;
                 }
 
                 if (attNode.size() > 0) {
-                    sendBean.setAttachments(attNode.toString());
+                    sendBean.setAttachments(mapper.writeValueAsString(attNode)); // String
                 }
 
+
                 sendList.add(sendBean);
+            }
+
+            if (!invalidList.isEmpty()) {
+                try {
+                    Msg_Log ml = new Msg_Log();
+                    ml.setMsg_table(param.getMsg_table());
+                    ml.setDatabase(param.getDatabase());
+
+                    if(log_back.equalsIgnoreCase("Y")){
+                        LocalDate now = LocalDate.now();
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
+                        String currentMonth = now.format(formatter);
+
+                        ml.setLog_table(log_table+"_"+currentMonth);
+                    }else{
+                        ml.setLog_table(log_table);
+                    }
+
+                    ml.setStatus("4");
+                    ml.setResult_message("(AGENT) JSON/ARRAY 데이터 형식 오류");
+                    ml.setCode("7999");
+
+                    ftRequestService.updateFTInvalidData(invalidList, ml);
+                    log.info("KF Invalid 데이터 {}건 처리 완료", invalidList.size());
+                } catch (Exception e) {
+                    log.error("KF Invalid 데이터 처리 오류: {}", e.getMessage());
+                }
             }
 
             if (!sendList.isEmpty()) {
@@ -361,12 +388,32 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                         ftRequestService.updateFTSendInit(sendParam);
                     }
                 } catch (Exception e) {
-                    log.error("KF 메세지 전송 오류 : " + e.toString());
+                    log.error("KF 메세지 전송 오류 : {}",e.toString());
                     ftRequestService.updateFTSendInit(sendParam);
                 }
             }
         }catch (Exception e){
-            log.error("KF 메세지 전송 오류 : " + e.toString());
+            log.error("KF 메세지 전송 오류 : {}",e.toString());
+        }
+    }
+
+    private JsonStatus isValidJson(String str) {
+        if (str == null || str.trim().isEmpty()) return JsonStatus.EMPTY;
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode node = mapper.readTree(str);
+
+            if (node.isArray()) {
+                return node.size() > 0 ? JsonStatus.VALID : JsonStatus.EMPTY;
+            }
+            if (node.isObject()) {
+                return node.fieldNames().hasNext() ? JsonStatus.VALID : JsonStatus.EMPTY;
+            }
+            return JsonStatus.INVALID;
+
+        } catch (Exception e) {
+            return JsonStatus.INVALID;
         }
     }
 
