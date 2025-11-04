@@ -26,7 +26,8 @@ public class JasyptConfig {
         return encryptor;		
 	}
 	*/
-	
+
+        // (구) application.yml 암호화 때 사용했던 것 같음
 	@Bean(name = "jasyptStringEncryptor")
 	public StringEncryptor stringEncryptor() {
         String key = "sjk4556!!22";
