@@ -1,9 +1,6 @@
 package com.dhn.client.dao;
 
-import com.dhn.client.bean.BMDataBean;
-import com.dhn.client.bean.BMRequestBean;
-import com.dhn.client.bean.Msg_Log;
-import com.dhn.client.bean.SQLParameter;
+import com.dhn.client.bean.*;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -77,5 +74,37 @@ public class BMRequestDAOimpl implements BMRequestDAO {
     @Override
     public List<BMRequestBean> selectBDRequests(SQLParameter param) throws Exception {
         return sqlSession.selectList("com.dhn.client.brand.mapper.SendRequest.req_bd_select", param);
+    }
+
+    @Override
+    public int selectIBMImageCount(SQLParameter param) throws Exception {
+        return sqlSession.selectOne("com.dhn.client.brand.mapper.SendRequest.ibm_kao_img_count",param);
+    }
+
+    @Override
+    public void updateIBMImageGroup(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.brand.mapper.SendRequest.ibm_kao_img_group",param);
+    }
+
+    @Override
+    public List<ImageBean> selectIBMImage(SQLParameter param) throws Exception {
+        return sqlSession.selectList("com.dhn.client.brand.mapper.SendRequest.ibm_kao_image_list",param);
+    }
+
+    @Override
+    public void updateIBMImageFail(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.brand.mapper.SendRequest.ibm_image_fail_update", param);
+        sqlSession.update("com.dhn.client.brand.mapper.SendRequest.ibm_image_fail_log_Insert", param);
+        sqlSession.update("com.dhn.client.brand.mapper.SendRequest.ibm_image_fail_delete", param);
+    }
+
+    @Override
+    public void updateIBMImageUploadFail(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.brand.mapper.SendRequest.ibm_image_upload_fail",param);
+    }
+
+    @Override
+    public void updateIBMImageUrl(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.brand.mapper.SendRequest.ibm_image_url_update",param);
     }
 }

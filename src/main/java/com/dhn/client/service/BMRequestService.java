@@ -1,9 +1,6 @@
 package com.dhn.client.service;
 
-import com.dhn.client.bean.BMDataBean;
-import com.dhn.client.bean.BMRequestBean;
-import com.dhn.client.bean.Msg_Log;
-import com.dhn.client.bean.SQLParameter;
+import com.dhn.client.bean.*;
 
 import java.util.List;
 
@@ -28,4 +25,17 @@ public interface BMRequestService {
     public void updateBDGroupNo(SQLParameter param)throws Exception;
 
     public List<BMRequestBean> selectBDRequests(SQLParameter param) throws Exception;
+
+    // 이미지 파일 업로드 형식
+    public int selectIBMImageCount(SQLParameter param) throws Exception;
+
+    public void updateIBMImageGroup(SQLParameter param) throws Exception;
+
+    public List<ImageBean> selectIBMImage(SQLParameter param) throws Exception;
+
+    public void updateIBMImageFail(SQLParameter param) throws Exception;
+
+    public void updateIBMImageUploadFail(SQLParameter param) throws Exception;
+
+    public void updateIBMImageUrl(SQLParameter param) throws Exception;
 }

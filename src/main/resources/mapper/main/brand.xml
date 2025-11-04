@@ -658,4 +658,181 @@
         </choose>
     </select>
 
+    <select id="ibm_kao_img_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
+        <choose>
+            <when test="database == 'oracle'">
+                SELECT count(1) AS cnt
+                FROM ${msg_table}
+                WHERE STATUS = '0'
+                    AND RESERVE_DT &lt;= SYSDATE
+                    AND MESSAGE_TYPE = #{msg_type}
+                    AND SEND_GROUP IS NULL
+                    AND FI_IMAGE_PATH IS NOT NULL
+                    AND IMAGE_URL IS NULL
+            </when>
+            <when test="database == 'mysql'">
+                SELECT count(1) AS cnt
+                FROM ${msg_table}
+                WHERE STATUS = '0'
+                    AND RESERVE_DT &lt;= NOW()
+                    AND MESSAGE_TYPE = #{msg_type}
+                    AND SEND_GROUP IS NULL
+                    AND FI_IMAGE_PATH IS NOT NULL AND FI_IMAGE_PATH &lt;&gt; ''
+                    AND (IMAGE_URL IS NULL OR IMAGE_URL = '')
+            </when>
+        </choose>
+    </select>
+
+    <update id="ibm_kao_img_group" parameterType = "com.dhn.client.bean.SQLParameter" >
+        <choose>
+            <when test="database == 'oracle'">
+                UPDATE ${msg_table}
+                SET SEND_GROUP = #{img_group_no}
+                WHERE ROWID IN (
+                    SELECT rid FROM (
+                        SELECT ROWID rid
+                        FROM ${msg_table}
+                        WHERE STATUS = '0'
+                            AND RESERVE_DT &lt;= SYSDATE
+                            AND MESSAGE_TYPE = #{msg_type}
+                            AND SEND_GROUP IS NULL
+                            AND FI_IMAGE_PATH IS NOT NULL
+                            AND IMAGE_URL IS NULL
+                    ) WHERE ROWNUM &lt;= 500
+                )
+            </when>
+            <when test="database == 'mysql'">
+                UPDATE ${msg_table}
+                SET SEND_GROUP = #{img_group_no}
+                WHERE STATUS = '0'
+                    AND RESERVE_DT &lt;= NOW()
+                    AND MESSAGE_TYPE = #{msg_type}
+                    AND SEND_GROUP IS NULL
+                    AND FI_IMAGE_PATH IS NOT NULL AND FI_IMAGE_PATH &lt;&gt; ''
+                    AND (IMAGE_URL IS NULL OR IMAGE_URL = '')
+                LIMIT 500
+            </when>
+        </choose>
+    </update>
+
+    <select id="ibm_kao_image_list" parameterType = "com.dhn.client.bean.SQLParameter" resultType="com.dhn.client.bean.ImageBean">
+        <choose>
+            <when test="database == 'oracle'">
+                SELECT FI_IMAGE_PATH as bmimagepath,
+                    NVL(WIDE, 'N') AS WIDE
+                FROM ${msg_table}
+                WHERE SEND_GROUP = #{img_group_no}
+                GROUP BY FI_IMAGE_PATH, NVL(WIDE, 'N')
+            </when>
+            <when test="database == 'mysql'">
+                SELECT FI_IMAGE_PATH as bmimagepath,
+                    IFNULL(WIDE, 'N') AS WIDE
+                FROM ${msg_table}
+                WHERE SEND_GROUP = #{img_group_no}
+                GROUP BY FI_IMAGE_PATH, IFNULL(WIDE, 'N')
+            </when>
+        </choose>
+    </select>
+
+    <update id="ibm_image_fail_update" parameterType = "com.dhn.client.bean.SQLParameter" >
+        <choose>
+            <when test="database == 'oracle'">
+                UPDATE ${msg_table}
+                SET RESULT = '${ft_image_code}',
+                    RESULT_DT = TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS'),
+                    STATUS = 'F',
+                    RESULT_MESSAGE = '${img_err_msg}'
+                WHERE SEND_GROUP = #{img_group_no}
+                    AND FI_IMAGE_PATH = #{mms_key}
+                    AND NVL(WIDE, 'N') = #{dist_value}
+            </when>
+            <when test="database == 'mysql'">
+                UPDATE ${msg_table}
+                SET RESULT = '${ft_image_code}',
+                    RESULT_DT = NOW(),
+                    STATUS = 'F',
+                    RESULT_MESSAGE = '${img_err_msg}'
+                WHERE SEND_GROUP = #{img_group_no}
+                    AND FI_IMAGE_PATH = #{mms_key}
+                    AND IFNULL(WIDE, 'N') = #{dist_value}
+            </when>
+        </choose>
+    </update>
+
+    <insert id="ibm_image_fail_log_Insert" parameterType="com.dhn.client.bean.SQLParameter">
+        <choose>
+            <when test="database == 'oracle'">
+                INSERT INTO ${log_table}
+                SELECT * FROM ${msg_table}
+                WHERE SEND_GROUP = #{img_group_no}
+                    AND FI_IMAGE_PATH = #{mms_key}
+                    AND NVL(WIDE, 'N') = #{dist_value}
+            </when>
+            <when test="database == 'mysql'">
+                INSERT INTO ${log_table}
+                SELECT * FROM ${msg_table}
+                WHERE SEND_GROUP = #{img_group_no}
+                    AND FI_IMAGE_PATH = #{mms_key}
+                    AND IFNULL(WIDE, 'N') = #{dist_value}
+            </when>
+        </choose>
+    </insert>
+
+    <delete id="ibm_image_fail_delete" parameterType="com.dhn.client.bean.SQLParameter">
+        <choose>
+            <when test="database == 'oracle'">
+                DELETE FROM ${msg_table}
+                WHERE SEND_GROUP = #{img_group_no}
+                    AND FI_IMAGE_PATH = #{mms_key}
+                    AND NVL(WIDE, 'N') = #{dist_value}
+            </when>
+            <when test="database == 'mysql'">
+                DELETE FROM ${msg_table}
+                WHERE SEND_GROUP = #{img_group_no}
+                    AND FI_IMAGE_PATH = #{mms_key}
+                    AND IFNULL(WIDE, 'N') = #{dist_value}
+            </when>
+        </choose>
+    </delete>
+
+    <update id="ibm_image_url_update" parameterType = "com.dhn.client.bean.SQLParameter" >
+        <choose>
+            <when test="database == 'oracle'">
+                UPDATE ${msg_table}
+                SET IMAGE_URL = #{ft_image_url},
+                    SEND_GROUP = NULL
+                WHERE SEND_GROUP = #{img_group_no}
+                    AND FI_IMAGE_PATH = #{mms_key}
+                    AND NVL(WIDE, 'N') = #{dist_value}
+            </when>
+            <when test="database == 'mysql'">
+                UPDATE ${msg_table}
+                SET IMAGE_URL = #{ft_image_url},
+                    SEND_GROUP = NULL
+                WHERE SEND_GROUP = #{img_group_no}
+                    AND FI_IMAGE_PATH = #{mms_key}
+                    AND IFNULL(WIDE, 'N') = #{dist_value}
+            </when>
+        </choose>
+    </update>
+
+    <update id="ibm_image_upload_fail" parameterType = "com.dhn.client.bean.SQLParameter" >
+        <choose>
+            <when test="database == 'oracle'">
+                UPDATE ${msg_table}
+                SET SEND_GROUP = NULL
+                WHERE SEND_GROUP = #{img_group_no}
+                    AND FI_IMAGE_PATH = #{mms_key}
+                    AND NVL(WIDE, 'N') = #{dist_value}
+            </when>
+            <when test="database == 'mysql'">
+                UPDATE ${msg_table}
+                SET SEND_GROUP = NULL
+                WHERE SEND_GROUP = #{img_group_no}
+                    AND FI_IMAGE_PATH = #{mms_key}
+                    AND IFNULL(WIDE, 'N') = #{dist_value}
+            </when>
+        </choose>
+    </update>
+
 </mapper>

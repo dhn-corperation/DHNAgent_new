@@ -1,9 +1,6 @@
 package com.dhn.client.service;
 
-import com.dhn.client.bean.BMDataBean;
-import com.dhn.client.bean.BMRequestBean;
-import com.dhn.client.bean.Msg_Log;
-import com.dhn.client.bean.SQLParameter;
+import com.dhn.client.bean.*;
 import com.dhn.client.dao.BMRequestDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -65,6 +62,36 @@ public class BMRequestServiceimpl implements BMRequestService {
     @Override
     public List<BMRequestBean> selectBDRequests(SQLParameter param) throws Exception {
         return bmRequestDAO.selectBDRequests(param);
+    }
+
+    @Override
+    public int selectIBMImageCount(SQLParameter param) throws Exception {
+        return bmRequestDAO.selectIBMImageCount(param);
+    }
+
+    @Override
+    public void updateIBMImageGroup(SQLParameter param) throws Exception {
+        bmRequestDAO.updateIBMImageGroup(param);
+    }
+
+    @Override
+    public List<ImageBean> selectIBMImage(SQLParameter param) throws Exception {
+        return bmRequestDAO.selectIBMImage(param);
+    }
+
+    @Override
+    public void updateIBMImageFail(SQLParameter param) throws Exception {
+        bmRequestDAO.updateIBMImageFail(param);
+    }
+
+    @Override
+    public void updateIBMImageUploadFail(SQLParameter param) throws Exception {
+        bmRequestDAO.updateIBMImageUploadFail(param);
+    }
+
+    @Override
+    public void updateIBMImageUrl(SQLParameter param) throws Exception {
+        bmRequestDAO.updateIBMImageUrl(param);
     }
 
 }

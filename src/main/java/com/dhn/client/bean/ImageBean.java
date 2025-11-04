@@ -9,6 +9,6 @@ public class ImageBean {
 	private String file1;
 	private String file2;
 	private String file3;
-	private String ftimagepath;
+	private String bmimagepath;
 	
 }
