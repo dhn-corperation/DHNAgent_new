@@ -94,4 +94,19 @@ public class BMRequestServiceimpl implements BMRequestService {
         bmRequestDAO.updateIBMImageUrl(param);
     }
 
+    @Override
+    public int selectIBMRequestCount(SQLParameter param) throws Exception {
+        return bmRequestDAO.selectIBMRequestCount(param);
+    }
+
+    @Override
+    public void updateIBMGroupNo(SQLParameter param) throws Exception {
+        bmRequestDAO.updateIBMGroupNo(param);
+    }
+
+    @Override
+    public List<BMDataBean> selectIBMRequests(SQLParameter param) throws Exception {
+        return bmRequestDAO.selectIBMRequests(param);
+    }
+
 }

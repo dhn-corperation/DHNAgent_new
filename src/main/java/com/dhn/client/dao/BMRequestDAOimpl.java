@@ -107,4 +107,21 @@ public class BMRequestDAOimpl implements BMRequestDAO {
     public void updateIBMImageUrl(SQLParameter param) throws Exception {
         sqlSession.update("com.dhn.client.brand.mapper.SendRequest.ibm_image_url_update",param);
     }
+
+    @Override
+    public int selectIBMRequestCount(SQLParameter param) throws Exception {
+        int cnt = 0;
+        cnt = sqlSession.selectOne("com.dhn.client.brand.mapper.SendRequest.ibm_kao_count",param);
+        return cnt;
+    }
+
+    @Override
+    public void updateIBMGroupNo(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.brand.mapper.SendRequest.req_ibm_group_update",param);
+    }
+
+    @Override
+    public List<BMDataBean> selectIBMRequests(SQLParameter param) throws Exception {
+        return sqlSession.selectList("com.dhn.client.brand.mapper.SendRequest.req_ibm_select", param);
+    }
 }

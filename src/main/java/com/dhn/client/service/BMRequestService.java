@@ -38,4 +38,11 @@ public interface BMRequestService {
     public void updateIBMImageUploadFail(SQLParameter param) throws Exception;
 
     public void updateIBMImageUrl(SQLParameter param) throws Exception;
+
+    public int selectIBMRequestCount(SQLParameter param) throws Exception;
+
+    public void updateIBMGroupNo(SQLParameter param) throws Exception;
+
+    public List<BMDataBean> selectIBMRequests(SQLParameter param) throws Exception;
+
 }
