@@ -59,7 +59,7 @@ public class IBMSendRequest implements ApplicationListener<ContextRefreshedEvent
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
-        param.setBrand_use(appContext.getEnvironment().getProperty("dhnclient.brand_use"));
+        param.setBrand_use(appContext.getEnvironment().getProperty("dhnclient.upbrand_use"));
         param.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database"));
         param.setSequence(appContext.getEnvironment().getProperty("dhnclient.msg_seq"));
         param.setMsg_type("IBM");
@@ -275,7 +275,7 @@ public class IBMSendRequest implements ApplicationListener<ContextRefreshedEvent
                 BMRequestBean sendBean = new BMRequestBean();
                 sendBean.setMsgid(bmDataBean.getMsgid());
                 sendBean.setPushalarm(bmDataBean.getPushalarm());
-                sendBean.setMessagetype(bmDataBean.getMessagetype());
+                sendBean.setMessagetype("B1");
                 sendBean.setMsg(bmDataBean.getMsg());
                 sendBean.setMsgsms(bmDataBean.getMsgsms());
                 sendBean.setPcom("P");
@@ -299,13 +299,21 @@ public class IBMSendRequest implements ApplicationListener<ContextRefreshedEvent
 
                 ObjectNode attNode = mapper.createObjectNode();
 
-                JsonStatus stImg = isValidJson(bmDataBean.getAttimage());
-                if (stImg == JsonStatus.VALID) {
-                    attNode.set("image", mapper.readTree(bmDataBean.getAttimage()));
-                } else if (stImg == JsonStatus.INVALID) {
-                    log.error("Invalid JSON/ARRAY (image) msgid={}", bmDataBean.getMsgid());
-                    invalidList.add(bmDataBean.getMsgid());
-                    continue;
+                if(bmDataBean.getImageurl() != null && !bmDataBean.getImageurl().trim().isEmpty()){
+                    ObjectNode imageNode = mapper.createObjectNode();
+                    imageNode.put("img_url", bmDataBean.getImageurl());
+
+                    if(bmDataBean.getImagelink() != null && !bmDataBean.getImagelink().trim().isEmpty()){
+                        imageNode.put("img_link", bmDataBean.getImagelink());
+                    }
+
+                    if ("Y".equals(sendBean.getWide())) {
+                        sendBean.setMessagetype("B3");
+                    } else {
+                        sendBean.setMessagetype("B2");
+                    }
+
+                    attNode.set("image", imageNode);
                 }
 
                 JsonStatus stBtn = isValidJson(bmDataBean.getAttbutton());
