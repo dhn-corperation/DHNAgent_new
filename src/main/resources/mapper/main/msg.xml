@@ -131,22 +131,22 @@
         <choose>
             <when test="database == 'oracle'">
                 UPDATE ${msg_table}
-                SET STATUS = '${status}',
-                    RESULT_DT = '${result_dt}',
-                    RESULT_MSG = '${code}',
-                    RESULT_MESSAGE = '${result_message}',
-                    TELCOINFO = '${telecom}',
-                    REAL_MESSAGE_TYPE = '${real_send_type}'
+                SET STATUS = #{status},
+                    RESULT_DT = #{result_dt},
+                    RESULT_MSG = #{code},
+                    RESULT_MESSAGE = #{result_message},
+                    TELCOINFO = #{telecom},
+                    REAL_MESSAGE_TYPE = #{real_send_type}
                 WHERE MSG_ID = #{msgid}
             </when>
             <when test="database == 'mysql'">
                 UPDATE ${msg_table}
-                SET STATUS = '${status}',
-                    RESULT_DT = '${result_dt}',
-                    RESULT_MSG = '${code}',
-                    RESULT_MESSAGE = '${result_message}',
-                    TELCOINFO = '${telecom}',
-                    REAL_MESSAGE_TYPE = '${real_send_type}'
+                SET STATUS = #{status},
+                    RESULT_DT = #{result_dt},
+                    RESULT_MSG = #{code},
+                    RESULT_MESSAGE = #{result_message},
+                    TELCOINFO = #{telecom},
+                    REAL_MESSAGE_TYPE = #{real_send_type}
                 WHERE MSG_ID = #{msgid}
             </when>
         </choose>
