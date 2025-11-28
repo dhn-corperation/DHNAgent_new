@@ -102,6 +102,8 @@ public class IBMSendRequest implements ApplicationListener<ContextRefreshedEvent
                         List<ImageBean> bmimages = bmRequestService.selectIBMImage(param);
 
                         for (ImageBean bmimage : bmimages) {
+
+                            log.info("test : {}",bmimage.toString());
                             SQLParameter bmiparam = new SQLParameter();
                             bmiparam.setMsg_table(param.getMsg_table());
                             bmiparam.setDatabase(param.getDatabase());
@@ -152,8 +154,7 @@ public class IBMSendRequest implements ApplicationListener<ContextRefreshedEvent
                                     continue;
                                 }
 
-                                body.add("image1", new org.springframework.core.io.FileSystemResource(file));
-                                body.add("image_path1", rawPath);
+                                body.add("image", new org.springframework.core.io.FileSystemResource(file));
                             }
 
                             HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
@@ -184,7 +185,7 @@ public class IBMSendRequest implements ApplicationListener<ContextRefreshedEvent
 
                                     if(bmiparam.getFt_image_code().equals("0000")){
 
-                                        bmiparam.setFt_image_url(res.get("image1"));
+                                        bmiparam.setFt_image_url(res.get("image"));
                                         bmRequestService.updateIBMImageUrl(bmiparam);
                                     }else{
 
@@ -307,7 +308,7 @@ public class IBMSendRequest implements ApplicationListener<ContextRefreshedEvent
                         imageNode.put("img_link", bmDataBean.getImagelink());
                     }
 
-                    if ("Y".equals(sendBean.getWide())) {
+                    if ("Y".equals(bmDataBean.getWide())) {
                         sendBean.setMessagetype("B3");
                     } else {
                         sendBean.setMessagetype("B2");
@@ -325,15 +326,6 @@ public class IBMSendRequest implements ApplicationListener<ContextRefreshedEvent
                     continue;
                 }
 
-                JsonStatus stItem = isValidJson(bmDataBean.getAttitem());
-                if (stItem == JsonStatus.VALID) {
-                    attNode.set("item", mapper.readTree(bmDataBean.getAttitem()));
-                } else if (stItem == JsonStatus.INVALID) {
-                    log.error("Invalid JSON/ARRAY (item) msgid={}", bmDataBean.getMsgid());
-                    invalidList.add(bmDataBean.getMsgid());
-                    continue;
-                }
-
                 JsonStatus stCoupon = isValidJson(bmDataBean.getAttcoupon());
                 if (stCoupon == JsonStatus.VALID) {
                     attNode.set("coupon", mapper.readTree(bmDataBean.getAttcoupon()));
@@ -343,60 +335,8 @@ public class IBMSendRequest implements ApplicationListener<ContextRefreshedEvent
                     continue;
                 }
 
-                JsonStatus stCommerce = isValidJson(bmDataBean.getAttcommerce());
-                if (stCommerce == JsonStatus.VALID) {
-                    attNode.set("commerce", mapper.readTree(bmDataBean.getAttcommerce()));
-                } else if (stCommerce == JsonStatus.INVALID) {
-                    log.error("Invalid JSON/ARRAY (commerce) msgid={}", bmDataBean.getMsgid());
-                    invalidList.add(bmDataBean.getMsgid());
-                    continue;
-                }
-
-                JsonStatus stVideo = isValidJson(bmDataBean.getAttvideo());
-                if (stVideo == JsonStatus.VALID) {
-                    attNode.set("video", mapper.readTree(bmDataBean.getAttvideo()));
-                } else if (stVideo == JsonStatus.INVALID) {
-                    log.error("Invalid JSON/ARRAY (video) msgid={}", bmDataBean.getMsgid());
-                    invalidList.add(bmDataBean.getMsgid());
-                    continue;
-                }
-
                 if (attNode.size() > 0) {
-                    sendBean.setAttachments(mapper.writeValueAsString(attNode)); // String
-                }
-
-                // ===== carousel 조립 =====
-                ObjectNode carNode = mapper.createObjectNode();
-
-                JsonStatus stHead = isValidJson(bmDataBean.getCarhead());
-                if (stHead == JsonStatus.VALID) {
-                    carNode.set("head", mapper.readTree(bmDataBean.getCarhead()));
-                } else if (stHead == JsonStatus.INVALID) {
-                    log.error("Invalid JSON/ARRAY (carhead) msgid={}", bmDataBean.getMsgid());
-                    invalidList.add(bmDataBean.getMsgid());
-                    continue;
-                }
-
-                JsonStatus stList = isValidJson(bmDataBean.getCarlist());
-                if (stList == JsonStatus.VALID) {
-                    carNode.set("list", mapper.readTree(bmDataBean.getCarlist()));
-                } else if (stList == JsonStatus.INVALID) {
-                    log.error("Invalid JSON/ARRAY (carlist) msgid={}", bmDataBean.getMsgid());
-                    invalidList.add(bmDataBean.getMsgid());
-                    continue;
-                }
-
-                JsonStatus stTail = isValidJson(bmDataBean.getCartail());
-                if (stTail == JsonStatus.VALID) {
-                    carNode.set("tail", mapper.readTree(bmDataBean.getCartail()));
-                } else if (stTail == JsonStatus.INVALID) {
-                    log.error("Invalid JSON/ARRAY (cartail) msgid={}", bmDataBean.getMsgid());
-                    invalidList.add(bmDataBean.getMsgid());
-                    continue;
-                }
-
-                if (carNode.size() > 0) {
-                    sendBean.setCarousel(mapper.writeValueAsString(carNode)); // String
+                    sendBean.setAttachments(mapper.writeValueAsString(attNode));
                 }
 
                 sendList.add(sendBean);
