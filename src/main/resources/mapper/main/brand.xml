@@ -741,7 +741,7 @@
                 SET RESULT = '${ft_image_code}',
                     RESULT_DT = TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS'),
                     STATUS = 'F',
-                    RESULT_MESSAGE = '${img_err_msg}'
+                    RESULT_MESSAGE = #{img_err_msg}
                 WHERE SEND_GROUP = #{img_group_no}
                     AND FI_IMAGE_PATH = #{mms_key}
                     AND NVL(WIDE, 'N') = #{dist_value}
@@ -751,7 +751,7 @@
                 SET RESULT = '${ft_image_code}',
                     RESULT_DT = NOW(),
                     STATUS = 'F',
-                    RESULT_MESSAGE = '${img_err_msg}'
+                    RESULT_MESSAGE = #{img_err_msg}
                 WHERE SEND_GROUP = #{img_group_no}
                     AND FI_IMAGE_PATH = #{mms_key}
                     AND IFNULL(WIDE, 'N') = #{dist_value}
