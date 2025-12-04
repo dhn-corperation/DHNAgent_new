@@ -53,4 +53,5 @@ public class BMRequestBean {
     private String kind;
     private String attitems;
     private String pushalarm;
+    private int expectedbroadcastcnt;
 }

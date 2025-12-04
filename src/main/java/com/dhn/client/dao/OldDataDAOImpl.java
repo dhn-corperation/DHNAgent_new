@@ -4,6 +4,7 @@ import com.dhn.client.bean.SQLParameter;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public class OldDataDAOImpl implements OldDataDAO{
@@ -25,6 +26,7 @@ public class OldDataDAOImpl implements OldDataDAO{
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void old_data_result(SQLParameter param) throws Exception {
         sqlSession.update("com.dhn.client.olddata.mapper.SendRequest.old_data_update",param);
         sqlSession.insert("com.dhn.client.olddata.mapper.SendRequest.old_data_insert",param);

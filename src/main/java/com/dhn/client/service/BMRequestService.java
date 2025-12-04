@@ -28,4 +28,8 @@ public interface BMRequestService {
     public void updateBDGroupNo(SQLParameter param)throws Exception;
 
     public List<BMRequestBean> selectBDRequests(SQLParameter param) throws Exception;
+
+    public void updateExpectedFail(Msg_Log ml) throws Exception;
+
+    public void retryBmData(List<String> retryList, Msg_Log ml) throws Exception;
 }

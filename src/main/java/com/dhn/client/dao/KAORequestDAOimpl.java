@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -51,6 +52,7 @@ public class KAORequestDAOimpl implements KAORequestDAO{
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void kaoResultInsert(Msg_Log ml) throws Exception {
         sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.kaoResultUpdate", ml);
         sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.kaoLogInsert", ml);
@@ -68,6 +70,7 @@ public class KAORequestDAOimpl implements KAORequestDAO{
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void log_move(SQLParameter param) throws Exception {
         sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.log_move_insert", param);
         sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.log_move_delete", param);

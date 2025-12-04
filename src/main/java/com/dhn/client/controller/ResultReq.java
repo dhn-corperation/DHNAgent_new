@@ -168,7 +168,11 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 					kao_ml.setStatus("4");
 				}
 
-				kao_ml.setBcast_cnt(ent.getString("price").isEmpty()?"":ent.getString("price"));
+				if(ent.getString("message_type").toUpperCase().startsWith("D")){
+					kao_ml.setBcast_cnt(ent.getString("price").isEmpty()?"":ent.getString("price"));
+				}else if(ent.getString("kind").equalsIgnoreCase("M")){
+					kao_ml.setBcast_cnt(ent.getString("remark3").isEmpty()?"":ent.getString("remark3"));
+				}
 
 			}else if(ent.getString("message_type").equalsIgnoreCase("PH") && ent.has("s_code") && !ent.isNull("s_code") && ent.getString("s_code").length() > 1){
 				// 알림톡 실패 문자

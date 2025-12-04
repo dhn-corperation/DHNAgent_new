@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -49,6 +50,7 @@ public class MSGRequestDAOimpl implements MSGRequestDAO{
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void msgResultInsert(Msg_Log ml) throws Exception {
         sqlSession.update("com.dhn.client.msg.mapper.SendRequest.msgResultUpdate", ml);
         sqlSession.update("com.dhn.client.msg.mapper.SendRequest.msgLogInsert", ml);
@@ -66,6 +68,7 @@ public class MSGRequestDAOimpl implements MSGRequestDAO{
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void log_move(SQLParameter param) throws Exception {
         sqlSession.update("com.dhn.client.msg.mapper.SendRequest.log_move_insert", param);
         sqlSession.update("com.dhn.client.msg.mapper.SendRequest.log_move_delete", param);
@@ -117,6 +120,7 @@ public class MSGRequestDAOimpl implements MSGRequestDAO{
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateMMSImageFail(SQLParameter param) throws Exception {
         sqlSession.update("com.dhn.client.msg.mapper.SendRequest.mms_image_fail_update",param);
         sqlSession.update("com.dhn.client.msg.mapper.SendRequest.mms_image_fail_log_Insert", param);

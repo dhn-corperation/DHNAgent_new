@@ -67,4 +67,14 @@ public class BMRequestServiceimpl implements BMRequestService {
         return bmRequestDAO.selectBDRequests(param);
     }
 
+    @Override
+    public void updateExpectedFail(Msg_Log ml) throws Exception {
+        bmRequestDAO.updateExpectedFail(ml);
+    }
+
+    @Override
+    public void retryBmData(List<String> retryList, Msg_Log ml) throws Exception {
+        bmRequestDAO.retryBmData(retryList, ml);
+    }
+
 }

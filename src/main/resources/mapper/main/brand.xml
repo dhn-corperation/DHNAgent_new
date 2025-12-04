@@ -658,4 +658,344 @@
         </choose>
     </select>
 
+    <update id="bmExpectedUpdate" parameterType="com.dhn.client.bean.Msg_Log">
+        <choose>
+            <when test="database == 'oracle'">
+                UPDATE ${msg_table}
+                SET STATUS = #{status},
+                    RESULT_DT = SYSDATE,
+                    RESULT = #{code},
+                    RESULT_MESSAGE = #{result_message}
+                WHERE MSG_ID = #{msgid}
+            </when>
+            <when test="database == 'mysql'">
+                UPDATE ${msg_table}
+                SET STATUS = #{status},
+                    RESULT_DT = NOW(),
+                    RESULT = #{code},
+                    RESULT_MESSAGE = #{result_message}
+                WHERE MSG_ID = #{msgid}
+            </when>
+        </choose>
+    </update>
+
+    <insert id="bmExpectedLogInsert" parameterType="com.dhn.client.bean.Msg_Log">
+        <choose>
+            <when test="database == 'oracle'">
+                INSERT INTO ${log_table}
+                (
+                    ID,
+                    MSG_ID,
+                    MESSAGE_TYPE,
+                    MESSAGE,
+                    STATUS,
+                    P_INVOICE,
+                    PHN,
+                    SMS_SENDER,
+                    REG_DT,
+                    RESERVE_DT,
+                    RESPONSE_DT,
+                    RESULT_DT,
+                    BUTTON1,
+                    BUTTON2,
+                    BUTTON3,
+                    BUTTON4,
+                    BUTTON5,
+                    TMPL_ID,
+                    PROFILE,
+                    TITLE,
+                    HEADER,
+                    AD_FLAG,
+                    FI_IMAGE_PATH,
+                    IMAGE_LINK,
+                    IMAGE_URL,
+                    WIDE,
+                    LINK,
+                    ATTACHMENTS,
+                    MSG,
+                    SMS_KIND,
+                    SMSLMS_TIT,
+                    MMS_IMAGE_KEY,
+                    MMS_IMAGE1,
+                    MMS_IMAGE2,
+                    MMS_IMAGE3,
+                    SEND_GROUP,
+                    RESULT,
+                    RESULT_MSG,
+                    RESULT_MESSAGE,
+                    TELCOINFO,
+                    REAL_MESSAGE_TYPE,
+                    REAL_SEND_FLAG,
+                    KISA_CODE,
+                    ETC1,
+                    ETC2,
+                    ETC3,
+                    ETC4,
+                    ETC5,
+                    KIND,
+                    SUPPLEMENT,
+                    CURRENCY_TYPE,
+                    ATT_MESSAGE,
+                    ATT_BUTTON,
+                    ATT_IMAGE,
+                    ATT_ITEM,
+                    ATT_COUPON,
+                    ATT_COMMERCE,
+                    ATT_VIDEO,
+                    CAR_HEAD,
+                    CAR_LIST,
+                    CAR_TAIL,
+                    GROUP_TAG,
+                    BCAST_CNT,
+                    USER_KEY,
+                    PUSH_ALARM
+                )
+                SELECT
+                    ID,
+                    MSG_ID,
+                    MESSAGE_TYPE,
+                    MESSAGE,
+                    STATUS,
+                    P_INVOICE,
+                    PHN,
+                    SMS_SENDER,
+                    REG_DT,
+                    RESERVE_DT,
+                    RESPONSE_DT,
+                    RESULT_DT,
+                    BUTTON1,
+                    BUTTON2,
+                    BUTTON3,
+                    BUTTON4,
+                    BUTTON5,
+                    TMPL_ID,
+                    PROFILE,
+                    TITLE,
+                    HEADER,
+                    AD_FLAG,
+                    FI_IMAGE_PATH,
+                    IMAGE_LINK,
+                    IMAGE_URL,
+                    WIDE,
+                    LINK,
+                    ATTACHMENTS,
+                    MSG,
+                    SMS_KIND,
+                    SMSLMS_TIT,
+                    MMS_IMAGE_KEY,
+                    MMS_IMAGE1,
+                    MMS_IMAGE2,
+                    MMS_IMAGE3,
+                    SEND_GROUP,
+                    RESULT,
+                    RESULT_MSG,
+                    RESULT_MESSAGE,
+                    TELCOINFO,
+                    REAL_MESSAGE_TYPE,
+                    REAL_SEND_FLAG,
+                    KISA_CODE,
+                    ETC1,
+                    ETC2,
+                    ETC3,
+                    ETC4,
+                    ETC5,
+                    KIND,
+                    SUPPLEMENT,
+                    CURRENCY_TYPE,
+                    ATT_MESSAGE,
+                    ATT_BUTTON,
+                    ATT_IMAGE,
+                    ATT_ITEM,
+                    ATT_COUPON,
+                    ATT_COMMERCE,
+                    ATT_VIDEO,
+                    CAR_HEAD,
+                    CAR_LIST,
+                    CAR_TAIL,
+                    GROUP_TAG,
+                    BCAST_CNT,
+                    USER_KEY,
+                    PUSH_ALARM
+                FROM ${msg_table}
+                WHERE MSG_ID = #{msgid}
+            </when>
+            <when test="database == 'mysql'">
+                INSERT INTO ${log_table}
+                (
+                    ID,
+                    MSG_ID,
+                    MESSAGE_TYPE,
+                    MESSAGE,
+                    STATUS,
+                    P_INVOICE,
+                    PHN,
+                    SMS_SENDER,
+                    REG_DT,
+                    RESERVE_DT,
+                    RESPONSE_DT,
+                    RESULT_DT,
+                    BUTTON1,
+                    BUTTON2,
+                    BUTTON3,
+                    BUTTON4,
+                    BUTTON5,
+                    TMPL_ID,
+                    PROFILE,
+                    TITLE,
+                    HEADER,
+                    AD_FLAG,
+                    FI_IMAGE_PATH,
+                    IMAGE_LINK,
+                    IMAGE_URL,
+                    WIDE,
+                    LINK,
+                    ATTACHMENTS,
+                    MSG,
+                    SMS_KIND,
+                    SMSLMS_TIT,
+                    MMS_IMAGE_KEY,
+                    MMS_IMAGE1,
+                    MMS_IMAGE2,
+                    MMS_IMAGE3,
+                    SEND_GROUP,
+                    RESULT,
+                    RESULT_MSG,
+                    RESULT_MESSAGE,
+                    TELCOINFO,
+                    REAL_MESSAGE_TYPE,
+                    REAL_SEND_FLAG,
+                    KISA_CODE,
+                    ETC1,
+                    ETC2,
+                    ETC3,
+                    ETC4,
+                    ETC5,
+                    KIND,
+                    SUPPLEMENT,
+                    CURRENCY_TYPE,
+                    ATT_MESSAGE,
+                    ATT_BUTTON,
+                    ATT_IMAGE,
+                    ATT_ITEM,
+                    ATT_COUPON,
+                    ATT_COMMERCE,
+                    ATT_VIDEO,
+                    CAR_HEAD,
+                    CAR_LIST,
+                    CAR_TAIL,
+                    GROUP_TAG,
+                    BCAST_CNT,
+                    USER_KEY,
+                    PUSH_ALARM
+                )
+                SELECT
+                    ID,
+                    MSG_ID,
+                    MESSAGE_TYPE,
+                    MESSAGE,
+                    STATUS,
+                    P_INVOICE,
+                    PHN,
+                    SMS_SENDER,
+                    REG_DT,
+                    RESERVE_DT,
+                    RESPONSE_DT,
+                    RESULT_DT,
+                    BUTTON1,
+                    BUTTON2,
+                    BUTTON3,
+                    BUTTON4,
+                    BUTTON5,
+                    TMPL_ID,
+                    PROFILE,
+                    TITLE,
+                    HEADER,
+                    AD_FLAG,
+                    FI_IMAGE_PATH,
+                    IMAGE_LINK,
+                    IMAGE_URL,
+                    WIDE,
+                    LINK,
+                    ATTACHMENTS,
+                    MSG,
+                    SMS_KIND,
+                    SMSLMS_TIT,
+                    MMS_IMAGE_KEY,
+                    MMS_IMAGE1,
+                    MMS_IMAGE2,
+                    MMS_IMAGE3,
+                    SEND_GROUP,
+                    RESULT,
+                    RESULT_MSG,
+                    RESULT_MESSAGE,
+                    TELCOINFO,
+                    REAL_MESSAGE_TYPE,
+                    REAL_SEND_FLAG,
+                    KISA_CODE,
+                    ETC1,
+                    ETC2,
+                    ETC3,
+                    ETC4,
+                    ETC5,
+                    KIND,
+                    SUPPLEMENT,
+                    CURRENCY_TYPE,
+                    ATT_MESSAGE,
+                    ATT_BUTTON,
+                    ATT_IMAGE,
+                    ATT_ITEM,
+                    ATT_COUPON,
+                    ATT_COMMERCE,
+                    ATT_VIDEO,
+                    CAR_HEAD,
+                    CAR_LIST,
+                    CAR_TAIL,
+                    GROUP_TAG,
+                    BCAST_CNT,
+                    USER_KEY,
+                    PUSH_ALARM
+                FROM ${msg_table}
+                WHERE MSG_ID = #{msgid}
+            </when>
+        </choose>
+    </insert>
+
+    <delete id="bmExpectedDelete" parameterType="com.dhn.client.bean.Msg_Log">
+        <choose>
+            <when test="database == 'oracle'">
+                DELETE FROM ${msg_table}
+                WHERE MSG_ID = #{msgid}
+            </when>
+            <when test="database == 'mysql'">
+                DELETE FROM ${msg_table}
+                WHERE MSG_ID = #{msgid}
+            </when>
+        </choose>
+    </delete>
+
+    <update id="bmRetryUpdate" parameterType="map" >
+        <choose>
+            <when test="ml.database == 'oracle'">
+                UPDATE ${ml.msg_table}
+                SET STATUS = '0',
+                    SEND_GROUP = NULL,
+                    RESPONSE_DT = NULL
+                WHERE MSG_ID IN
+                <foreach collection="list" item="msgid" open="(" separator="," close=")">
+                    #{msgid}
+                </foreach>
+            </when>
+            <when test="ml.database == 'mysql'">
+                UPDATE ${ml.msg_table}
+                SET STATUS = '0',
+                    SEND_GROUP = NULL,
+                    RESPONSE_DT = NULL
+                WHERE MSG_ID IN
+                <foreach collection="list" item="msgid" open="(" separator="," close=")">
+                    #{msgid}
+                </foreach>
+            </when>
+        </choose>
+    </update>
+
 </mapper>

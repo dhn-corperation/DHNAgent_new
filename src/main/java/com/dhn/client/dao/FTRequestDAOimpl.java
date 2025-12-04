@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -39,6 +40,7 @@ public class FTRequestDAOimpl implements FTRequestDAO {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateFTInvalidData(List<String> invalidList, Msg_Log ml) throws Exception {
         Map<String, Object> param = new HashMap<>();
         param.put("list", invalidList);
@@ -75,10 +77,11 @@ public class FTRequestDAOimpl implements FTRequestDAO {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateFTImageFail(SQLParameter param) throws Exception {
         sqlSession.update("com.dhn.client.friend.mapper.SendRequest.ft_image_fail_update", param);
-        sqlSession.update("com.dhn.client.friend.mapper.SendRequest.ft_image_fail_log_Insert", param);
-        sqlSession.update("com.dhn.client.friend.mapper.SendRequest.ft_image_fail_delete", param);
+        sqlSession.insert("com.dhn.client.friend.mapper.SendRequest.ft_image_fail_log_Insert", param);
+        sqlSession.delete("com.dhn.client.friend.mapper.SendRequest.ft_image_fail_delete", param);
     }
 
     @Override
