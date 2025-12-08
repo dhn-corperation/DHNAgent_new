@@ -136,10 +136,12 @@ public class OTPSendRequest implements ApplicationListener<ContextRefreshedEvent
                     log.info("OTP 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
                 } else {
                     log.error("({}) OTP 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
+                    Thread.sleep(30000);
                     msgRequestService.updateSMSSendInit(sendParam);
                 }
             }catch (Exception e) {
                 log.error("OTP 메세지 전송 오류 : " + e.toString());
+                Thread.sleep(30000);
                 msgRequestService.updateSMSSendInit(sendParam);
             }
         }catch (Exception e){

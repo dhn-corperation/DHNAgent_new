@@ -290,10 +290,12 @@ public class BMDSendRequest implements ApplicationListener<ContextRefreshedEvent
                         log.info("BD (동보형) 메세지 전송 완료 : " + response.getStatusCode() + " / " + group_no + " / " + _list.size() + " 건");
                     }else {
                         log.error("({}) BD (동보형) 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
+                        Thread.sleep(30000);
                         bmRequestService.updateBMSendInit(sendParam);
                     }
                 } catch (Exception e) {
                     log.error("BD (동보형) 메세지 전송 오류 : " + e.toString());
+                    Thread.sleep(30000);
                     bmRequestService.updateBMSendInit(sendParam);
                 }
             }

@@ -158,7 +158,6 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 				if (result_message == null || result_message.trim().isEmpty()) {
 					kao_ml.setResult_message("");
 				} else {
-					// 작은따옴표 → 두 개의 작은따옴표로 치환
 					kao_ml.setResult_message(result_message.replace("'", "''"));
 				}
 
@@ -170,8 +169,16 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 
 				if(ent.getString("message_type").toUpperCase().startsWith("D")){
 					kao_ml.setBcast_cnt(ent.getString("price").isEmpty()?"":ent.getString("price"));
-				}else if(ent.getString("kind").equalsIgnoreCase("M")){
-					kao_ml.setBcast_cnt(ent.getString("remark3").isEmpty()?"":ent.getString("remark3"));
+				}else if (ent.getString("kind").toUpperCase().startsWith("I")&&ent.getString("s_code").equals("0000")){
+					kao_ml.setBcast_cnt("1");
+				}else if (ent.getString("kind").toUpperCase().startsWith("N")&&ent.getString("s_code").equals("0000")){
+					kao_ml.setBcast_cnt("0");
+				}else if(ent.getString("kind").toUpperCase().startsWith("M")&&ent.getString("s_code").equals("0000")){
+					if(!ent.getString("remark3").isEmpty()&&ent.getString("remark3").substring(0, 1).equalsIgnoreCase("I")){
+						kao_ml.setBcast_cnt("1");
+					}else if(!ent.getString("remark3").isEmpty()){
+						kao_ml.setBcast_cnt("0");
+					}
 				}
 
 			}else if(ent.getString("message_type").equalsIgnoreCase("PH") && ent.has("s_code") && !ent.isNull("s_code") && ent.getString("s_code").length() > 1){
@@ -211,7 +218,6 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 					kao_ml.setStatus("4");
 				}
 				kao_ml.setReal_send_type(ent.getString("sms_kind"));
-				kao_ml.setBcast_cnt(ent.getString("price").isEmpty()?"":ent.getString("price"));
 
 			}else{
 				// 문자

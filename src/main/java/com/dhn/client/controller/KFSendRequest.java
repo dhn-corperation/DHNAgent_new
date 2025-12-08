@@ -385,10 +385,12 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                         log.info("KF 메세지 전송 완료 : " + response.getStatusCode() + " / " + group_no + " / " + _list.size() + " 건");
                     } else { // API 전송 실패시
                         log.error("({}) KF 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
+                        Thread.sleep(30000);
                         ftRequestService.updateFTSendInit(sendParam);
                     }
                 } catch (Exception e) {
                     log.error("KF 메세지 전송 오류 : {}",e.toString());
+                    Thread.sleep(30000);
                     ftRequestService.updateFTSendInit(sendParam);
                 }
             }
