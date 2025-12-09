@@ -127,7 +127,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		log.info("결과 수신 시작 : " + json.length() + " 건");
 		for(int i=0; i<json.length(); i++) {
 			JSONObject ent = json.getJSONObject(i);
-			
+
 			Msg_Log kao_ml = new Msg_Log();
 			Msg_Log msg_ml = new Msg_Log();
 

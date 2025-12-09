@@ -160,15 +160,15 @@
         <choose>
             <when test="database == 'oracle'">
                 UPDATE ${msg_table}
-                SET STATUS = #{status},
-                    RESULT_DT = #{result_dt},
-                    RESULT = #{s_code},
-                    RESULT_MSG = #{code},
-                    RESULT_MESSAGE = #{result_message},
-                    TELCOINFO = #{telecom},
-                    REAL_MESSAGE_TYPE = #{real_send_type},
-                    BCAST_CNT = #{bcast_cnt}
-                WHERE MSG_ID = #{msgid}
+                SET STATUS = #{status, jdbcType=VARCHAR},
+                    RESULT_DT = #{result_dt, jdbcType=VARCHAR},
+                    RESULT = #{s_code, jdbcType=VARCHAR},
+                    RESULT_MSG = #{code, jdbcType=VARCHAR},
+                    RESULT_MESSAGE = #{result_message, jdbcType=VARCHAR},
+                    TELCOINFO = #{telecom, jdbcType=VARCHAR},
+                    REAL_MESSAGE_TYPE = #{real_send_type, jdbcType=VARCHAR},
+                    BCAST_CNT = #{bcast_cnt, jdbcType=VARCHAR}
+                WHERE MSG_ID = #{msgid, jdbcType=VARCHAR}
             </when>
             <when test="database == 'mysql'">
                 UPDATE ${msg_table}
