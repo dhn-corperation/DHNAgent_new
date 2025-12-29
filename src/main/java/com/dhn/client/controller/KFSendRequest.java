@@ -39,6 +39,7 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
     private boolean isProc = false;
     private boolean isProcImg = false;
     private SQLParameter param = new SQLParameter();
+    private SQLParameter imgParam = new SQLParameter();
     private String dhnServer;
     private String userid;
     private String preGroupNo = "";
@@ -64,6 +65,11 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
         param.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database"));
         param.setSequence(appContext.getEnvironment().getProperty("dhnclient.msg_seq"));
         param.setMsg_type("KF");
+
+        imgParam.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
+        imgParam.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database"));
+        imgParam.setSequence(appContext.getEnvironment().getProperty("dhnclient.msg_seq"));
+        imgParam.setMsg_type("KF");
 
         dhnServer = appContext.getEnvironment().getProperty("dhnclient.server");
         userid = appContext.getEnvironment().getProperty("dhnclient.userid");
@@ -93,20 +99,20 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                 try{
 
 
-                    int cnt = ftRequestService.selectFtImageCount(param);
+                    int cnt = ftRequestService.selectFtImageCount(imgParam);
 
                     if(cnt > 0){
 
-                        param.setImg_group_no(img_group_no);
-                        ftRequestService.updateFTImageGroup(param);
+                        imgParam.setImg_group_no(img_group_no);
+                        ftRequestService.updateFTImageGroup(imgParam);
 
-                        List<ImageBean> ftimages = ftRequestService.selectFtImage(param);
+                        List<ImageBean> ftimages = ftRequestService.selectFtImage(imgParam);
 
                         for (ImageBean ftimage : ftimages) {
                             SQLParameter ftiparam = new SQLParameter();
-                            ftiparam.setMsg_table(param.getMsg_table());
-                            ftiparam.setDatabase(param.getDatabase());
-                            ftiparam.setSequence(param.getSequence());
+                            ftiparam.setMsg_table(imgParam.getMsg_table());
+                            ftiparam.setDatabase(imgParam.getDatabase());
+                            ftiparam.setSequence(imgParam.getSequence());
                             ftiparam.setMms_key(ftimage.getFtimagepath());
                             ftiparam.setDist_value(ftimage.getWide());
                             ftiparam.setImg_group_no(img_group_no);
@@ -135,7 +141,7 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                                 if (!file.exists() || !file.isFile()) {
                                     log.warn("KF Image 파일 없음 : " + rawPath);
 
-                                    if(param.getLog_back() != null && param.getLog_back().equalsIgnoreCase("Y")){
+                                    if(log_back != null && log_back.equalsIgnoreCase("Y")){
                                         ftiparam.setLog_table(log_table + "_" + currentMonth_log);
                                     }else{
                                         ftiparam.setLog_table(log_table);
@@ -185,7 +191,7 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                                         ftRequestService.updateFTImageUrl(ftiparam);
                                     }else{
 
-                                        if(param.getLog_back() != null && param.getLog_back().equalsIgnoreCase("Y")){
+                                        if(log_back != null && log_back.equalsIgnoreCase("Y")){
                                             ftiparam.setLog_table(log_table + "_" + currentMonth_log);
                                         }else{
                                             ftiparam.setLog_table(log_table);
