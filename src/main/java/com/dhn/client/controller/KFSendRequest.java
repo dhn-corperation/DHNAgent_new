@@ -380,8 +380,6 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                 RestTemplate rt = new RestTemplate();
                 HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
 
-                log.info("test : {}",sw.toString());
-
                 try {
                     ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
                     Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
