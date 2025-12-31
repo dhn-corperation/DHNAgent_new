@@ -103,9 +103,6 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
 
                     if(cnt > 0){
 
-                        imgParam.setImg_group_no(img_group_no);
-                        ftRequestService.updateFTImageGroup(imgParam);
-
                         List<ImageBean> ftimages = ftRequestService.selectFtImage(imgParam);
 
                         for (ImageBean ftimage : ftimages) {
@@ -113,9 +110,12 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                             ftiparam.setMsg_table(imgParam.getMsg_table());
                             ftiparam.setDatabase(imgParam.getDatabase());
                             ftiparam.setSequence(imgParam.getSequence());
+                            ftiparam.setMsgid(ftimage.getMsgid());
                             ftiparam.setMms_key(ftimage.getFtimagepath());
                             ftiparam.setDist_value(ftimage.getWide());
                             ftiparam.setImg_group_no(img_group_no);
+
+                            log.info("test : {}",ftimage.toString());
 
                             LocalDate now_log = LocalDate.now();
                             DateTimeFormatter formatter_log = DateTimeFormatter.ofPattern("yyyyMM");
@@ -203,7 +203,7 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                                     }
                                 } else {
                                     log.error("친구톡 이미지 등록 실패 통신오류 : {}",response.getBody());
-                                    ftRequestService.updateFTImageUploadFail(ftiparam);
+//                                    ftRequestService.updateFTImageUploadFail(ftiparam);
                                 }
 
                             }catch (Exception e){
