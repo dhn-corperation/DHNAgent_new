@@ -115,8 +115,6 @@ public class KFSendRequest implements ApplicationListener<ContextRefreshedEvent>
                             ftiparam.setDist_value(ftimage.getWide());
                             ftiparam.setImg_group_no(img_group_no);
 
-                            log.info("test : {}",ftimage.toString());
-
                             LocalDate now_log = LocalDate.now();
                             DateTimeFormatter formatter_log = DateTimeFormatter.ofPattern("yyyyMM");
                             String currentMonth_log = now_log.format(formatter_log);
