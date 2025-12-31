@@ -680,7 +680,7 @@
                 WHERE STATUS = '0'
                     AND RESERVE_DT &lt;= NOW()
                     AND MESSAGE_TYPE = #{msg_type}
-                    AND (FI_IMAGE_PATH IS NULL OR FI_IMAGE_PATH = '' OR (IMAGE_URL IS NOT NULL AND FI_IMAGE_PATH IS NOT NULL))
+                    AND (FI_IMAGE_PATH IS NULL OR FI_IMAGE_PATH = '' OR (FI_IMAGE_PATH IS NOT NULL AND FI_IMAGE_PATH &lt;&gt; '' AND IMAGE_URL IS NOT NULL AND IMAGE_URL &lt;&gt; ''))
                     AND SEND_GROUP IS NULL
             </when>
         </choose>
@@ -707,7 +707,7 @@
                     AND RESERVE_DT &lt;= NOW()
                     AND MESSAGE_TYPE = #{msg_type}
                     AND SEND_GROUP IS NULL
-                    AND (FI_IMAGE_PATH IS NULL OR FI_IMAGE_PATH = '' OR (IMAGE_URL IS NOT NULL AND FI_IMAGE_PATH IS NOT NULL))
+                    AND (FI_IMAGE_PATH IS NULL OR FI_IMAGE_PATH = '' OR (FI_IMAGE_PATH IS NOT NULL AND FI_IMAGE_PATH &lt;&gt; '' AND IMAGE_URL IS NOT NULL AND IMAGE_URL &lt;&gt; ''))
                     LIMIT 200
             </when>
         </choose>
