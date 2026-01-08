@@ -565,17 +565,34 @@
         <choose>
             <when test="database == 'oracle'">
                 SELECT FI_IMAGE_PATH as ftimagepath,
-                    NVL(WIDE, 'N') AS WIDE
+                    NVL(WIDE, 'N') AS WIDE,
+                    MSG_ID AS msgid
                 FROM ${msg_table}
-                WHERE SEND_GROUP = #{img_group_no}
-                GROUP BY FI_IMAGE_PATH, NVL(WIDE, 'N')
+                WHERE ROWID IN (
+                    SELECT rid FROM (
+                        SELECT ROWID rid
+                        FROM ${msg_table}
+                        WHERE STATUS = '0'
+                        AND RESERVE_DT &lt;= SYSDATE
+                        AND MESSAGE_TYPE = #{msg_type}
+                        AND SEND_GROUP IS NULL
+                        AND FI_IMAGE_PATH IS NOT NULL
+                        AND IMAGE_URL IS NULL
+                    ) WHERE ROWNUM &lt;= 500
+                )
             </when>
             <when test="database == 'mysql'">
                 SELECT FI_IMAGE_PATH as ftimagepath,
-                    IFNULL(WIDE, 'N') AS WIDE
+                    IFNULL(WIDE, 'N') AS WIDE,
+                    MSG_ID AS msgid
                 FROM ${msg_table}
-                WHERE SEND_GROUP = #{img_group_no}
-                GROUP BY FI_IMAGE_PATH, IFNULL(WIDE, 'N')
+                WHERE STATUS = '0'
+                    AND RESERVE_DT &lt;= NOW()
+                    AND MESSAGE_TYPE = #{msg_type}
+                    AND SEND_GROUP IS NULL
+                    AND FI_IMAGE_PATH IS NOT NULL AND FI_IMAGE_PATH &lt;&gt; ''
+                    AND (IMAGE_URL IS NULL OR IMAGE_URL = '')
+                LIMIT 500
             </when>
         </choose>
     </select>
@@ -588,9 +605,7 @@
                     RESULT_DT = TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS'),
                     STATUS = 'F',
                     RESULT_MESSAGE = #{img_err_msg}
-                WHERE SEND_GROUP = #{img_group_no}
-                AND FI_IMAGE_PATH = #{mms_key}
-                AND NVL(WIDE, 'N') = #{dist_value}
+                WHERE MSG_ID = #{msgid}
             </when>
             <when test="database == 'mysql'">
                 UPDATE ${msg_table}
@@ -598,9 +613,7 @@
                     RESULT_DT = NOW(),
                     STATUS = 'F',
                     RESULT_MESSAGE = #{img_err_msg}
-                WHERE SEND_GROUP = #{img_group_no}
-                    AND FI_IMAGE_PATH = #{mms_key}
-                    AND IFNULL(WIDE, 'N') = #{dist_value}
+                WHERE MSG_ID = #{msgid}
             </when>
         </choose>
     </update>
@@ -610,16 +623,12 @@
             <when test="database == 'oracle'">
                 INSERT INTO ${log_table}
                 SELECT * FROM ${msg_table}
-                WHERE SEND_GROUP = #{img_group_no}
-                    AND FI_IMAGE_PATH = #{mms_key}
-                    AND NVL(WIDE, 'N') = #{dist_value}
+                WHERE MSG_ID = #{msgid}
             </when>
             <when test="database == 'mysql'">
                 INSERT INTO ${log_table}
                 SELECT * FROM ${msg_table}
-                WHERE SEND_GROUP = #{img_group_no}
-                    AND FI_IMAGE_PATH = #{mms_key}
-                    AND IFNULL(WIDE, 'N') = #{dist_value}
+                WHERE MSG_ID = #{msgid}
             </when>
         </choose>
     </insert>
@@ -628,15 +637,11 @@
         <choose>
             <when test="database == 'oracle'">
                 DELETE FROM ${msg_table}
-                WHERE SEND_GROUP = #{img_group_no}
-                    AND FI_IMAGE_PATH = #{mms_key}
-                    AND NVL(WIDE, 'N') = #{dist_value}
+                WHERE MSG_ID = #{msgid}
             </when>
             <when test="database == 'mysql'">
                 DELETE FROM ${msg_table}
-                WHERE SEND_GROUP = #{img_group_no}
-                    AND FI_IMAGE_PATH = #{mms_key}
-                    AND IFNULL(WIDE, 'N') = #{dist_value}
+                WHERE MSG_ID = #{msgid}
             </when>
         </choose>
     </delete>
@@ -647,17 +652,13 @@
                 UPDATE ${msg_table}
                 SET IMAGE_URL = #{ft_image_url},
                     SEND_GROUP = NULL
-                WHERE SEND_GROUP = #{img_group_no}
-                    AND FI_IMAGE_PATH = #{mms_key}
-                    AND NVL(WIDE, 'N') = #{dist_value}
+                WHERE MSG_ID = #{msgid}
             </when>
             <when test="database == 'mysql'">
                 UPDATE ${msg_table}
                 SET IMAGE_URL = #{ft_image_url},
                     SEND_GROUP = NULL
-                WHERE SEND_GROUP = #{img_group_no}
-                    AND FI_IMAGE_PATH = #{mms_key}
-                    AND IFNULL(WIDE, 'N') = #{dist_value}
+                WHERE MSG_ID = #{msgid}
             </when>
         </choose>
     </update>
@@ -679,7 +680,7 @@
                 WHERE STATUS = '0'
                     AND RESERVE_DT &lt;= NOW()
                     AND MESSAGE_TYPE = #{msg_type}
-                    AND (FI_IMAGE_PATH IS NULL OR FI_IMAGE_PATH = '' OR (IMAGE_URL IS NOT NULL AND FI_IMAGE_PATH IS NOT NULL))
+                    AND (FI_IMAGE_PATH IS NULL OR FI_IMAGE_PATH = '' OR (FI_IMAGE_PATH IS NOT NULL AND FI_IMAGE_PATH &lt;&gt; '' AND IMAGE_URL IS NOT NULL AND IMAGE_URL &lt;&gt; ''))
                     AND SEND_GROUP IS NULL
             </when>
         </choose>
@@ -706,7 +707,7 @@
                     AND RESERVE_DT &lt;= NOW()
                     AND MESSAGE_TYPE = #{msg_type}
                     AND SEND_GROUP IS NULL
-                    AND (FI_IMAGE_PATH IS NULL OR FI_IMAGE_PATH = '' OR (IMAGE_URL IS NOT NULL AND FI_IMAGE_PATH IS NOT NULL))
+                    AND (FI_IMAGE_PATH IS NULL OR FI_IMAGE_PATH = '' OR (FI_IMAGE_PATH IS NOT NULL AND FI_IMAGE_PATH &lt;&gt; '' AND IMAGE_URL IS NOT NULL AND IMAGE_URL &lt;&gt; ''))
                     LIMIT 200
             </when>
         </choose>
