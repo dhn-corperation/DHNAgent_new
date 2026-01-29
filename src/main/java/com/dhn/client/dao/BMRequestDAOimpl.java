@@ -6,8 +6,10 @@ import com.dhn.client.bean.Msg_Log;
 import com.dhn.client.bean.SQLParameter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.session.SqlSession;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
@@ -50,8 +52,34 @@ public class BMRequestDAOimpl implements BMRequestDAO {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void updateInvalidData(List<String> invalidList, Msg_Log ml) throws Exception {
+        int retry = 0;
+        int maxRetry = 5;
+
+        while (true) {
+
+            try {
+                ((BMRequestDAO) AopContext.currentProxy()).doUpdateInvalidDataTx(invalidList, ml);
+                return;
+            } catch (Exception e) {
+                retry++;
+                log.warn("[RETRY] updateInvalidData retry {}/{} invalidCnt={} / {}",retry,maxRetry,invalidList.size(),e);
+                if (!isRetryable(e) || retry >= maxRetry) {
+                    log.error("[FAIL] updateInvalidData failed after {} retries", retry, e);
+                    throw e;
+                }
+                Thread.sleep(200 * retry);
+            }
+        }
+    }
+
+    @Override
+    @Transactional(
+            rollbackFor = Exception.class,
+            propagation = Propagation.REQUIRES_NEW
+    )
+    public void doUpdateInvalidDataTx(List<String> invalidList, Msg_Log ml) {
+
         Map<String, Object> param = new HashMap<>();
         param.put("list", invalidList);
         param.put("ml", ml);
@@ -84,8 +112,34 @@ public class BMRequestDAOimpl implements BMRequestDAO {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void updateExpectedFail(Msg_Log ml) throws Exception {
+        int retry = 0;
+        int maxRetry = 5;
+
+        while (true) {
+            try {
+                ((BMRequestDAO) AopContext.currentProxy()).doUpdateExpectedFailTx(ml);
+                return;
+
+            } catch (Exception e) {
+                retry++;
+                log.warn("[RETRY] updateExpectedFail retry {}/{} msgid={} / {}",retry,maxRetry,ml.getMsgid(),e);
+                if (!isRetryable(e) || retry >= maxRetry) {
+                    log.error("[FAIL] updateExpectedFail failed after {} retries", retry, e);
+                    throw e;
+                }
+                Thread.sleep(200 * retry);
+            }
+        }
+    }
+
+    @Override
+    @Transactional(
+            rollbackFor = Exception.class,
+            propagation = Propagation.REQUIRES_NEW
+    )
+    public void doUpdateExpectedFailTx(Msg_Log ml) {
+
         sqlSession.update("com.dhn.client.brand.mapper.SendRequest.bmExpectedUpdate", ml);
         sqlSession.insert("com.dhn.client.brand.mapper.SendRequest.bmExpectedLogInsert", ml);
         sqlSession.delete("com.dhn.client.brand.mapper.SendRequest.bmExpectedDelete", ml);
@@ -99,5 +153,32 @@ public class BMRequestDAOimpl implements BMRequestDAO {
         param.put("ml", ml);
 
         sqlSession.update("com.dhn.client.brand.mapper.SendRequest.bmRetryUpdate", param);
+    }
+
+    private boolean isRetryable(Exception e) {
+        Throwable t = e;
+        while (t != null) {
+            String msg = t.getMessage();
+            if (msg != null) {
+                msg = msg.toLowerCase();
+                if (msg.contains("deadlock")
+                        || msg.contains("lock wait timeout")) {
+                    return true;
+                }
+                if (msg.contains("ora-00060")
+                        || msg.contains("ora-30006")) {
+                    return true;
+                }
+            }
+
+            if (t instanceof java.sql.SQLException) {
+                String state = ((java.sql.SQLException)t).getSQLState();
+                if ("40001".equals(state)) {
+                    return true;
+                }
+            }
+            t = t.getCause();
+        }
+        return false;
     }
 }

@@ -38,4 +38,8 @@ public interface FTRequestDAO {
     public List<FTDataBean> selectOldFTRequests(SQLParameter param) throws Exception;
 
     public void updateFTImageUploadFail(SQLParameter param) throws Exception;
+
+    public void doupdateFTInvalidDataTx(List<String> invalidList, Msg_Log ml) throws Exception;
+
+    public void doupdateFTImageFailTx(SQLParameter param) throws Exception;
 }

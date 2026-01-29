@@ -32,4 +32,8 @@ public interface BMRequestDAO {
     public void updateExpectedFail(Msg_Log ml) throws Exception;
 
     public void retryBmData(List<String> retryList, Msg_Log ml) throws Exception;
+
+    public void doUpdateInvalidDataTx(List<String> invalidList, Msg_Log ml) throws Exception;
+
+    public void doUpdateExpectedFailTx(Msg_Log ml) throws Exception;
 }

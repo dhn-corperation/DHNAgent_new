@@ -27,4 +27,7 @@ public interface KAORequestDAO {
 
     public void log_move(SQLParameter param) throws Exception;
 
+    public void dokaoResultInsertTx(Msg_Log ml) throws Exception;
+
+    public void dolog_moveTx(SQLParameter param) throws Exception;
 }

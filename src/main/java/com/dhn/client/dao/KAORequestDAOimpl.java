@@ -6,8 +6,10 @@ import com.dhn.client.bean.Msg_Log;
 import com.dhn.client.bean.SQLParameter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.session.SqlSession;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -52,8 +54,32 @@ public class KAORequestDAOimpl implements KAORequestDAO{
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void kaoResultInsert(Msg_Log ml) throws Exception {
+        int retry = 0;
+        int maxRetry = 5;
+
+        while (true) {
+            try {
+                ((KAORequestDAO) AopContext.currentProxy()).dokaoResultInsertTx(ml);
+                return;
+            } catch (Exception e) {
+                retry++;
+                log.warn("[RETRY] kaoResultInsert retry {}/{} msgid={} / {}",retry,maxRetry,ml.getMsgid(),e);
+                if (!isRetryable(e) || retry >= maxRetry) {
+                    log.error("[FAIL] kaoResultInsert failed after {} retries", retry, e);
+                    throw e;
+                }
+                Thread.sleep(200 * retry);
+            }
+        }
+    }
+
+    @Override
+    @Transactional(
+            rollbackFor = Exception.class,
+            propagation = Propagation.REQUIRES_NEW
+    )
+    public void dokaoResultInsertTx(Msg_Log ml) {
         sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.kaoResultUpdate", ml);
         sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.kaoLogInsert", ml);
         sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.kaoResultDelete", ml);
@@ -70,10 +96,61 @@ public class KAORequestDAOimpl implements KAORequestDAO{
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void log_move(SQLParameter param) throws Exception {
+        int retry = 0;
+        int maxRetry = 5;
+
+        while (true) {
+            try {
+                ((KAORequestDAO) AopContext.currentProxy()).dolog_moveTx(param);
+                return;
+            } catch (Exception e) {
+                retry++;
+                log.warn("[RETRY] kao_log_move retry {}/{}/{}",retry,maxRetry,e);
+                if (!isRetryable(e) || retry >= maxRetry) {
+                    log.error("[FAIL] kao_log_move failed after {} retries", retry, e);
+                    throw e;
+                }
+                Thread.sleep(200 * retry);
+            }
+        }
+    }
+
+    @Override
+    @Transactional(
+            rollbackFor = Exception.class,
+            propagation = Propagation.REQUIRES_NEW
+    )
+    public void dolog_moveTx(SQLParameter param) {
         sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.log_move_insert", param);
         sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.log_move_delete", param);
+    }
+
+    private boolean isRetryable(Exception e) {
+        Throwable t = e;
+        while (t != null) {
+            String msg = t.getMessage();
+            if (msg != null) {
+                msg = msg.toLowerCase();
+                if (msg.contains("deadlock")
+                        || msg.contains("lock wait timeout")) {
+                    return true;
+                }
+                if (msg.contains("ora-00060")
+                        || msg.contains("ora-30006")) {
+                    return true;
+                }
+            }
+
+            if (t instanceof java.sql.SQLException) {
+                String state = ((java.sql.SQLException)t).getSQLState();
+                if ("40001".equals(state)) {
+                    return true;
+                }
+            }
+            t = t.getCause();
+        }
+        return false;
     }
 
 }

@@ -52,4 +52,10 @@ public interface MSGRequestDAO {
     public void updateOTPGroupNo(SQLParameter param) throws Exception;
 
     public List<RequestBean> selectOTPRequests(SQLParameter param) throws Exception;
+
+    public void domsgResultInsertTx(Msg_Log ml) throws Exception;
+
+    public void dolog_moveTx(SQLParameter param) throws Exception;
+
+    public void doupdateMMSImageFailTx(SQLParameter param) throws Exception;
 }

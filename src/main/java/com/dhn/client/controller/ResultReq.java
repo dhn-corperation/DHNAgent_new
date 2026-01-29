@@ -41,7 +41,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 	private String database = "";
 	private String log_back = "";
 
-	private static final ExecutorService executorService = Executors.newFixedThreadPool(10);
+	private static final ExecutorService executorService = Executors.newFixedThreadPool(5);
 
 	@Autowired
 	private KAORequestService kaoRequestService;
@@ -71,7 +71,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		ThreadPoolExecutor poolExecutor = (ThreadPoolExecutor) executorService;
 		int activeThreads = poolExecutor.getActiveCount();
 
-		if(isStart && !isProc && activeThreads < 10) {
+		if(isStart && !isProc && activeThreads < 5) {
 			isProc = true;
 			try {
 				ObjectMapper om = new ObjectMapper();

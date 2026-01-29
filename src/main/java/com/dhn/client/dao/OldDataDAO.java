@@ -9,4 +9,6 @@ public interface OldDataDAO {
     void old_data_group_update(SQLParameter param) throws Exception;
 
     void old_data_result(SQLParameter param) throws Exception;
+
+    void doold_data_resultTx(SQLParameter param) throws Exception;
 }
