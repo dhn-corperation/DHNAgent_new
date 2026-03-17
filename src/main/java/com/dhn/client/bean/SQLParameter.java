@@ -17,6 +17,7 @@ public class SQLParameter {
 	private String kakao_use;
 	private String brand_use;
 	private String msg_use;
+	private String rcs_use;
 	private String group_no;
 	private String img_group_no;
 	private String msg_type;

@@ -39,6 +39,7 @@ public class ProgramStatus implements CommandLineRunner, ApplicationListener<Con
         ResultReq.isStart = false;
         ResultOldData.isStart = false;
         LogTableCreate.isStart = false;
+        RCSSendRequest.isStart = false;
 
         log.info("프로그램 종료 처리 중.....");
         try {

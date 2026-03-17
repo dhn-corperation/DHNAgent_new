@@ -32,8 +32,6 @@
         CREATE SEQUENCE ${sequence}
             START WITH 1
             INCREMENT BY 1
-            NOCACHE
-        NOCYCLE
     </update>
 
     <update id="createTable_oracle" parameterType="com.dhn.client.bean.SQLParameter">
@@ -102,7 +100,12 @@
            "GROUP_TAG" VARCHAR2(50 CHAR) DEFAULT NULL,
            "BCAST_CNT" VARCHAR2(10 CHAR) DEFAULT NULL,
            "USER_KEY" VARCHAR2(30 CHAR) DEFAULT NULL,
-           "PUSH_ALARM" VARCHAR2(1 CHAR) DEFAULT NULL
+           "PUSH_ALARM" VARCHAR2(1 CHAR) DEFAULT NULL,
+           "RCS_BASE_ID" VARCHAR2(40 CHAR) DEFAULT NULL,
+           "RCS_BUTTON" CLOB DEFAULT NULL,
+           "RCS_AGENCY_ID" VARCHAR2(20 CHAR) DEFAULT NULL,
+           "RCS_AGENCY_KEY" VARCHAR2(60 CHAR) DEFAULT NULL,
+           "RCS_BRANDKEY" VARCHAR2(60 CHAR) DEFAULT NULL
         )
     </update>
 
@@ -202,6 +205,11 @@
            `BCAST_CNT` varchar(10) DEFAULT NULL,
            `USER_KEY` varchar(30) DEFAULT NULL,
            `PUSH_ALARM` varchar(1) DEFAULT NULL,
+           `RCS_BASE_ID` varchar(40) DEFAULT NULL,
+           `RCS_BUTTON` text DEFAULT NULL,
+           `RCS_AGENCY_ID` varchar(20) DEFAULT NULL,
+           `RCS_AGENCY_KEY` varchar(60) DEFAULT NULL,
+           `RCS_BRANDKEY` varchar(60) DEFAULT NULL,
            PRIMARY KEY (`id`),
            KEY `${msg_table}_IDX1` (`STATUS`,`RESERVE_DT`,`MESSAGE_TYPE`,`SMS_KIND`,`SEND_GROUP`) USING BTREE,
            KEY `${msg_table}_IDX3` (`SEND_GROUP`) USING BTREE,

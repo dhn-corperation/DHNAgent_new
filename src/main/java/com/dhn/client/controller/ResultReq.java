@@ -76,16 +76,16 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			try {
 				ObjectMapper om = new ObjectMapper();
 				HttpHeaders header = new HttpHeaders();
-				
+
 				header.setContentType(MediaType.APPLICATION_JSON);
 				header.set("userid", userid);
-				
+
 				RestTemplate rt = new RestTemplate();
 				HttpEntity<String> entity = new HttpEntity<String>(null, header);
-				
+
 				try {
 					ResponseEntity<String> response = rt.postForEntity(dhnServer + "result", entity, String.class);
-											
+
 					if(response.getStatusCode() ==  HttpStatus.OK)
 					{
 						String responseBody = response.getBody();
@@ -231,7 +231,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 				msg_ml.setDatabase(database);
 
 				msg_ml.setCode(ent.getString("code"));
-				msg_ml.setReal_send_type(ent.getString("sms_kind"));
+				msg_ml.setReal_send_type(ent.optString("sms_kind", ""));
 
 				if(ent.getString("remark1").equalsIgnoreCase("LGT") || ent.getString("remark1").equals("019")){
 					msg_ml.setTelecom("LGT");

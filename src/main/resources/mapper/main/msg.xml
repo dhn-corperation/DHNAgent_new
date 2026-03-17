@@ -221,7 +221,12 @@
                     GROUP_TAG,
                     BCAST_CNT,
                     USER_KEY,
-                    PUSH_ALARM
+                    PUSH_ALARM,
+                    RCS_BASE_ID,
+                    RCS_BUTTON,
+                    RCS_AGENCY_ID,
+                    RCS_AGENCY_KEY,
+                    RCS_BRANDKEY
                 )
                 SELECT
                     ID,
@@ -288,7 +293,17 @@
                     GROUP_TAG,
                     BCAST_CNT,
                     USER_KEY,
-                    PUSH_ALARM
+                    PUSH_ALARM,
+                    RCS_BASE_ID,
+                    RCS_BUTTON,
+                    RCS_AGENCY_ID,
+                    RCS_AGENCY_KEY,
+                    RCS_BRANDKEY,
+                    RCS_BASE_ID,
+                    RCS_BUTTON,
+                    RCS_AGENCY_ID,
+                    RCS_AGENCY_KEY,
+                    RCS_BRANDKEY
                 FROM ${msg_table}
                 WHERE MSG_ID = #{msgid}
             </when>
@@ -359,7 +374,12 @@
                     GROUP_TAG,
                     BCAST_CNT,
                     USER_KEY,
-                    PUSH_ALARM
+                    PUSH_ALARM,
+                    RCS_BASE_ID,
+                    RCS_BUTTON,
+                    RCS_AGENCY_ID,
+                    RCS_AGENCY_KEY,
+                    RCS_BRANDKEY
                 )
                 SELECT
                     ID,
@@ -426,7 +446,12 @@
                     GROUP_TAG,
                     BCAST_CNT,
                     USER_KEY,
-                    PUSH_ALARM
+                    PUSH_ALARM,
+                    RCS_BASE_ID,
+                    RCS_BUTTON,
+                    RCS_AGENCY_ID,
+                    RCS_AGENCY_KEY,
+                    RCS_BRANDKEY
                 FROM ${msg_table}
                 WHERE MSG_ID = #{msgid}
             </when>
@@ -548,7 +573,12 @@
                     GROUP_TAG,
                     BCAST_CNT,
                     USER_KEY,
-                    PUSH_ALARM
+                    PUSH_ALARM,
+                    RCS_BASE_ID,
+                    RCS_BUTTON,
+                    RCS_AGENCY_ID,
+                    RCS_AGENCY_KEY,
+                    RCS_BRANDKEY
                 )
                 SELECT
                     ID,
@@ -615,7 +645,12 @@
                     GROUP_TAG,
                     BCAST_CNT,
                     USER_KEY,
-                    PUSH_ALARM
+                    PUSH_ALARM,
+                    RCS_BASE_ID,
+                    RCS_BUTTON,
+                    RCS_AGENCY_ID,
+                    RCS_AGENCY_KEY,
+                    RCS_BRANDKEY
                 FROM ${msg_table}
                 WHERE SEND_GROUP = #{group_no}
             </when>
@@ -686,7 +721,12 @@
                     GROUP_TAG,
                     BCAST_CNT,
                     USER_KEY,
-                    PUSH_ALARM
+                    PUSH_ALARM,
+                    RCS_BASE_ID,
+                    RCS_BUTTON,
+                    RCS_AGENCY_ID,
+                    RCS_AGENCY_KEY,
+                    RCS_BRANDKEY
                 )
                 SELECT
                     ID,
@@ -753,7 +793,12 @@
                     GROUP_TAG,
                     BCAST_CNT,
                     USER_KEY,
-                    PUSH_ALARM
+                    PUSH_ALARM,
+                    RCS_BASE_ID,
+                    RCS_BUTTON,
+                    RCS_AGENCY_ID,
+                    RCS_AGENCY_KEY,
+                    RCS_BRANDKEY
                 FROM ${msg_table}
                 WHERE SEND_GROUP = #{group_no}
             </when>
@@ -1120,7 +1165,12 @@
                     GROUP_TAG,
                     BCAST_CNT,
                     USER_KEY,
-                    PUSH_ALARM
+                    PUSH_ALARM,
+                    RCS_BASE_ID,
+                    RCS_BUTTON,
+                    RCS_AGENCY_ID,
+                    RCS_AGENCY_KEY,
+                    RCS_BRANDKEY
                 )
                 SELECT
                     ID,
@@ -1187,7 +1237,12 @@
                     GROUP_TAG,
                     BCAST_CNT,
                     USER_KEY,
-                    PUSH_ALARM
+                    PUSH_ALARM,
+                    RCS_BASE_ID,
+                    RCS_BUTTON,
+                    RCS_AGENCY_ID,
+                    RCS_AGENCY_KEY,
+                    RCS_BRANDKEY
                 FROM ${msg_table}
                 WHERE MSG_ID = #{msgid}
             </when>
@@ -1258,7 +1313,12 @@
                     GROUP_TAG,
                     BCAST_CNT,
                     USER_KEY,
-                    PUSH_ALARM
+                    PUSH_ALARM,
+                    RCS_BASE_ID,
+                    RCS_BUTTON,
+                    RCS_AGENCY_ID,
+                    RCS_AGENCY_KEY,
+                    RCS_BRANDKEY
                 )
                 SELECT
                     ID,
@@ -1325,7 +1385,12 @@
                     GROUP_TAG,
                     BCAST_CNT,
                     USER_KEY,
-                    PUSH_ALARM
+                    PUSH_ALARM,
+                    RCS_BASE_ID,
+                    RCS_BUTTON,
+                    RCS_AGENCY_ID,
+                    RCS_AGENCY_KEY,
+                    RCS_BRANDKEY
                 FROM ${msg_table}
                 WHERE MSG_ID = #{msgid}
             </when>
