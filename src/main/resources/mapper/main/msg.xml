@@ -298,11 +298,6 @@
                     RCS_BUTTON,
                     RCS_AGENCY_ID,
                     RCS_AGENCY_KEY,
-                    RCS_BRANDKEY,
-                    RCS_BASE_ID,
-                    RCS_BUTTON,
-                    RCS_AGENCY_ID,
-                    RCS_AGENCY_KEY,
                     RCS_BRANDKEY
                 FROM ${msg_table}
                 WHERE MSG_ID = #{msgid}
