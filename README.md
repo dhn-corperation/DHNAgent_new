@@ -1,4 +1,4 @@
-# 자바 DHN_CLIENT DHN테이블 생성 - RCS 추가 Version
+# 자바 DHN_CLIENT DHN테이블 생성
 ## Database
 - oracle
 - mysql
@@ -17,5 +17,6 @@
 - (구)친구톡 (이미지 단건단건 처리)
 - (구)친구톡 쿠폰 및 버튼 한 컬럼처리
 - RCS 타입 추가
+- 브랜드메시지 V2 추가
 
 ## 각 발송 쓰레드 처리
