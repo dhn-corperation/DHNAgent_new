@@ -60,7 +60,7 @@
                     CASE
                         WHEN PHN LIKE '82%' THEN PHN
                         WHEN PHN LIKE '010%' THEN '82' || SUBSTR(PHN, 2, 15)
-                        ELSE '82' || SUBSTR(PHN, 2, 15)
+                        ELSE PHN
                     END AS phn,
                     P_INVOICE as pinvoice,
                     SMS_SENDER AS smssender,
@@ -100,7 +100,7 @@
                     CASE
                         WHEN PHN LIKE '82%' THEN PHN
                         WHEN PHN LIKE '010%' THEN CONCAT('82', SUBSTRING(PHN, 2, 15))
-                        ELSE CONCAT('82', SUBSTRING(PHN, 2, 15))
+                        ELSE PHN
                     END AS phn,
                     P_INVOICE as pinvoice,
                     SMS_SENDER AS smssender,
@@ -744,7 +744,7 @@
                     CASE
                         WHEN PHN LIKE '82%' THEN PHN
                         WHEN PHN LIKE '010%' THEN '82' || SUBSTR(PHN, 2, 15)
-                        ELSE '82' || SUBSTR(PHN, 2, 15)
+                        ELSE PHN
                     END AS phn,
                     P_INVOICE as pinvoice,
                     AD_FLAG as adflag,
@@ -775,7 +775,7 @@
                     CASE
                         WHEN PHN LIKE '82%' THEN PHN
                         WHEN PHN LIKE '010%' THEN CONCAT('82', SUBSTRING(PHN, 2, 15))
-                        ELSE CONCAT('82', SUBSTRING(PHN, 2, 15))
+                        ELSE PHN
                     END AS phn,
                     P_INVOICE as pinvoice,
                     AD_FLAG as adflag,
