@@ -1074,7 +1074,7 @@
         <choose>
             <when test="database == 'oracle'">
                 UPDATE ${msg_table}
-                SET RESULT = '${msg_image_code}',
+                SET RESULT_MSG = '${msg_image_code}',
                     RESULT_MESSAGE = '이미지 등록 실패',
                     RESULT_DT = TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS'),
                     STATUS = 'F'
@@ -1082,7 +1082,7 @@
             </when>
             <when test="database == 'mysql'">
                 UPDATE ${msg_table}
-                SET RESULT = '${msg_image_code}',
+                SET RESULT_MSG = '${msg_image_code}',
                     RESULT_MESSAGE = '이미지 등록 실패',
                     RESULT_DT = NOW(),
                     STATUS = 'F'
