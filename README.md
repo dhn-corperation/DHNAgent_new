@@ -1,8 +1,9 @@
-# 자바 DHN_CLIENT DHN테이블 생성
+# 자바 DHN_CLIENT DHN테이블 생성 (92_5서버)
 ## Database
 - oracle
 - mysql
 - mariadb
+- PostgreSQL
 
 ## Java version
 - 1.8
