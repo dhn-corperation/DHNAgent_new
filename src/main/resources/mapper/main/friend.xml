@@ -21,6 +21,14 @@
                     AND MESSAGE_TYPE LIKE #{msg_type}
                     AND SEND_GROUP IS NULL
             </when>
+            <when test="database == 'postgresql'">
+                SELECT count(1) AS cnt
+                FROM ${msg_table}
+                WHERE STATUS = '0'
+                    AND RESERVE_DT &lt;= CURRENT_TIMESTAMP
+                    AND MESSAGE_TYPE LIKE #{msg_type}
+                    AND SEND_GROUP IS NULL
+            </when>
         </choose>
     </select>
 
@@ -46,6 +54,21 @@
                     AND SEND_GROUP IS NULL
                 LIMIT 100
             </when>
+            <when test="database == 'postgresql'">
+                UPDATE ${msg_table}
+                SET STATUS = '1',
+                    SEND_GROUP = #{group_no}
+                WHERE ID IN (
+                    SELECT ID
+                    FROM ${msg_table}
+                    WHERE STATUS = '0'
+                        AND RESERVE_DT &lt;= CURRENT_TIMESTAMP
+                        AND MESSAGE_TYPE LIKE #{msg_type}
+                        AND SEND_GROUP IS NULL
+                    LIMIT 100
+                    FOR UPDATE SKIP LOCKED
+                )
+            </when>
         </choose>
     </update>
 
@@ -66,12 +89,11 @@
                     SMS_SENDER AS smssender,
                     SMSLMS_TIT AS smslmstit,
                     SMS_KIND as smskind,
-                    KISA_CODE as kisacode,
                     TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
                     PROFILE AS profile,
                     '00000000000000' AS reservedt,
                     AD_FLAG as adflag,
-                    TITLE as title,
+                    KISA_CODE as title,
                     HEADER as header,
                     LINK AS link,
                     SUPPLEMENT AS supplement,
@@ -106,13 +128,51 @@
                     SMS_SENDER AS smssender,
                     SMSLMS_TIT AS smslmstit,
                     SMS_KIND as smskind,
-                    KISA_CODE as kisacode,
                     DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s') AS regdt,
                     TMPL_ID AS tmplid,
                     PROFILE AS profile,
                     '00000000000000' AS reservedt,
                     AD_FLAG as adflag,
-                    TITLE as title,
+                    KISA_CODE as title,
+                    HEADER as header,
+                    LINK AS link,
+                    SUPPLEMENT AS supplement,
+                    CURRENCY_TYPE as currencytype,
+                    ATT_BUTTON as attbutton,
+                    ATT_IMAGE as attimage,
+                    ATT_ITEM as attitem,
+                    ATT_COUPON as attcoupon,
+                    ATT_COMMERCE as attcommerce,
+                    ATT_VIDEO as attvideo,
+                    CAR_HEAD as carhead,
+                    CAR_LIST as carlist,
+                    CAR_TAIL as cartail,
+                    GROUP_TAG as grouptag,
+                    USER_KEY as userkey,
+                    PUSH_ALARM as pushalarm
+                FROM ${msg_table}
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+            <when test="database == 'postgresql'">
+                SELECT
+                    MSG_ID AS msgid,
+                    MESSAGE_TYPE AS messagetype,
+                    MESSAGE AS msg,
+                    MSG AS msgsms,
+                    CASE
+                        WHEN PHN LIKE '82%' THEN PHN
+                        WHEN PHN LIKE '010%' THEN '82' || SUBSTRING(PHN, 2, 15)
+                        ELSE PHN
+                    END AS phn,
+                    P_INVOICE as pinvoice,
+                    SMS_SENDER AS smssender,
+                    SMSLMS_TIT AS smslmstit,
+                    SMS_KIND as smskind,
+                    TO_CHAR(CURRENT_TIMESTAMP, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
+                    PROFILE AS profile,
+                    '00000000000000' AS reservedt,
+                    AD_FLAG as adflag,
+                    KISA_CODE as title,
                     HEADER as header,
                     LINK AS link,
                     SUPPLEMENT AS supplement,
@@ -139,14 +199,20 @@
         <choose>
             <when test="database == 'oracle'">
                 UPDATE ${msg_table}
-                    SET STATUS = '2',
+                SET STATUS = '2',
                     RESPONSE_DT = SYSDATE
                 WHERE SEND_GROUP = #{group_no}
             </when>
             <when test="database == 'mysql'">
                 UPDATE ${msg_table}
-                    SET STATUS = '2',
+                SET STATUS = '2',
                     RESPONSE_DT = NOW()
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+            <when test="database == 'postgresql'">
+                UPDATE ${msg_table}
+                SET STATUS = '2',
+                    RESPONSE_DT = CURRENT_TIMESTAMP
                 WHERE SEND_GROUP = #{group_no}
             </when>
         </choose>
@@ -162,6 +228,13 @@
                 WHERE SEND_GROUP = #{group_no}
             </when>
             <when test="database == 'mysql'">
+                UPDATE ${msg_table}
+                SET STATUS = '0',
+                    SEND_GROUP = NULL,
+                    RESPONSE_DT = NULL
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+            <when test="database == 'postgresql'">
                 UPDATE ${msg_table}
                 SET STATUS = '0',
                     SEND_GROUP = NULL,
@@ -195,307 +268,114 @@
                     #{msgid}
                 </foreach>
             </when>
+            <when test="ml.database == 'postgresql'">
+                UPDATE ${ml.msg_table}
+                SET STATUS = '${ml.status}',
+                    RESULT_MESSAGE = '${ml.result_message}',
+                    RESULT_DT = TO_CHAR(CURRENT_TIMESTAMP, 'YYYY-MM-DD HH24:MI:SS'),
+                    RESULT = '${ml.code}'
+                WHERE MSG_ID IN
+                <foreach collection="list" item="msgid" open="(" separator="," close=")">
+                    #{msgid}
+                </foreach>
+            </when>
         </choose>
     </update>
 
     <insert id="ftInvalidLogInsert" parameterType="map">
         <choose>
             <when test="ml.database == 'oracle'">
-                INSERT INTO ${ml.log_table}
-                (
-                    ID,
-                    MSG_ID,
-                    MESSAGE_TYPE,
-                    MESSAGE,
-                    STATUS,
-                    P_INVOICE,
-                    PHN,
-                    SMS_SENDER,
-                    REG_DT,
-                    RESERVE_DT,
-                    RESPONSE_DT,
-                    RESULT_DT,
-                    BUTTON1,
-                    BUTTON2,
-                    BUTTON3,
-                    BUTTON4,
-                    BUTTON5,
-                    TMPL_ID,
-                    PROFILE,
-                    TITLE,
-                    HEADER,
-                    AD_FLAG,
-                    FI_IMAGE_PATH,
-                    IMAGE_LINK,
-                    IMAGE_URL,
-                    WIDE,
-                    LINK,
-                    ATTACHMENTS,
-                    MSG,
-                    SMS_KIND,
-                    SMSLMS_TIT,
-                    MMS_IMAGE_KEY,
-                    MMS_IMAGE1,
-                    MMS_IMAGE2,
-                    MMS_IMAGE3,
-                    SEND_GROUP,
-                    RESULT,
-                    RESULT_MSG,
-                    RESULT_MESSAGE,
-                    TELCOINFO,
-                    REAL_MESSAGE_TYPE,
-                    REAL_SEND_FLAG,
-                    KISA_CODE,
-                    ETC1,
-                    ETC2,
-                    ETC3,
-                    ETC4,
-                    ETC5,
-                    KIND,
-                    SUPPLEMENT,
-                    CURRENCY_TYPE,
-                    ATT_MESSAGE,
-                    ATT_BUTTON,
-                    ATT_IMAGE,
-                    ATT_ITEM,
-                    ATT_COUPON,
-                    ATT_COMMERCE,
-                    ATT_VIDEO,
-                    CAR_HEAD,
-                    CAR_LIST,
-                    CAR_TAIL,
-                    GROUP_TAG,
-                    BCAST_CNT,
-                    USER_KEY,
-                    PUSH_ALARM,
-                    RCS_BASE_ID,
-                    RCS_BUTTON,
-                    RCS_AGENCY_ID,
-                    RCS_AGENCY_KEY,
-                    RCS_BRANDKEY
+                INSERT INTO ${ml.log_table} (
+                    ID, MSG_ID, MESSAGE_TYPE, MESSAGE, STATUS, P_INVOICE, PHN, SMS_SENDER,
+                    REG_DT, RESERVE_DT, RESPONSE_DT, RESULT_DT, BUTTON1, BUTTON2, BUTTON3,
+                    BUTTON4, BUTTON5, TMPL_ID, PROFILE, TITLE, HEADER, AD_FLAG,
+                    FI_IMAGE_PATH, IMAGE_LINK, IMAGE_URL, WIDE, LINK, ATTACHMENTS, MSG,
+                    SMS_KIND, SMSLMS_TIT, MMS_IMAGE_KEY, MMS_IMAGE1, MMS_IMAGE2, MMS_IMAGE3,
+                    SEND_GROUP, RESULT, RESULT_MSG, RESULT_MESSAGE, TELCOINFO, REAL_MESSAGE_TYPE,
+                    REAL_SEND_FLAG, KISA_CODE, ETC1, ETC2, ETC3, ETC4, ETC5, KIND,
+                    SUPPLEMENT, CURRENCY_TYPE, ATT_MESSAGE, ATT_BUTTON, ATT_IMAGE, ATT_ITEM,
+                    ATT_COUPON, ATT_COMMERCE, ATT_VIDEO, CAR_HEAD, CAR_LIST, CAR_TAIL,
+                    GROUP_TAG, BCAST_CNT, USER_KEY, PUSH_ALARM, RCS_BASE_ID, RCS_BUTTON,
+                    RCS_AGENCY_ID, RCS_AGENCY_KEY, RCS_BRANDKEY
                 )
                 SELECT
-                    ID,
-                    MSG_ID,
-                    MESSAGE_TYPE,
-                    MESSAGE,
-                    STATUS,
-                    P_INVOICE,
-                    PHN,
-                    SMS_SENDER,
-                    REG_DT,
-                    RESERVE_DT,
-                    RESPONSE_DT,
-                    RESULT_DT,
-                    BUTTON1,
-                    BUTTON2,
-                    BUTTON3,
-                    BUTTON4,
-                    BUTTON5,
-                    TMPL_ID,
-                    PROFILE,
-                    TITLE,
-                    HEADER,
-                    AD_FLAG,
-                    FI_IMAGE_PATH,
-                    IMAGE_LINK,
-                    IMAGE_URL,
-                    WIDE,
-                    LINK,
-                    ATTACHMENTS,
-                    MSG,
-                    SMS_KIND,
-                    SMSLMS_TIT,
-                    MMS_IMAGE_KEY,
-                    MMS_IMAGE1,
-                    MMS_IMAGE2,
-                    MMS_IMAGE3,
-                    SEND_GROUP,
-                    RESULT,
-                    RESULT_MSG,
-                    RESULT_MESSAGE,
-                    TELCOINFO,
-                    REAL_MESSAGE_TYPE,
-                    REAL_SEND_FLAG,
-                    KISA_CODE,
-                    ETC1,
-                    ETC2,
-                    ETC3,
-                    ETC4,
-                    ETC5,
-                    KIND,
-                    SUPPLEMENT,
-                    CURRENCY_TYPE,
-                    ATT_MESSAGE,
-                    ATT_BUTTON,
-                    ATT_IMAGE,
-                    ATT_ITEM,
-                    ATT_COUPON,
-                    ATT_COMMERCE,
-                    ATT_VIDEO,
-                    CAR_HEAD,
-                    CAR_LIST,
-                    CAR_TAIL,
-                    GROUP_TAG,
-                    BCAST_CNT,
-                    USER_KEY,
-                    PUSH_ALARM,
-                    RCS_BASE_ID,
-                    RCS_BUTTON,
-                    RCS_AGENCY_ID,
-                    RCS_AGENCY_KEY,
-                    RCS_BRANDKEY
+                    ID, MSG_ID, MESSAGE_TYPE, MESSAGE, STATUS, P_INVOICE, PHN, SMS_SENDER,
+                    REG_DT, RESERVE_DT, RESPONSE_DT, RESULT_DT, BUTTON1, BUTTON2, BUTTON3,
+                    BUTTON4, BUTTON5, TMPL_ID, PROFILE, TITLE, HEADER, AD_FLAG,
+                    FI_IMAGE_PATH, IMAGE_LINK, IMAGE_URL, WIDE, LINK, ATTACHMENTS, MSG,
+                    SMS_KIND, SMSLMS_TIT, MMS_IMAGE_KEY, MMS_IMAGE1, MMS_IMAGE2, MMS_IMAGE3,
+                    SEND_GROUP, RESULT, RESULT_MSG, RESULT_MESSAGE, TELCOINFO, REAL_MESSAGE_TYPE,
+                    REAL_SEND_FLAG, KISA_CODE, ETC1, ETC2, ETC3, ETC4, ETC5, KIND,
+                    SUPPLEMENT, CURRENCY_TYPE, ATT_MESSAGE, ATT_BUTTON, ATT_IMAGE, ATT_ITEM,
+                    ATT_COUPON, ATT_COMMERCE, ATT_VIDEO, CAR_HEAD, CAR_LIST, CAR_TAIL,
+                    GROUP_TAG, BCAST_CNT, USER_KEY, PUSH_ALARM, RCS_BASE_ID, RCS_BUTTON,
+                    RCS_AGENCY_ID, RCS_AGENCY_KEY, RCS_BRANDKEY
                 FROM ${ml.msg_table}
                 WHERE MSG_ID IN
                 <foreach collection="list" item="msgid" open="(" separator="," close=")">
                     #{msgid}
                 </foreach>
             </when>
+
             <when test="ml.database == 'mysql'">
-                INSERT INTO ${ml.log_table}
-                (
-                    ID,
-                    MSG_ID,
-                    MESSAGE_TYPE,
-                    MESSAGE,
-                    STATUS,
-                    P_INVOICE,
-                    PHN,
-                    SMS_SENDER,
-                    REG_DT,
-                    RESERVE_DT,
-                    RESPONSE_DT,
-                    RESULT_DT,
-                    BUTTON1,
-                    BUTTON2,
-                    BUTTON3,
-                    BUTTON4,
-                    BUTTON5,
-                    TMPL_ID,
-                    PROFILE,
-                    TITLE,
-                    HEADER,
-                    AD_FLAG,
-                    FI_IMAGE_PATH,
-                    IMAGE_LINK,
-                    IMAGE_URL,
-                    WIDE,
-                    LINK,
-                    ATTACHMENTS,
-                    MSG,
-                    SMS_KIND,
-                    SMSLMS_TIT,
-                    MMS_IMAGE_KEY,
-                    MMS_IMAGE1,
-                    MMS_IMAGE2,
-                    MMS_IMAGE3,
-                    SEND_GROUP,
-                    RESULT,
-                    RESULT_MSG,
-                    RESULT_MESSAGE,
-                    TELCOINFO,
-                    REAL_MESSAGE_TYPE,
-                    REAL_SEND_FLAG,
-                    KISA_CODE,
-                    ETC1,
-                    ETC2,
-                    ETC3,
-                    ETC4,
-                    ETC5,
-                    KIND,
-                    SUPPLEMENT,
-                    CURRENCY_TYPE,
-                    ATT_MESSAGE,
-                    ATT_BUTTON,
-                    ATT_IMAGE,
-                    ATT_ITEM,
-                    ATT_COUPON,
-                    ATT_COMMERCE,
-                    ATT_VIDEO,
-                    CAR_HEAD,
-                    CAR_LIST,
-                    CAR_TAIL,
-                    GROUP_TAG,
-                    BCAST_CNT,
-                    USER_KEY,
-                    PUSH_ALARM,
-                    RCS_BASE_ID,
-                    RCS_BUTTON,
-                    RCS_AGENCY_ID,
-                    RCS_AGENCY_KEY,
-                    RCS_BRANDKEY
+                INSERT INTO ${ml.log_table} (
+                    ID, MSG_ID, MESSAGE_TYPE, MESSAGE, STATUS, P_INVOICE, PHN, SMS_SENDER,
+                    REG_DT, RESERVE_DT, RESPONSE_DT, RESULT_DT, BUTTON1, BUTTON2, BUTTON3,
+                    BUTTON4, BUTTON5, TMPL_ID, PROFILE, TITLE, HEADER, AD_FLAG,
+                    FI_IMAGE_PATH, IMAGE_LINK, IMAGE_URL, WIDE, LINK, ATTACHMENTS, MSG,
+                    SMS_KIND, SMSLMS_TIT, MMS_IMAGE_KEY, MMS_IMAGE1, MMS_IMAGE2, MMS_IMAGE3,
+                    SEND_GROUP, RESULT, RESULT_MSG, RESULT_MESSAGE, TELCOINFO, REAL_MESSAGE_TYPE,
+                    REAL_SEND_FLAG, KISA_CODE, ETC1, ETC2, ETC3, ETC4, ETC5, KIND,
+                    SUPPLEMENT, CURRENCY_TYPE, ATT_MESSAGE, ATT_BUTTON, ATT_IMAGE, ATT_ITEM,
+                    ATT_COUPON, ATT_COMMERCE, ATT_VIDEO, CAR_HEAD, CAR_LIST, CAR_TAIL,
+                    GROUP_TAG, BCAST_CNT, USER_KEY, PUSH_ALARM, RCS_BASE_ID, RCS_BUTTON,
+                    RCS_AGENCY_ID, RCS_AGENCY_KEY, RCS_BRANDKEY
                 )
                 SELECT
-                    ID,
-                    MSG_ID,
-                    MESSAGE_TYPE,
-                    MESSAGE,
-                    STATUS,
-                    P_INVOICE,
-                    PHN,
-                    SMS_SENDER,
-                    REG_DT,
-                    RESERVE_DT,
-                    RESPONSE_DT,
-                    RESULT_DT,
-                    BUTTON1,
-                    BUTTON2,
-                    BUTTON3,
-                    BUTTON4,
-                    BUTTON5,
-                    TMPL_ID,
-                    PROFILE,
-                    TITLE,
-                    HEADER,
-                    AD_FLAG,
-                    FI_IMAGE_PATH,
-                    IMAGE_LINK,
-                    IMAGE_URL,
-                    WIDE,
-                    LINK,
-                    ATTACHMENTS,
-                    MSG,
-                    SMS_KIND,
-                    SMSLMS_TIT,
-                    MMS_IMAGE_KEY,
-                    MMS_IMAGE1,
-                    MMS_IMAGE2,
-                    MMS_IMAGE3,
-                    SEND_GROUP,
-                    RESULT,
-                    RESULT_MSG,
-                    RESULT_MESSAGE,
-                    TELCOINFO,
-                    REAL_MESSAGE_TYPE,
-                    REAL_SEND_FLAG,
-                    KISA_CODE,
-                    ETC1,
-                    ETC2,
-                    ETC3,
-                    ETC4,
-                    ETC5,
-                    KIND,
-                    SUPPLEMENT,
-                    CURRENCY_TYPE,
-                    ATT_MESSAGE,
-                    ATT_BUTTON,
-                    ATT_IMAGE,
-                    ATT_ITEM,
-                    ATT_COUPON,
-                    ATT_COMMERCE,
-                    ATT_VIDEO,
-                    CAR_HEAD,
-                    CAR_LIST,
-                    CAR_TAIL,
-                    GROUP_TAG,
-                    BCAST_CNT,
-                    USER_KEY,
-                    PUSH_ALARM,
-                    RCS_BASE_ID,
-                    RCS_BUTTON,
-                    RCS_AGENCY_ID,
-                    RCS_AGENCY_KEY,
-                    RCS_BRANDKEY
+                    ID, MSG_ID, MESSAGE_TYPE, MESSAGE, STATUS, P_INVOICE, PHN, SMS_SENDER,
+                    REG_DT, RESERVE_DT, RESPONSE_DT, RESULT_DT, BUTTON1, BUTTON2, BUTTON3,
+                    BUTTON4, BUTTON5, TMPL_ID, PROFILE, TITLE, HEADER, AD_FLAG,
+                    FI_IMAGE_PATH, IMAGE_LINK, IMAGE_URL, WIDE, LINK, ATTACHMENTS, MSG,
+                    SMS_KIND, SMSLMS_TIT, MMS_IMAGE_KEY, MMS_IMAGE1, MMS_IMAGE2, MMS_IMAGE3,
+                    SEND_GROUP, RESULT, RESULT_MSG, RESULT_MESSAGE, TELCOINFO, REAL_MESSAGE_TYPE,
+                    REAL_SEND_FLAG, KISA_CODE, ETC1, ETC2, ETC3, ETC4, ETC5, KIND,
+                    SUPPLEMENT, CURRENCY_TYPE, ATT_MESSAGE, ATT_BUTTON, ATT_IMAGE, ATT_ITEM,
+                    ATT_COUPON, ATT_COMMERCE, ATT_VIDEO, CAR_HEAD, CAR_LIST, CAR_TAIL,
+                    GROUP_TAG, BCAST_CNT, USER_KEY, PUSH_ALARM, RCS_BASE_ID, RCS_BUTTON,
+                    RCS_AGENCY_ID, RCS_AGENCY_KEY, RCS_BRANDKEY
+                FROM ${ml.msg_table}
+                WHERE MSG_ID IN
+                <foreach collection="list" item="msgid" open="(" separator="," close=")">
+                    #{msgid}
+                </foreach>
+            </when>
+
+            <when test="ml.database == 'postgresql'">
+                INSERT INTO ${ml.log_table} (
+                    ID, MSG_ID, MESSAGE_TYPE, MESSAGE, STATUS, P_INVOICE, PHN, SMS_SENDER,
+                    REG_DT, RESERVE_DT, RESPONSE_DT, RESULT_DT, BUTTON1, BUTTON2, BUTTON3,
+                    BUTTON4, BUTTON5, TMPL_ID, PROFILE, TITLE, HEADER, AD_FLAG,
+                    FI_IMAGE_PATH, IMAGE_LINK, IMAGE_URL, WIDE, LINK, ATTACHMENTS, MSG,
+                    SMS_KIND, SMSLMS_TIT, MMS_IMAGE_KEY, MMS_IMAGE1, MMS_IMAGE2, MMS_IMAGE3,
+                    SEND_GROUP, RESULT, RESULT_MSG, RESULT_MESSAGE, TELCOINFO, REAL_MESSAGE_TYPE,
+                    REAL_SEND_FLAG, KISA_CODE, ETC1, ETC2, ETC3, ETC4, ETC5, KIND,
+                    SUPPLEMENT, CURRENCY_TYPE, ATT_MESSAGE, ATT_BUTTON, ATT_IMAGE, ATT_ITEM,
+                    ATT_COUPON, ATT_COMMERCE, ATT_VIDEO, CAR_HEAD, CAR_LIST, CAR_TAIL,
+                    GROUP_TAG, BCAST_CNT, USER_KEY, PUSH_ALARM, RCS_BASE_ID, RCS_BUTTON,
+                    RCS_AGENCY_ID, RCS_AGENCY_KEY, RCS_BRANDKEY
+                )
+                SELECT
+                    ID, MSG_ID, MESSAGE_TYPE, MESSAGE, STATUS, P_INVOICE, PHN, SMS_SENDER,
+                    REG_DT, RESERVE_DT, RESPONSE_DT, RESULT_DT, BUTTON1, BUTTON2, BUTTON3,
+                    BUTTON4, BUTTON5, TMPL_ID, PROFILE, TITLE, HEADER, AD_FLAG,
+                    FI_IMAGE_PATH, IMAGE_LINK, IMAGE_URL, WIDE, LINK, ATTACHMENTS, MSG,
+                    SMS_KIND, SMSLMS_TIT, MMS_IMAGE_KEY, MMS_IMAGE1, MMS_IMAGE2, MMS_IMAGE3,
+                    SEND_GROUP, RESULT, RESULT_MSG, RESULT_MESSAGE, TELCOINFO, REAL_MESSAGE_TYPE,
+                    REAL_SEND_FLAG, KISA_CODE, ETC1, ETC2, ETC3, ETC4, ETC5, KIND,
+                    SUPPLEMENT, CURRENCY_TYPE, ATT_MESSAGE, ATT_BUTTON, ATT_IMAGE, ATT_ITEM,
+                    ATT_COUPON, ATT_COMMERCE, ATT_VIDEO, CAR_HEAD, CAR_LIST, CAR_TAIL,
+                    GROUP_TAG, BCAST_CNT, USER_KEY, PUSH_ALARM, RCS_BASE_ID, RCS_BUTTON,
+                    RCS_AGENCY_ID, RCS_AGENCY_KEY, RCS_BRANDKEY
                 FROM ${ml.msg_table}
                 WHERE MSG_ID IN
                 <foreach collection="list" item="msgid" open="(" separator="," close=")">
@@ -515,6 +395,13 @@
                 </foreach>
             </when>
             <when test="ml.database == 'mysql'">
+                DELETE FROM ${ml.msg_table}
+                WHERE MSG_ID IN
+                <foreach collection="list" item="msgid" open="(" separator="," close=")">
+                    #{msgid}
+                </foreach>
+            </when>
+            <when test="ml.database == 'postgresql'">
                 DELETE FROM ${ml.msg_table}
                 WHERE MSG_ID IN
                 <foreach collection="list" item="msgid" open="(" separator="," close=")">
@@ -541,6 +428,16 @@
                 FROM ${msg_table}
                 WHERE STATUS = '0'
                     AND RESERVE_DT &lt;= NOW()
+                    AND MESSAGE_TYPE = #{msg_type}
+                    AND SEND_GROUP IS NULL
+                    AND FI_IMAGE_PATH IS NOT NULL AND FI_IMAGE_PATH &lt;&gt; ''
+                    AND (IMAGE_URL IS NULL OR IMAGE_URL = '')
+            </when>
+            <when test="database == 'postgresql'">
+                SELECT count(1) AS cnt
+                FROM ${msg_table}
+                WHERE STATUS = '0'
+                    AND RESERVE_DT &lt;= CURRENT_TIMESTAMP
                     AND MESSAGE_TYPE = #{msg_type}
                     AND SEND_GROUP IS NULL
                     AND FI_IMAGE_PATH IS NOT NULL AND FI_IMAGE_PATH &lt;&gt; ''
@@ -578,6 +475,22 @@
                     AND (IMAGE_URL IS NULL OR IMAGE_URL = '')
                 LIMIT 500
             </when>
+            <when test="database == 'postgresql'">
+                UPDATE ${msg_table}
+                SET SEND_GROUP = #{img_group_no}
+                WHERE ID IN (
+                    SELECT ID
+                    FROM ${msg_table}
+                    WHERE STATUS = '0'
+                        AND RESERVE_DT &lt;= CURRENT_TIMESTAMP
+                        AND MESSAGE_TYPE = #{msg_type}
+                        AND SEND_GROUP IS NULL
+                        AND FI_IMAGE_PATH IS NOT NULL AND FI_IMAGE_PATH &lt;&gt; ''
+                        AND (IMAGE_URL IS NULL OR IMAGE_URL = '')
+                    LIMIT 500
+                    FOR UPDATE SKIP LOCKED
+                )
+            </when>
         </choose>
     </update>
 
@@ -614,6 +527,19 @@
                     AND (IMAGE_URL IS NULL OR IMAGE_URL = '')
                 LIMIT 500
             </when>
+            <when test="database == 'postgresql'">
+                SELECT FI_IMAGE_PATH as ftimagepath,
+                    COALESCE(WIDE, 'N') AS WIDE,
+                    MSG_ID AS msgid
+                FROM ${msg_table}
+                WHERE STATUS = '0'
+                    AND RESERVE_DT &lt;= CURRENT_TIMESTAMP
+                    AND MESSAGE_TYPE = #{msg_type}
+                    AND SEND_GROUP IS NULL
+                    AND FI_IMAGE_PATH IS NOT NULL AND FI_IMAGE_PATH &lt;&gt; ''
+                    AND (IMAGE_URL IS NULL OR IMAGE_URL = '')
+                LIMIT 500
+            </when>
         </choose>
     </select>
 
@@ -635,6 +561,14 @@
                     RESULT_MESSAGE = #{img_err_msg}
                 WHERE MSG_ID = #{msgid}
             </when>
+            <when test="database == 'postgresql'">
+                UPDATE ${msg_table}
+                SET RESULT = '${ft_image_code}',
+                    RESULT_DT = TO_CHAR(CURRENT_TIMESTAMP, 'YYYY-MM-DD HH24:MI:SS'),
+                    STATUS = 'F',
+                    RESULT_MESSAGE = #{img_err_msg}
+                WHERE MSG_ID = #{msgid}
+            </when>
         </choose>
     </update>
 
@@ -646,6 +580,11 @@
                 WHERE MSG_ID = #{msgid}
             </when>
             <when test="database == 'mysql'">
+                INSERT INTO ${log_table}
+                SELECT * FROM ${msg_table}
+                WHERE MSG_ID = #{msgid}
+            </when>
+            <when test="database == 'postgresql'">
                 INSERT INTO ${log_table}
                 SELECT * FROM ${msg_table}
                 WHERE MSG_ID = #{msgid}
@@ -663,6 +602,10 @@
                 DELETE FROM ${msg_table}
                 WHERE MSG_ID = #{msgid}
             </when>
+            <when test="database == 'postgresql'">
+                DELETE FROM ${msg_table}
+                WHERE MSG_ID = #{msgid}
+            </when>
         </choose>
     </delete>
 
@@ -675,6 +618,12 @@
                 WHERE MSG_ID = #{msgid}
             </when>
             <when test="database == 'mysql'">
+                UPDATE ${msg_table}
+                SET IMAGE_URL = #{ft_image_url},
+                    SEND_GROUP = NULL
+                WHERE MSG_ID = #{msgid}
+            </when>
+            <when test="database == 'postgresql'">
                 UPDATE ${msg_table}
                 SET IMAGE_URL = #{ft_image_url},
                     SEND_GROUP = NULL
@@ -699,6 +648,15 @@
                 FROM ${msg_table}
                 WHERE STATUS = '0'
                     AND RESERVE_DT &lt;= NOW()
+                    AND MESSAGE_TYPE = #{msg_type}
+                    AND (FI_IMAGE_PATH IS NULL OR FI_IMAGE_PATH = '' OR (FI_IMAGE_PATH IS NOT NULL AND FI_IMAGE_PATH &lt;&gt; '' AND IMAGE_URL IS NOT NULL AND IMAGE_URL &lt;&gt; ''))
+                    AND SEND_GROUP IS NULL
+            </when>
+            <when test="database == 'postgresql'">
+                SELECT count(1) AS cnt
+                FROM ${msg_table}
+                WHERE STATUS = '0'
+                    AND RESERVE_DT &lt;= CURRENT_TIMESTAMP
                     AND MESSAGE_TYPE = #{msg_type}
                     AND (FI_IMAGE_PATH IS NULL OR FI_IMAGE_PATH = '' OR (FI_IMAGE_PATH IS NOT NULL AND FI_IMAGE_PATH &lt;&gt; '' AND IMAGE_URL IS NOT NULL AND IMAGE_URL &lt;&gt; ''))
                     AND SEND_GROUP IS NULL
@@ -730,6 +688,22 @@
                     AND (FI_IMAGE_PATH IS NULL OR FI_IMAGE_PATH = '' OR (FI_IMAGE_PATH IS NOT NULL AND FI_IMAGE_PATH &lt;&gt; '' AND IMAGE_URL IS NOT NULL AND IMAGE_URL &lt;&gt; ''))
                     LIMIT 200
             </when>
+            <when test="database == 'postgresql'">
+                UPDATE ${msg_table}
+                SET STATUS = '1',
+                    SEND_GROUP = #{group_no}
+                WHERE ID IN (
+                    SELECT ID
+                    FROM ${msg_table}
+                    WHERE STATUS = '0'
+                        AND RESERVE_DT &lt;= CURRENT_TIMESTAMP
+                        AND MESSAGE_TYPE = #{msg_type}
+                        AND SEND_GROUP IS NULL
+                        AND (FI_IMAGE_PATH IS NULL OR FI_IMAGE_PATH = '' OR (FI_IMAGE_PATH IS NOT NULL AND FI_IMAGE_PATH &lt;&gt; '' AND IMAGE_URL IS NOT NULL AND IMAGE_URL &lt;&gt; ''))
+                    LIMIT 200
+                    FOR UPDATE SKIP LOCKED
+                )
+            </when>
         </choose>
     </update>
 
@@ -751,7 +725,7 @@
                     SMS_SENDER AS smssender,
                     SMSLMS_TIT AS smslmstit,
                     SMS_KIND as smskind,
-                    KISA_CODE as kisacode,
+                    KISA_CODE as title,
                     TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
                     ATT_BUTTON as attbutton,
                     ATT_COUPON as attcoupon,
@@ -782,8 +756,39 @@
                     SMS_SENDER AS smssender,
                     SMSLMS_TIT AS smslmstit,
                     SMS_KIND as smskind,
-                    KISA_CODE as kisacode,
+                    KISA_CODE as title,
                     DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s') AS regdt,
+                    ATT_BUTTON as attbutton,
+                    ATT_COUPON as attcoupon,
+                    IMAGE_LINK as imagelink,
+                    IMAGE_URL as imageurl,
+                    PROFILE AS profile,
+                    '00000000000000' AS reservedt,
+                    WIDE as wide,
+                    Header as header,
+                    CURRENCY_TYPE as currencytype,
+                    PUSH_ALARM as pushalarm
+                FROM ${msg_table}
+                WHERE SEND_GROUP = #{group_no}
+            </when>
+            <when test="database == 'postgresql'">
+                SELECT
+                    MSG_ID AS msgid,
+                    MESSAGE_TYPE AS messagetype,
+                    MESSAGE AS msg,
+                    MSG AS msgsms,
+                    CASE
+                        WHEN PHN LIKE '82%' THEN PHN
+                        WHEN PHN LIKE '010%' THEN '82' || SUBSTRING(PHN, 2, 15)
+                        ELSE PHN
+                    END AS phn,
+                    P_INVOICE as pinvoice,
+                    AD_FLAG as adflag,
+                    SMS_SENDER AS smssender,
+                    SMSLMS_TIT AS smslmstit,
+                    SMS_KIND as smskind,
+                    KISA_CODE as title,
+                    TO_CHAR(CURRENT_TIMESTAMP, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
                     ATT_BUTTON as attbutton,
                     ATT_COUPON as attcoupon,
                     IMAGE_LINK as imagelink,
@@ -815,6 +820,13 @@
                 WHERE SEND_GROUP = #{img_group_no}
                     AND FI_IMAGE_PATH = #{mms_key}
                     AND IFNULL(WIDE, 'N') = #{dist_value}
+            </when>
+            <when test="database == 'postgresql'">
+                UPDATE ${msg_table}
+                SET SEND_GROUP = NULL
+                WHERE SEND_GROUP = #{img_group_no}
+                    AND FI_IMAGE_PATH = #{mms_key}
+                    AND COALESCE(WIDE, 'N') = #{dist_value}
             </when>
         </choose>
     </update>

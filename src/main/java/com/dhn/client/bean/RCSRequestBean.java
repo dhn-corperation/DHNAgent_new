@@ -16,6 +16,7 @@ public class RCSRequestBean {
     private String smslmstit;
     private String smssender;
     private String kisacode;
+    private String title;
     private String rcsbaseid;
     private String rcsbutton;
     private String rcsagencyid;
