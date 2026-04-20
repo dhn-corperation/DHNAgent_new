@@ -23,7 +23,7 @@
             </when>
             <when test="database == 'postgresql'">
                 SELECT count(1) AS cnt
-                FROM ${msg_table}
+                FROM "${msg_table}"
                 WHERE STATUS = '0'
                     AND RESERVE_DT &lt;= CURRENT_TIMESTAMP
                     AND MESSAGE_TYPE LIKE #{msg_type}
@@ -55,12 +55,12 @@
                 LIMIT 200
             </when>
             <when test="database == 'postgresql'">
-                UPDATE ${msg_table}
+                UPDATE "${msg_table}"
                 SET STATUS = '1',
                     SEND_GROUP = #{group_no}
                 WHERE ID IN (
                     SELECT ID
-                    FROM ${msg_table}
+                    FROM "${msg_table}"
                     WHERE STATUS = '0'
                         AND RESERVE_DT &lt;= CURRENT_TIMESTAMP
                         AND MESSAGE_TYPE LIKE #{msg_type}
@@ -137,7 +137,7 @@
                     RCS_AGENCY_ID AS rcsagencyid,
                     RCS_AGENCY_KEY AS rcsagencykey,
                     RCS_BRANDKEY AS rcsbrandkey
-                FROM ${msg_table}
+                FROM "${msg_table}"
                 WHERE SEND_GROUP = #{group_no}
             </when>
         </choose>
@@ -158,7 +158,7 @@
                 WHERE SEND_GROUP = #{group_no}
             </when>
             <when test="database == 'postgresql'">
-                UPDATE ${msg_table}
+                UPDATE "${msg_table}"
                 SET STATUS = '2',
                     RESPONSE_DT = CURRENT_TIMESTAMP
                 WHERE SEND_GROUP = #{group_no}
@@ -183,7 +183,7 @@
                 WHERE SEND_GROUP = #{group_no}
             </when>
             <when test="database == 'postgresql'">
-                UPDATE ${msg_table}
+                UPDATE "${msg_table}"
                 SET STATUS = '0',
                     SEND_GROUP = NULL,
                     RESPONSE_DT = NULL

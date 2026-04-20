@@ -68,12 +68,12 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
         v2flag = appContext.getEnvironment().getProperty("dhnclient.v2flag","0");
 
 
-        if (param.getKakao_use() != null && param.getKakao_use().equalsIgnoreCase("Y") && "0".equals(v2flag)) {
-            isStart = true;
-            log.info("FT (친구톡) 초기화 완료");
-        } else {
-            posts.postProcessBeforeDestruction(this, null);
-        }
+//        if (param.getKakao_use() != null && param.getKakao_use().equalsIgnoreCase("Y") && "0".equals(v2flag)) {
+//            isStart = true;
+//            log.info("FT (친구톡) 초기화 완료");
+//        } else {
+//            posts.postProcessBeforeDestruction(this, null);
+//        }
 
     }
 

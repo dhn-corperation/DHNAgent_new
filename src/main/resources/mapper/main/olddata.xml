@@ -19,7 +19,7 @@
             </when>
             <when test="database == 'postgresql'">
                 SELECT count(1) AS cnt
-                FROM ${msg_table}
+                FROM "${msg_table}"
                 WHERE STATUS != '0'
                     AND RESERVE_DT &lt;= CURRENT_TIMESTAMP - (CAST('${time}' AS INTEGER) * INTERVAL '1 day')
             </when>
@@ -43,11 +43,11 @@
                 LIMIT 500
             </when>
             <when test="database == 'postgresql'">
-                UPDATE ${msg_table}
+                UPDATE "${msg_table}"
                 SET SEND_GROUP = #{group_no}
                 WHERE ID IN (
                     SELECT ID
-                    FROM ${msg_table}
+                    FROM "${msg_table}"
                     WHERE STATUS != '0'
                     AND RESERVE_DT &lt;= CURRENT_TIMESTAMP - (CAST('${time}' AS INTEGER) * INTERVAL '1 day')
                     LIMIT 500
@@ -80,7 +80,7 @@
                 WHERE SEND_GROUP = #{group_no}
             </when>
             <when test="database == 'postgresql'">
-                UPDATE ${msg_table}
+                UPDATE "${msg_table}"
                 SET STATUS = '8',
                     RESULT_DT = TO_CHAR(CURRENT_TIMESTAMP, 'YYYY-MM-DD HH24:MI:SS'),
                     RESULT = '3999',
@@ -105,8 +105,8 @@
                 WHERE SEND_GROUP = #{group_no}
             </when>
             <when test="database == 'postgresql'">
-                INSERT INTO ${log_table}
-                SELECT * FROM ${msg_table}
+                INSERT INTO "${log_table}"
+                SELECT * FROM "${msg_table}"
                 WHERE SEND_GROUP = #{group_no}
             </when>
         </choose>
@@ -123,7 +123,7 @@
                 WHERE SEND_GROUP = #{group_no}
             </when>
             <when test="database == 'postgresql'">
-                DELETE FROM ${msg_table}
+                DELETE FROM "${msg_table}"
                 WHERE SEND_GROUP = #{group_no}
             </when>
         </choose>
