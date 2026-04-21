@@ -90,7 +90,7 @@
                     SMS_SENDER AS smssender,
                     SMSLMS_TIT AS smslmstit,
                     SMS_KIND AS smskind,
-                    KISA_CODE as kisacode,
+                    KISA_CODE as title,
                     TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
                     '00000000000000' AS reservedt
                 from ${msg_table}
@@ -107,7 +107,7 @@
                     SMS_SENDER AS smssender,
                     SMSLMS_TIT AS smslmstit,
                     SMS_KIND AS smskind,
-                    KISA_CODE as kisacode,
+                    KISA_CODE as title,
                     DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s') AS regdt,
                     '00000000000000' AS reservedt
                 from ${msg_table}
@@ -124,7 +124,7 @@
                     SMS_SENDER AS smssender,
                     SMSLMS_TIT AS smslmstit,
                     SMS_KIND AS smskind,
-                    KISA_CODE as kisacode,
+                    KISA_CODE as title,
                     TO_CHAR(CURRENT_TIMESTAMP, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
                     '00000000000000' AS reservedt
                 from "${msg_table}"
@@ -439,7 +439,7 @@
                     SMS_SENDER AS smssender,
                     SMSLMS_TIT AS smslmstit,
                     'L' AS smskind,
-                    KISA_CODE as kisacode,
+                    KISA_CODE as title,
                     TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
                     '00000000000000' AS reservedt
                 from ${msg_table}
@@ -456,7 +456,7 @@
                     SMS_SENDER AS smssender,
                     SMSLMS_TIT AS smslmstit,
                     'L' AS smskind,
-                    KISA_CODE as kisacode,
+                    KISA_CODE as title,
                     DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s') AS regdt,
                     '00000000000000' AS reservedt
                 from ${msg_table}
@@ -473,7 +473,7 @@
                     SMS_SENDER AS smssender,
                     SMSLMS_TIT AS smslmstit,
                     'L' AS smskind,
-                    KISA_CODE as kisacode,
+                    KISA_CODE as title,
                     TO_CHAR(CURRENT_TIMESTAMP, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
                     '00000000000000' AS reservedt
                 from "${msg_table}"
@@ -577,7 +577,7 @@
                     SMSLMS_TIT AS smslmstit,
                     'M' AS smskind,
                     MMS_IMAGE_KEY AS mmsimageid,
-                    KISA_CODE as kisacode,
+                    KISA_CODE as title,
                     TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
                     '00000000000000' AS reservedt
                 from ${msg_table}
@@ -595,7 +595,7 @@
                     SMSLMS_TIT AS smslmstit,
                     'M' AS smskind,
                     MMS_IMAGE_KEY AS mmsimageid,
-                    KISA_CODE as kisacode,
+                    KISA_CODE as title,
                     DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s') AS regdt,
                     '00000000000000' AS reservedt
                 from ${msg_table}
@@ -613,7 +613,7 @@
                     SMSLMS_TIT AS smslmstit,
                     'M' AS smskind,
                     MMS_IMAGE_KEY AS mmsimageid,
-                    KISA_CODE as kisacode,
+                    KISA_CODE as title,
                     TO_CHAR(CURRENT_TIMESTAMP, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
                     '00000000000000' AS reservedt
                 from "${msg_table}"
@@ -884,7 +884,7 @@
                     SMS_SENDER AS smssender,
                     SMSLMS_TIT AS smslmstit,
                     SMS_KIND AS smskind,
-                    KISA_CODE as kisacode,
+                    KISA_CODE as title,
                     TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
                     '00000000000000' AS reservedt
                 from ${msg_table}
@@ -901,7 +901,7 @@
                     SMS_SENDER AS smssender,
                     SMSLMS_TIT AS smslmstit,
                     SMS_KIND AS smskind,
-                    KISA_CODE as kisacode,
+                    KISA_CODE as title,
                     DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s') AS regdt,
                     '00000000000000' AS reservedt
                 from ${msg_table}
@@ -918,7 +918,7 @@
                     SMS_SENDER AS smssender,
                     SMSLMS_TIT AS smslmstit,
                     SMS_KIND AS smskind,
-                    KISA_CODE as kisacode,
+                    KISA_CODE as title,
                     TO_CHAR(CURRENT_TIMESTAMP, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
                     '00000000000000' AS reservedt
                 from "${msg_table}"
