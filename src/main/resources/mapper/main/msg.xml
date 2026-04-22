@@ -565,6 +565,7 @@
                     AND SMS_KIND = #{sms_kind}
                     AND SEND_GROUP IS NULL
                     AND MMS_IMAGE_KEY IS NULL
+                    AND ROWNUM &lt;= 200
             </when>
             <when test="database == 'mysql'">
                 SELECT
@@ -579,6 +580,7 @@
                     AND SMS_KIND = #{sms_kind}
                     AND SEND_GROUP IS NULL
                     AND MMS_IMAGE_KEY IS NULL
+                LIMIT 200
             </when>
         </choose>
     </select>
