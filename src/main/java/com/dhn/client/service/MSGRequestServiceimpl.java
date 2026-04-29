@@ -128,4 +128,9 @@ public class MSGRequestServiceimpl implements MSGRequestService {
     public List<RequestBean> selectOTPRequests(SQLParameter param) throws Exception {
         return msgRequestDAO.selectOTPRequests(param);
     }
+
+    @Override
+    public void updateMMSImageGroupNo(SQLParameter param) throws Exception {
+        msgRequestDAO.updateMMSImageGroupNo(param);
+    }
 }

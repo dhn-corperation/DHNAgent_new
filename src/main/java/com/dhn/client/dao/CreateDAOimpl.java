@@ -39,6 +39,7 @@ public class CreateDAOimpl implements CreateDAO {
             sqlSession.update("com.dhn.client.create.mapper.SendRequest.createIndex4_oracle", param);
             sqlSession.update("com.dhn.client.create.mapper.SendRequest.createIndex5_oracle", param);
             sqlSession.update("com.dhn.client.create.mapper.SendRequest.createIndex6_oracle", param);
+            sqlSession.update("com.dhn.client.create.mapper.SendRequest.createIndex7_oracle", param);
         }else if(param.getDatabase().equals("mysql") || param.getDatabase().equals("mariadb")){
             sqlSession.update("com.dhn.client.create.mapper.SendRequest.createTable_mysql", param);
         }

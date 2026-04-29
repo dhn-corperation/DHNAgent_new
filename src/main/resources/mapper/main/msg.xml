@@ -550,30 +550,24 @@
         </choose>
     </select>
 
-    <select id="req_mms_image" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "com.dhn.client.bean.ImageBean">
+    <update id="req_mms_img_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
         <choose>
             <when test="database == 'oracle'">
-                SELECT
-                    MSG_ID AS msgid,
-                    MMS_IMAGE1 AS file1,
-                    MMS_IMAGE2 AS file2,
-                    MMS_IMAGE3 AS file3
-                FROM ${msg_table}
+                UPDATE ${msg_table}
+                SET STATUS = '1',
+                SEND_GROUP = #{group_no}
                 WHERE STATUS = '0'
                     AND RESERVE_DT &lt;= SYSDATE
                     AND MESSAGE_TYPE = #{msg_type}
                     AND SMS_KIND = #{sms_kind}
                     AND SEND_GROUP IS NULL
                     AND MMS_IMAGE_KEY IS NULL
-                    AND ROWNUM &lt;= 200
+                AND ROWNUM &lt;= 200
             </when>
             <when test="database == 'mysql'">
-                SELECT
-                    MSG_ID AS msgid,
-                    MMS_IMAGE1 AS file1,
-                    MMS_IMAGE2 AS file2,
-                    MMS_IMAGE3 AS file3
-                FROM ${msg_table}
+                UPDATE ${msg_table}
+                SET STATUS = '1',
+                SEND_GROUP = #{group_no}
                 WHERE STATUS = '0'
                     AND RESERVE_DT &lt;= NOW()
                     AND MESSAGE_TYPE = #{msg_type}
@@ -583,19 +577,56 @@
                 LIMIT 200
             </when>
         </choose>
+    </update>
+
+    <select id="req_mms_image" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "com.dhn.client.bean.ImageBean">
+        <choose>
+            <when test="database == 'oracle'">
+                SELECT
+                    MSG_ID AS msgid,
+                    MMS_IMAGE1 AS file1,
+                    MMS_IMAGE2 AS file2,
+                    MMS_IMAGE3 AS file3
+                FROM ${msg_table}
+                WHERE SEND_GROUP = #{group_no}
+                  AND MMS_IMAGE_KEY IS NULL
+            </when>
+            <when test="database == 'mysql'">
+                SELECT
+                    MSG_ID AS msgid,
+                    MMS_IMAGE1 AS file1,
+                    MMS_IMAGE2 AS file2,
+                    MMS_IMAGE3 AS file3
+                FROM ${msg_table}
+                WHERE SEND_GROUP = #{group_no}
+                    AND MMS_IMAGE_KEY IS NULL
+            </when>
+        </choose>
     </select>
 
     <update id="req_mms_key_update" parameterType = "com.dhn.client.bean.SQLParameter">
         <choose>
             <when test="database == 'oracle'">
                 UPDATE ${msg_table}
-                SET MMS_IMAGE_KEY = #{mms_key}
-                WHERE MSG_ID = #{msgid}
+                SET MMS_IMAGE_KEY = #{mms_key},
+                    STATUS = '0',
+                    SEND_GROUP = NULL
+                WHERE SEND_GROUP = #{group_no, jdbcType=VARCHAR}
+                    AND NVL(MMS_IMAGE1, ' ') = NVL(#{file1, jdbcType=VARCHAR}, ' ')
+                    AND NVL(MMS_IMAGE2, ' ') = NVL(#{file2, jdbcType=VARCHAR}, ' ')
+                    AND NVL(MMS_IMAGE3, ' ') = NVL(#{file3, jdbcType=VARCHAR}, ' ')
+                    AND MMS_IMAGE_KEY IS NULL
             </when>
             <when test="database == 'mysql'">
                 UPDATE ${msg_table}
-                SET MMS_IMAGE_KEY = #{mms_key}
-                WHERE MSG_ID = #{msgid}
+                SET MMS_IMAGE_KEY = #{mms_key},
+                    STATUS = '0',
+                    SEND_GROUP = NULL
+                WHERE SEND_GROUP = #{group_no}
+                    AND COALESCE(MMS_IMAGE1, '') = COALESCE(#{file1}, '')
+                    AND COALESCE(MMS_IMAGE2, '') = COALESCE(#{file2}, '')
+                    AND COALESCE(MMS_IMAGE3, '') = COALESCE(#{file3}, '')
+                    AND MMS_IMAGE_KEY IS NULL
             </when>
         </choose>
     </update>
@@ -604,11 +635,11 @@
         <choose>
             <when test="database == 'oracle'">
                 UPDATE ${msg_table}
-                SET RESULT_MSG = '${msg_image_code}',
+                SET RESULT_MSG = #{msg_image_code, jdbcType=VARCHAR},
                     RESULT_MESSAGE = '이미지 등록 실패',
                     RESULT_DT = TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS'),
                     STATUS = 'F'
-                WHERE MSG_ID = #{msgid}
+                WHERE MSG_ID = #{msgid, jdbcType=VARCHAR}
             </when>
             <when test="database == 'mysql'">
                 UPDATE ${msg_table}
