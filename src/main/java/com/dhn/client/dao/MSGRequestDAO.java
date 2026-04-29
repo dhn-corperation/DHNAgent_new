@@ -58,4 +58,6 @@ public interface MSGRequestDAO {
     public void dolog_moveTx(SQLParameter param) throws Exception;
 
     public void doupdateMMSImageFailTx(SQLParameter param) throws Exception;
+
+    public void updateMMSImageGroupNo(SQLParameter param) throws Exception;
 }

@@ -204,6 +204,11 @@ public class MSGRequestDAOimpl implements MSGRequestDAO{
     }
 
     @Override
+    public void updateMMSImageGroupNo(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.msg.mapper.SendRequest.req_mms_img_group_update",param);
+    }
+
+    @Override
     public int selectOTPRequestCount(SQLParameter param) throws Exception {
         return sqlSession.selectOne("com.dhn.client.msg.mapper.SendRequest.req_otp_count",param);
     }

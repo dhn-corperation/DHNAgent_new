@@ -52,4 +52,6 @@ public interface MSGRequestService {
     public void updateOTPGroupNo(SQLParameter param) throws Exception;
 
     public List<RequestBean> selectOTPRequests(SQLParameter sendParam) throws Exception;
+
+    public void updateMMSImageGroupNo(SQLParameter param) throws Exception;
 }
