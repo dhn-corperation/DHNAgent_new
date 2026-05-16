@@ -142,7 +142,9 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 					|| ent.getString("message_type").toUpperCase().startsWith("F")
 					|| ent.getString("message_type").toUpperCase().startsWith("B")
 					|| ent.getString("message_type").toUpperCase().startsWith("C")
-					|| ent.getString("message_type").toUpperCase().startsWith("D")){
+					|| ent.getString("message_type").toUpperCase().startsWith("D")
+					|| ent.getString("message_type").toUpperCase().startsWith("E")
+					|| ent.getString("message_type").toUpperCase().startsWith("G")){
 				// 비즈메세지
 				kao_ml.setMsgid(ent.getString("msgid"));
 				kao_ml.setMsg_table(msg_table);
