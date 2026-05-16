@@ -36,6 +36,7 @@ public class CreateTable implements ApplicationListener<ContextRefreshedEvent> {
             log.info("DHN 발송 테이블 체크 및 생성 완료");
         }catch (Exception e){
             log.error(param.getMsg_table() + " 테이블 생성 오류 : " + e.getMessage());
+            throw new RuntimeException("테이블 생성 실패 - 서버 중단", e);
         }
 
         try{
@@ -43,6 +44,7 @@ public class CreateTable implements ApplicationListener<ContextRefreshedEvent> {
             log.info("DHN 로그 테이블 체크 및 생성 완료");
         }catch (Exception e){
             log.error(param.getLog_table() + " 테이블 생성 오류 : " + e.getMessage());
+            throw new RuntimeException("로그 테이블 생성 실패 - 서버 중단", e);
         }
     }
 }

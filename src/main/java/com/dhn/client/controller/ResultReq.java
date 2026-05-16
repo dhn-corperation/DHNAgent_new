@@ -231,7 +231,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 				msg_ml.setDatabase(database);
 
 				msg_ml.setCode(ent.getString("code"));
-				msg_ml.setReal_send_type(ent.getString("sms_kind"));
+				msg_ml.setReal_send_type(ent.optString("sms_kind", ""));
 
 				if(ent.getString("remark1").equalsIgnoreCase("LGT") || ent.getString("remark1").equals("019")){
 					msg_ml.setTelecom("LGT");
