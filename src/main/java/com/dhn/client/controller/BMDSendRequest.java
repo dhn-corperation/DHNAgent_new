@@ -41,6 +41,7 @@ public class BMDSendRequest implements ApplicationListener<ContextRefreshedEvent
     private String preGroupNo = "";
     private String log_back = "";
     private String log_table = "";
+    private String v2flag = "0";
 
     private static final ExecutorService executorService = Executors.newFixedThreadPool(2);
 
@@ -65,6 +66,7 @@ public class BMDSendRequest implements ApplicationListener<ContextRefreshedEvent
         userid = appContext.getEnvironment().getProperty("dhnclient.userid");
         log_back = appContext.getEnvironment().getProperty("dhnclient.log_back","Y");
         log_table = appContext.getEnvironment().getProperty("dhnclient.log_table");
+        v2flag = appContext.getEnvironment().getProperty("dhnclient.v2flag","0");
 
 
         if (param.getBrand_use() != null && param.getBrand_use().equalsIgnoreCase("Y")) {
@@ -277,6 +279,7 @@ public class BMDSendRequest implements ApplicationListener<ContextRefreshedEvent
 
                 header.setContentType(MediaType.APPLICATION_JSON);
                 header.set("userid", userid);
+                header.set("v2flag", v2flag);
 
                 rt = new RestTemplate();
                 HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);

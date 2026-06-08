@@ -40,6 +40,7 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
     private String preGroupNo = "";
     private String log_back = "";
     private String log_table = "";
+    private String v2flag = "0";
 
     private static final ExecutorService executorService = Executors.newFixedThreadPool(2);
 
@@ -64,9 +65,10 @@ public class FTSendRequest implements ApplicationListener<ContextRefreshedEvent>
         userid = appContext.getEnvironment().getProperty("dhnclient.userid");
         log_back = appContext.getEnvironment().getProperty("dhnclient.log_back","Y");
         log_table = appContext.getEnvironment().getProperty("dhnclient.log_table");
+        v2flag = appContext.getEnvironment().getProperty("dhnclient.v2flag","0");
 
 
-        if (param.getKakao_use() != null && param.getKakao_use().equalsIgnoreCase("Y")) {
+        if (param.getKakao_use() != null && param.getKakao_use().equalsIgnoreCase("Y") && "0".equals(v2flag)) {
             isStart = true;
             log.info("FT (친구톡) 초기화 완료");
         } else {

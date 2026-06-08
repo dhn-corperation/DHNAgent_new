@@ -29,7 +29,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 @Component
 @Slf4j
-public class BMCSendRequest implements ApplicationListener<ContextRefreshedEvent> {
+public class BMGSendRequest implements ApplicationListener<ContextRefreshedEvent> {
 
     public static boolean isStart = false;
     private boolean isProc = false;
@@ -58,7 +58,7 @@ public class BMCSendRequest implements ApplicationListener<ContextRefreshedEvent
         param.setBrand_use(appContext.getEnvironment().getProperty("dhnclient.brand_use"));
         param.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database"));
         param.setSequence(appContext.getEnvironment().getProperty("dhnclient.msg_seq"));
-        param.setMsg_type("C%");
+        param.setMsg_type("G%");
 
         dhnServer = appContext.getEnvironment().getProperty("dhnclient.server");
         userid = appContext.getEnvironment().getProperty("dhnclient.userid");
@@ -67,9 +67,9 @@ public class BMCSendRequest implements ApplicationListener<ContextRefreshedEvent
         v2flag = appContext.getEnvironment().getProperty("dhnclient.v2flag","0");
 
 
-        if (param.getBrand_use() != null && param.getBrand_use().equalsIgnoreCase("Y")) {
+        if (param.getBrand_use() != null && param.getBrand_use().equalsIgnoreCase("Y") && "1".equals(v2flag)) {
             isStart = true;
-            log.info("브랜드메시지 기본형 초기화 완료");
+            log.info("브랜드메시지 기본형(채널친구 대상) 초기화 완료");
         } else {
             posts.postProcessBeforeDestruction(this, null);
         }
@@ -87,7 +87,7 @@ public class BMCSendRequest implements ApplicationListener<ContextRefreshedEvent
             if(activeThreads < 2){
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
                 LocalDateTime now = LocalDateTime.now();
-                String group_no = "BC" + now.format(formatter);
+                String group_no = "BG" + now.format(formatter);
 
                 if(!group_no.equals(preGroupNo)) {
                     try{
@@ -101,7 +101,7 @@ public class BMCSendRequest implements ApplicationListener<ContextRefreshedEvent
                         }
 
                     }catch (Exception e){
-                        log.error("BC (기본형) 메세지 전송 오류 : " + e.toString());
+                        log.error("BG (채널친구 기본형) 메세지 전송 오류 : " + e.toString());
                     }
 
                     preGroupNo = group_no;
@@ -246,9 +246,9 @@ public class BMCSendRequest implements ApplicationListener<ContextRefreshedEvent
                     ml.setCode("7999");
 
                     bmRequestService.updateInvalidData(invalidList, ml);
-                    log.info("BC (기본형) Invalid 데이터 {}건 처리 완료", invalidList.size());
+                    log.info("BG (채널친구 기본형) Invalid 데이터 {}건 처리 완료", invalidList.size());
                 } catch (Exception e) {
-                    log.error("BC (기본형) Invalid 데이터 처리 오류: {}", e.getMessage());
+                    log.error("BG (채널친구 기본형) Invalid 데이터 처리 오류: {}", e.getMessage());
                 }
             }
 
@@ -273,21 +273,21 @@ public class BMCSendRequest implements ApplicationListener<ContextRefreshedEvent
                     log.info(res.toString());
                     if (response.getStatusCode() == HttpStatus.OK) {
                         bmRequestService.updateBMSendComplete(sendParam);
-                        log.info("BC (기본형) 메세지 전송 완료 : " + response.getStatusCode() + " / " + group_no + " / " + sendList.size() + " 건");
+                        log.info("BG (채널친구 기본형) 메세지 전송 완료 : " + response.getStatusCode() + " / " + group_no + " / " + sendList.size() + " 건");
                     }else {
-                        log.error("({}) BC (기본형) 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
+                        log.error("({}) BG (채널친구 기본형) 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
                         Thread.sleep(30000);
                         bmRequestService.updateBMSendInit(sendParam);
                     }
                 } catch (Exception e) {
-                    log.error("BC (기본형) 메세지 전송 오류 : " + e.toString());
+                    log.error("BG (채널친구 기본형) 메세지 전송 오류 : " + e.toString());
                     Thread.sleep(30000);
                     bmRequestService.updateBMSendInit(sendParam);
                 }
 
             }
         }catch (Exception e){
-            log.error("BC (기본형) 메세지 전송 오류 : " + e.toString());
+            log.error("BG (채널친구 기본형) 메세지 전송 오류 : " + e.toString());
         }
     }
 
@@ -310,6 +310,4 @@ public class BMCSendRequest implements ApplicationListener<ContextRefreshedEvent
             return JsonStatus.INVALID;
         }
     }
-
-
 }
