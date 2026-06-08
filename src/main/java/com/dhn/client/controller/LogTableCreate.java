@@ -33,7 +33,7 @@ public class LogTableCreate implements ApplicationListener<ContextRefreshedEvent
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
-        param.setMsg_type(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
+        param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
         param.setLog_table(appContext.getEnvironment().getProperty("dhnclient.log_table"));
         param.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database"));
         param.setKakao_use(appContext.getEnvironment().getProperty("dhnclient.kakao_use"));
