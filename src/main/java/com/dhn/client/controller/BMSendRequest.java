@@ -193,7 +193,14 @@ public class BMSendRequest implements ApplicationListener<ContextRefreshedEvent>
 
                 JsonStatus stCommerce = isValidJson(bmDataBean.getAttcommerce());
                 if (stCommerce == JsonStatus.VALID) {
-                    attNode.set("commerce", mapper.readTree(bmDataBean.getAttcommerce()));
+                    if ("B9".equalsIgnoreCase(bmDataBean.getMessagetype())
+                            || "C9".equalsIgnoreCase(bmDataBean.getMessagetype())
+                            || "E9".equalsIgnoreCase(bmDataBean.getMessagetype())
+                            || "G9".equalsIgnoreCase(bmDataBean.getMessagetype())) {
+                        attNode.set("catalog", mapper.readTree(bmDataBean.getAttcommerce()));
+                    } else {
+                        attNode.set("commerce", mapper.readTree(bmDataBean.getAttcommerce()));
+                    }
                 } else if (stCommerce == JsonStatus.INVALID) {
                     log.error("Invalid JSON/ARRAY (commerce) msgid={}", bmDataBean.getMsgid());
                     invalidList.add(bmDataBean.getMsgid());
