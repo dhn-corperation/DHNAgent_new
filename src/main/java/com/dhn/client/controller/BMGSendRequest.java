@@ -193,7 +193,6 @@ public class BMGSendRequest implements ApplicationListener<ContextRefreshedEvent
 
                 JsonStatus stCommerce = isValidJson(bmDataBean.getAttcommerce());
                 if (stCommerce == JsonStatus.VALID) {
-                    attNode.set("commerce", mapper.readTree(bmDataBean.getAttcommerce()));
                     if ("B9".equalsIgnoreCase(bmDataBean.getMessagetype())
                             || "C9".equalsIgnoreCase(bmDataBean.getMessagetype())
                             || "E9".equalsIgnoreCase(bmDataBean.getMessagetype())
