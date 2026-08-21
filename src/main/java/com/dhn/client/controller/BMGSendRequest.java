@@ -134,6 +134,7 @@ public class BMGSendRequest implements ApplicationListener<ContextRefreshedEvent
                 sendBean.setMessagetype(bmDataBean.getMessagetype());
                 sendBean.setMsg(bmDataBean.getMsg());
                 sendBean.setMsgsms(bmDataBean.getMsgsms());
+                sendBean.setTitle(bmDataBean.getTitle());
                 sendBean.setPcom("P");
                 sendBean.setPinvoice(bmDataBean.getPinvoice());
                 sendBean.setPhn(bmDataBean.getPhn());
