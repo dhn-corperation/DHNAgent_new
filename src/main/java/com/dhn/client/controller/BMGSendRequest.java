@@ -198,9 +198,9 @@ public class BMGSendRequest implements ApplicationListener<ContextRefreshedEvent
                             || "C9".equalsIgnoreCase(bmDataBean.getMessagetype())
                             || "E9".equalsIgnoreCase(bmDataBean.getMessagetype())
                             || "G9".equalsIgnoreCase(bmDataBean.getMessagetype())) {
-                        attNode.set("catalog", mapper.readTree(bmDataBean.getAttcommerce()));
+                        attNode.set("catalog_variable", mapper.readTree(bmDataBean.getAttcommerce()));
                     } else {
-                        attNode.set("commerce", mapper.readTree(bmDataBean.getAttcommerce()));
+                        attNode.set("commerce_variable", mapper.readTree(bmDataBean.getAttcommerce()));
                     }
                 } else if (stCommerce == JsonStatus.INVALID) {
                     log.error("Invalid JSON/ARRAY (commerce) msgid={}", bmDataBean.getMsgid());
