@@ -134,6 +134,7 @@ public class BMGSendRequest implements ApplicationListener<ContextRefreshedEvent
                 sendBean.setMessagetype(bmDataBean.getMessagetype());
                 sendBean.setMsg(bmDataBean.getMsg());
                 sendBean.setMsgsms(bmDataBean.getMsgsms());
+                sendBean.setTitle(bmDataBean.getTitle());
                 sendBean.setPcom("P");
                 sendBean.setPinvoice(bmDataBean.getPinvoice());
                 sendBean.setPhn(bmDataBean.getPhn());
@@ -173,6 +174,7 @@ public class BMGSendRequest implements ApplicationListener<ContextRefreshedEvent
                     continue;
                 }
 
+
                 JsonStatus stImg = isValidJson(bmDataBean.getAttimage());
                 if (stImg == JsonStatus.VALID) {
                     attNode.set("image_variable", mapper.readTree(bmDataBean.getAttimage()));
@@ -193,7 +195,14 @@ public class BMGSendRequest implements ApplicationListener<ContextRefreshedEvent
 
                 JsonStatus stCommerce = isValidJson(bmDataBean.getAttcommerce());
                 if (stCommerce == JsonStatus.VALID) {
-                    attNode.set("commerce_variable", mapper.readTree(bmDataBean.getAttcommerce()));
+                    if ("B9".equalsIgnoreCase(bmDataBean.getMessagetype())
+                            || "C9".equalsIgnoreCase(bmDataBean.getMessagetype())
+                            || "E9".equalsIgnoreCase(bmDataBean.getMessagetype())
+                            || "G9".equalsIgnoreCase(bmDataBean.getMessagetype())) {
+                        attNode.set("catalog_variable", mapper.readTree(bmDataBean.getAttcommerce()));
+                    } else {
+                        attNode.set("commerce_variable", mapper.readTree(bmDataBean.getAttcommerce()));
+                    }
                 } else if (stCommerce == JsonStatus.INVALID) {
                     log.error("Invalid JSON/ARRAY (commerce) msgid={}", bmDataBean.getMsgid());
                     invalidList.add(bmDataBean.getMsgid());
