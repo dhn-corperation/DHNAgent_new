@@ -169,17 +169,22 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 					kao_ml.setStatus("4");
 				}
 
-				if(ent.getString("message_type").toUpperCase().startsWith("D")){
-					kao_ml.setBcast_cnt(ent.getString("price").isEmpty()?"":ent.getString("price"));
-				}else if (ent.getString("kind").toUpperCase().startsWith("I")&&ent.getString("s_code").equals("0000")){
+				if (ent.getString("message_type").toUpperCase().startsWith("D")) {
+					kao_ml.setBcast_cnt(ent.getString("price").isEmpty() ? "" : ent.getString("price"));
+				} else if ((ent.getString("kind").toUpperCase().startsWith("I") || ent.getString("kind").toUpperCase().startsWith("O"))
+						&& ent.getString("s_code").equals("0000")) {
 					kao_ml.setBcast_cnt("1");
-				}else if (ent.getString("kind").toUpperCase().startsWith("N")&&ent.getString("s_code").equals("0000")){
+				} else if (ent.getString("kind").toUpperCase().startsWith("N") && ent.getString("s_code").equals("0000")) {
 					kao_ml.setBcast_cnt("0");
-				}else if(ent.getString("kind").toUpperCase().startsWith("M")&&ent.getString("s_code").equals("0000")){
-					if(!ent.getString("remark3").isEmpty()&&ent.getString("remark3").substring(0, 1).equalsIgnoreCase("I")){
-						kao_ml.setBcast_cnt("1");
-					}else if(!ent.getString("remark3").isEmpty()){
-						kao_ml.setBcast_cnt("0");
+				}else if (ent.getString("kind").toUpperCase().startsWith("M") && ent.getString("s_code").equals("0000")) {
+					String remark3 = ent.getString("remark3");
+					if (remark3 != null && !remark3.isEmpty()) {
+						String firstChar = remark3.substring(0, 1);
+						if (firstChar.equalsIgnoreCase("I") || firstChar.equalsIgnoreCase("O")) {
+							kao_ml.setBcast_cnt("1");
+						} else {
+							kao_ml.setBcast_cnt("0");
+						}
 					}
 				}
 
